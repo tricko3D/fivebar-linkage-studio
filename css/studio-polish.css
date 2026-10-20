@@ -280,3 +280,147 @@
 .scaleTicks::before,.scaleTicks::after {display:none;}
 @media screen and (max-width:950px) { .canvasScale {bottom:79px;} }
 @media screen and (max-width:600px) { .canvasScale {bottom:142px;} }
+
+/* Revision: minimal eight-node mount alignment diagram */
+.mountPicker{
+  position:relative;
+  width:152px;height:152px;
+  display:grid;grid-template-columns:30px 1fr 30px;
+  grid-template-rows:30px 1fr 30px;
+  gap:0;place-items:center;
+  padding:6px;
+  margin:9px auto 11px;
+  border:0;border-radius:0;background:transparent;
+}
+.mountPicker::before{
+  content:"";position:absolute;inset:21px;
+  border:2px solid #647f96;pointer-events:none;
+}
+.mountSpot{
+  z-index:1;width:23px;height:23px;
+  justify-self:center;align-self:center;
+  border:1.5px solid #647f96;
+  border-radius:2px;
+  background:#f8fbfe;
+  box-shadow:none;
+}
+.mountSpot:hover{background:#e0eefb;border-color:#2279c0;}
+.mountSpot.is-selected{background:#348cd1;border:2px solid #125d95;box-shadow:0 0 0 2px #ffffffd9;}
+.mountBoardPreview{
+  border:0;background:transparent;box-shadow:none;pointer-events:none;
+}
+.mountBoardPreview::before {content:none;}
+/* Keep the 2D scale a simple map-style L, with no floating box or fill. */
+.canvasScale{
+  left:12px;bottom:12px;right:auto;top:auto;
+  padding:0;gap:4px;align-items:flex-start;
+  background:transparent;border:0;border-radius:0;box-shadow:none;
+  color:#486881;font-size:10px;font-weight:700;
+  text-shadow:0 1px 1px #ffffff;
+}
+.scaleTicks{
+  background:none!important;
+  border:0!important;border-left:3px solid #55728a!important;
+  border-bottom:3px solid #55728a!important;
+  box-shadow:none!important;box-sizing:border-box;
+  height:55px; width:55px;
+}
+.scaleTicks::before,.scaleTicks::after{display:none!important;}
+.canvaslegend{left:auto!important;right:9px!important;bottom:8px!important;width:auto;max-width:calc(100% - 150px);}
+
+/* Top-right drawing heatmap control, independent of the sidebar. */
+.canvasHeatmap{
+  position:absolute;z-index:15;top:8px;right:8px;
+  display:flex;align-items:center;gap:6px;
+  max-width:min(285px,58%);
+  padding:4px 6px;
+  background:#fffffff0;
+  border:1px solid #b9c8d5;border-radius:4px;
+  box-shadow:0 2px 5px #213d5620;
+}
+.canvasHeatmap > svg {width:14px;height:14px;color:#366e98;flex-shrink:0;}
+.canvasHeatmap select{
+  appearance:none;min-width:0;max-width:100%;width:176px;height:26px;
+  font-size:11px;padding:4px 22px 4px 7px;
+  font-weight:600;color:#365772;
+  border:1px solid #b9c9d9;border-radius:3px;
+  background-color:white;
+  background-image:linear-gradient(45deg,transparent 50%,#607e99 50%),linear-gradient(135deg,#607e99 50%,transparent 50%);
+  background-position:calc(100% - 12px) 50%,calc(100% - 7px) 50%;
+  background-size:5px 5px;background-repeat:no-repeat;
+}
+.canvasHeatmap select:hover{border-color:#4891c9;}
+.canvasHeatmap .infoTrigger{margin:0;height:24px;width:24px;}
+
+/* Motion study returns to its own row under the canvas. */
+.workarea > .routepanel{
+  position:relative!important;
+  bottom:auto!important;right:auto!important;top:auto!important;left:auto!important;
+  width:100%!important;max-width:none!important;max-height:none!important;
+  flex:0 0 auto;
+  min-width:0;
+  padding:9px 12px;
+  background:#f8fafc;
+  border:1px solid #b6c4d0;border-radius:4px;
+  box-shadow:0 1px 2px #273a4a14;
+  gap:6px;
+}
+.workarea > .routepanel .routeTop{gap:8px;align-items:center;}
+.workarea > .routepanel .sectheader{padding:0;border:0;margin:0;}
+.workarea > .routepanel .sectheader::before{content:"";margin:0;}
+.workarea > .routepanel .routeFields{min-height:28px;gap:10px;}
+.workarea > .routepanel .routeCharts{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+.workarea > .routepanel .routeChart{min-width:0;}
+.workarea > .routepanel .routeChart svg{height:102px;min-height:0;max-height:102px;}
+.workarea > .routepanel .routeMetrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;}
+.workarea > .routepanel .routeMetrics strong{font-size:11px;}
+.workarea > .routepanel .routeMetrics small{font-size:10px;white-space:normal;}
+.workarea > .routepanel.is-collapsed > :not(.routeTop){display:none!important;}
+@media screen and (max-width:1100px){
+  .canvasHeatmap{top:52px;right:7px;max-width:245px;}
+  .workarea > .routepanel .routeCharts{grid-template-columns:1fr;}
+  .workarea > .routepanel .routeMetrics{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media screen and (max-width:600px){
+  .canvasHeatmap{top:45px;right:6px;max-width:min(245px,72%);padding:3px;}
+  .canvasHeatmap select{width:135px;font-size:10px;}
+  .canvasScale{bottom:8px;left:9px;}
+  .canvaslegend{bottom:5px!important;right:5px!important;max-width:calc(100% - 110px);}
+}
+/* Dynamic Resize Links is a named operation, not a large extra bar. */
+.toolkitRow #resizeButton{white-space:nowrap;}
+.toolkitRow #resizeButton span{white-space:nowrap;}
+.crossSectionHead{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:6px;margin:8px 0 9px;
+  color:#456781;font-size:11px;
+}
+.crossSectionHead .infoTrigger{margin-left:auto;}
+
+/* Group related parameters in independently collapsible property cards. */
+.mechanicsGroup{
+  border:1px solid #c3d2df;
+  border-radius:4px;
+  margin:8px 0;
+  background:#f8fbfe;
+  overflow:hidden;
+}
+.mechanicsGroup summary{
+  display:flex;align-items:center;gap:7px;
+  cursor:pointer;list-style:none;
+  background:linear-gradient(#fafcff,#ecf2f7);
+  padding:10px 12px;
+  font-size:12px;font-weight:700;color:#35526d;
+  user-select:none;
+}
+.mechanicsGroup summary::-webkit-details-marker{display:none;}
+.mechanicsGroup summary::before{content:"▸";font-size:11px;color:#4e7595;}
+.mechanicsGroup[open] summary::before{content:"▾";}
+.mechanicsGroup summary > svg{width:14px;height:14px;margin-left:auto;color:#7190a6;transition:transform .15s;}
+.mechanicsGroup[open] summary > svg{transform:rotate(180deg);}
+.mechanicsGroup .mechanicsGroupBody{border-top:1px solid #d6e1eb;padding:11px;}
+.mechanicsGroupBody .fieldrow{grid-template-columns:repeat(2,minmax(0,1fr));}
+.mechanicsGroupBody .infoTrigger{width:20px;height:20px;}
+.mechanicsGroup summary .infoTrigger{margin-left:4px;}
+.mechanicsGroup summary .infoTrigger svg{transform:none;}
+.mechanicsGroup summary:focus-visible{outline:2px solid #4d9bd8;outline-offset:-2px;}
