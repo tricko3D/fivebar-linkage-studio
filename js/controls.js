@@ -157,9 +157,7 @@ function initControls() {
     setRouteCursor(Number($('routeScrub').value) / 1000);
   });
   $('reportButton').onclick = downloadAuditText;
-  $('sideReportButton').onclick = downloadAuditText;
   $('printButton').onclick = openPrintableAudit;
-  $('sidePrintButton').onclick = openPrintableAudit;
   $('importButton').onclick = () => $('importFile').click();
   $('importFile').onchange = async (e) => {
     const file = e.target.files?.[0];
