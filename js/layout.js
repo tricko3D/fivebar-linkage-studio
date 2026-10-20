@@ -38,7 +38,7 @@
     if (btn) choose(resultTabs, inspectors, results, btn.dataset.insight);
   });
   choose(settingTabs, configSections, groups, 'board');
-  choose(resultTabs, inspectors, results, 'position');
+  choose(resultTabs, inspectors, results, 'help');
   function setDrawer(which, open) {
     document.body.classList.toggle('show-' + which, open);
     document
