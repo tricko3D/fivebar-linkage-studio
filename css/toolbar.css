@@ -1,0 +1,233 @@
+/* CAD toolbar and file menu. Scoped overrides for existing studio layout. */
+.appHeader {
+  position: relative;
+  z-index: 55;
+  overflow: visible;
+}
+.appHeader .head {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: 100%;
+  max-width: none;
+  min-height: 46px;
+  padding: 6px 11px;
+  gap: 13px;
+}
+.appHeader .brand {
+  min-width: 0;
+  flex: 0 0 auto;
+  gap: 7px;
+  white-space: nowrap;
+}
+.appHeader .brand .mark {
+  height: 26px;
+  width: 26px;
+  font-size: 12px;
+  border-radius: 3px;
+}
+.appHeader .brand h1 {
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: -.02em;
+  font-weight: 720;
+  color: #293b4e;
+  white-space: nowrap;
+}
+.appHeader .brand h1 span {
+  font-weight: 520;
+  color: #507b9c;
+}
+.appHeader .topSettingsTabs {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  padding: 0 0 0 12px;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid #c7d1dc;
+  border-radius: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.appHeader .topSettingsTabs::-webkit-scrollbar { display:none; }
+.appHeader .topSettingsTabs .navtab {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  min-height: 29px;
+  padding: 5px 9px;
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 600;
+  color: #526679;
+  white-space: nowrap;
+}
+.appHeader .topSettingsTabs .navtab:hover {
+  background: #e6eff8;
+  color: #175d97;
+  border-color: #c6d9e9;
+}
+.appHeader .topSettingsTabs .navtab.is-active {
+  background: linear-gradient(#e9f3ff, #d4e7fb);
+  color: #115b98;
+  border: 1px solid #9fc0df;
+  box-shadow: inset 0 -3px 0 #237bbd;
+}
+.appHeader .headright {
+  margin-left: auto;
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+.appHeader .headright .headerIconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
+  height: 30px;
+  padding: 5px 8px;
+  font-size: 11px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.appHeader .headright #resetButton {
+  display: inline-flex;
+  width: 31px;
+  padding: 5px;
+}
+.appHeader svg.lucide,
+.appHeader [data-lucide] {
+  display: inline-block;
+  height: 15px;
+  width: 15px;
+  flex-shrink: 0;
+  vertical-align: middle;
+  stroke-width: 1.9;
+}
+.appHeader .brand svg.lucide { height: 17px; width: 17px; }
+.appHeader .fileMenuTrigger .chevron,
+.appHeader .fileMenuTrigger svg.lucide:last-child { height: 12px; width: 12px; }
+.appHeader .headright .compactLabel {display:inline;}
+.appHeader .fileMenuWrap {
+  position: relative;
+}
+.appHeader .fileMenuList {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  width: 273px;
+  max-width: calc(100vw - 20px);
+  z-index: 120;
+  background: #fff;
+  border: 1px solid #aab9ca;
+  border-radius: 5px;
+  box-shadow: 0 15px 34px #263d5560,0 2px 6px #273f5926;
+  padding: 6px;
+  color: #30485f;
+}
+.appHeader .fileMenuList[hidden] { display:none!important; }
+.appHeader .fileMenuHeading {
+  color: #788b9c;
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: .09em;
+  padding: 8px 10px 3px;
+}
+.appHeader .fileMenuDivider {border-top:1px solid #dce4ec; margin:5px 6px;}
+.appHeader .fileMenuList button {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: #31485e;
+  font-size: 11px;
+  font-weight: 570;
+  padding: 6px 9px;
+}
+.appHeader .fileMenuList button svg {
+  width:16px;
+  height:16px;
+  color:#2774af;
+}
+.appHeader .fileMenuList button span {
+  margin-left: auto;
+  font-size: 9px;
+  color: #7a8c9b;
+  letter-spacing:.02em;
+}
+.appHeader .fileMenuList button:hover,
+.appHeader .fileMenuList button:focus-visible {
+  background: #e5f1fe;
+  border-color: #bad6ee;
+  color: #135c98;
+}
+.appHeader .fileMenuList button:focus-visible {
+  outline: 2px solid #328ddd;
+  outline-offset: -2px;
+}
+.appHeader button:focus-visible,.appHeader .navtab:focus-visible {
+  outline: 2px solid #318dd0;
+  outline-offset: 2px;
+}
+.appHeader .headright .layoutToggle:not(.is-on) {color:#456279;}
+.appHeader .headright #toggleSettings {display:none;}
+@media screen and (max-width: 1180px) {
+  .appHeader .head {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    gap: 4px 10px;
+    padding: 5px 10px 6px;
+  }
+  .appHeader .brand {grid-column:1;grid-row:1;}
+  .appHeader .headright {grid-column:2;grid-row:1;margin:0;}
+  .appHeader .topSettingsTabs {
+    grid-row:2;
+    grid-column:1 / -1;
+    min-width:0;
+    width:100%;
+    padding-left:0;
+    border:0;
+    justify-content:flex-start;
+  }
+}
+@media screen and (max-width:1100px) {
+  .analysis {top:calc(var(--studio-header-height, 86px) + 6px);}
+}
+@media screen and (max-width:850px) {
+  .appHeader .headright #toggleSettings {display:inline-flex;}
+  .appHeader .headright .compactLabel {display:none;}
+  .appHeader .headright .headerIconButton {width:31px;padding:5px;}
+  .appHeader .headright .fileMenuTrigger {width:49px;}
+  .config,.analysis {top:calc(var(--studio-header-height, 86px) + 6px);}
+}
+@media screen and (max-width:600px) {
+  .appHeader .head {
+    grid-template-columns: minmax(0,1fr) auto;
+    padding: 4px 7px 6px;
+    gap: 4px;
+  }
+  .appHeader .brand h1 {font-size:11px;}
+  .appHeader .brand .mark {width:23px;height:23px;}
+  .appHeader .topSettingsTabs {gap:2px;}
+  .appHeader .topSettingsTabs .navtab {padding:4px 7px;min-height:27px;font-size:10px;gap:5px;}
+  .appHeader .topSettingsTabs .navtab svg {width:13px;height:13px;}
+  .appHeader .headright #resetButton {display:inline-flex;}
+}
