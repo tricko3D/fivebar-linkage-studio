@@ -75,7 +75,11 @@ function renderSvg() {
   const sol = calc(vec(state.targetX, state.targetY));
   lastSolution = sol;
   const p = pivots(state);
-  if (!dragging && !routePlaying) currentView = sceneViewport(sol);
+  if (!dragging && !routePlaying) {
+    const base = sceneViewport(sol);
+    if (typeof clampPan === 'function') clampPan(base);
+    currentView = { ...base, x: base.x + panOffset.x, y: base.y + panOffset.y };
+  }
   svg.setAttribute(
     'viewBox',
     `${currentView.x} ${currentView.y} ${currentView.w} ${currentView.h}`,
