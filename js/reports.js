@@ -8,10 +8,12 @@ const auditNum = (x, places = 8) => (Number.isFinite(x) ? Number(x).toFixed(plac
 const auditVector = (v, p = 4) => (v ? `(${auditNum(v.x, p)}, ${auditNum(v.y, p)})` : 'N/A');
 const auditRadians = (x) => `${auditNum(x, 10)} rad`;
 const auditTag = (title, lines) => [
-  ``,
-  `${title}`,
-  `${'-'.repeat(Math.max(12, title.length))}`,
+  '',
+  '## ' + title.replace(/^\\d+\\s+/, ''),
+  '',
+  '```text',
   ...lines,
+  '```',
 ];
 function gradientAudit(sol, s = state) {
   if (!sol.valid) return null;
@@ -76,7 +78,7 @@ function buildAuditReport() {
   const st = m.struct,
     bar = base.bars;
   const rep = [
-    'FIVEBAR / CHESS - CONFIGURATION & CALCULATION AUDIT',
+    '# Fivebar Linkage Studio | Calculation audit',
     'Generated: ' + new Date().toISOString(),
     'Units: mm, degrees, g unless otherwise specified. Calculations use SI (m, kg, N, N*m).',
     'Snapshot type: user inputs + reproducible intermediate computations, not certified engineering results.',
@@ -338,27 +340,48 @@ function buildAuditReport() {
   ];
   return rep.join('\n');
 }
-function downloadAuditText() {
-  download('fivebar-calculation-report.txt', buildAuditReport(), 'text/plain;charset=utf-8');
+function downloadAuditMarkdown() {
+  download('fivebar-calculation-report.md', buildAuditReport(), 'text/markdown;charset=utf-8');
 }
-function openPrintableAudit() {
-  const text = buildAuditReport();
-  // No PDF dependency required: the browser's native Print dialog can save PDF.
-  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Fivebar Linkage Studio - Calculation Report</title><style>
- @page{size:A4;margin:17mm}body{font:10px/1.42 ui-monospace,Consolas,Menlo,monospace;color:#172334;background:#fff;margin:18px;}
- h1{font:700 17px/1.3 system-ui,sans-serif;margin:0 0 10px}.toolbar{font:13px system-ui,sans-serif;position:sticky;top:0;background:#fff;border-bottom:1px solid #bbb;padding:10px;display:flex;align-items:center;gap:12px}
- button{padding:8px 14px;cursor:pointer}pre{white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;margin-top:14px}
- @media print{.toolbar{display:none}body{margin:0;font-size:9px}pre{margin-top:0}} </style></head><body><div class="toolbar"><b>Fivebar / Chess calculation report</b><button onclick="window.print()">Print or save PDF</button><span>Use your browser's “Save as PDF” printer.</span></div><pre id="report"></pre></body></html>`;
-  const w = window.open('', '_blank');
-  if (!w) {
-    alert('Your browser blocked the print view. Allow pop-ups or use Report TXT instead.');
-    return;
-  }
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
-  w.document.getElementById('report').textContent = text;
-  w.focus();
+// Equations-file syntax: global variable declarations for SolidWorks Tools > Equations > Import.
+// Distances are in mm, angles in degrees; no linkage solver assumptions are encoded here.
+function buildSolidWorksVariables() {
+  const s=state, pv=pivots(s);
+  const mm = (name,value) => `"${name}" = ${Number(value.toFixed(5))}mm`;
+  const deg = (name,value) => `"${name}" = ${Number(value.toFixed(5))}deg`;
+  const unit = (name,value) => `"${name}" = ${Number(value.toFixed(6))}`;
+  return [
+    "' Fivebar Linkage Studio | SolidWorks global variables",
+    "' Import via Tools > Equations > Import. Values are nominal design inputs.",
+    "' Coordinates use chessboard top-left origin, X right, Y down.",
+    "' Coordinate variables do not constrain sketches until linked to dimensions.",
+    mm('BoardWidth',s.boardW),mm('BoardHeight',s.boardH),
+    mm('OuterBoardWidth',s.outerW),mm('OuterBoardHeight',s.outerH),
+    mm('BoardMarginX',(s.outerW-s.boardW)/2),
+    mm('BoardMarginY',(s.outerH-s.boardH)/2),
+    mm('SquareWidth',s.boardW/8),mm('SquareHeight',s.boardH/8),
+    mm('MotorSpacing',s.sep),mm('MotorMidpointX',s.mountX),mm('MotorMidpointY',s.mountY),
+    deg('MotorBaselineAngle',s.angle),
+    mm('MotorAX',pv.A.x),mm('MotorAY',pv.A.y),
+    mm('MotorBX',pv.B.x),mm('MotorBY',pv.B.y),
+    mm('LeftProximalLength',s.l1),mm('LeftDistalLength',s.l2),
+    mm('RightProximalLength',s.r1),mm('RightDistalLength',s.r2),
+    mm('LinkLeftProximalWidth',s.l1W),mm('LinkLeftProximalHeight',s.l1H),
+    mm('LinkLeftDistalWidth',s.l2W),mm('LinkLeftDistalHeight',s.l2H),
+    mm('LinkRightProximalWidth',s.r1W),mm('LinkRightProximalHeight',s.r1H),
+    mm('LinkRightDistalWidth',s.r2W),mm('LinkRightDistalHeight',s.r2H),
+    mm('WallThickness',s.wall),
+    mm('ToolExtension',s.extension),mm('ToolOffsetX',s.offsetX),mm('ToolOffsetY',s.offsetY),
+    mm('TargetX',s.targetX),mm('TargetY',s.targetY),
+    unit('GearReduction',s.ratio),
+    '',
+    "' Mechanical inputs such as PETG Young's modulus, torque, efficiency and payload",
+    "' are intentionally excluded from geometry variables.",
+    ''
+  ].join('\\n');
+}
+function downloadSolidWorksVariables() {
+  download('fivebar-solidworks-variables.txt',buildSolidWorksVariables(),'text/plain;charset=utf-8');
 }
 function download(name, body, mime) {
   const blob = new Blob([body], { type: mime });
