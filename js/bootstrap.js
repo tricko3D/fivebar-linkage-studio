@@ -9,22 +9,27 @@ function localPoint(evt) {
   const m = svg.getScreenCTM();
   return m ? p.matrixTransform(m.inverse()) : vec(0, 0);
 }
+// The camera may move at most half a viewport in each direction, giving a
+// two-viewport-wide panning envelope without losing the mechanism.
+let panOffset = vec(0, 0);
+function clampPan(view) {
+  panOffset.x = Math.max(-view.w / 2, Math.min(view.w / 2, panOffset.x));
+  panOffset.y = Math.max(-view.h / 2, Math.min(view.h / 2, panOffset.y));
+}
+svg.style.cursor = 'grab';
+svg.style.touchAction = 'none';
 svg.addEventListener('pointerdown', (e) => {
   if (routePlaying) stopRoute();
   const h = e.target.closest('[data-handle]');
-  let target = h?.dataset.handle || 'target';
-  if (!h) {
-    if (resizeMode) return; // In resize mode only the gold joint P is draggable.
-    // Clicking anywhere on the playing board sets the gripper position.
-    const q = localPoint(e);
-    if (q.x >= 0 && q.x <= state.boardW && q.y >= 0 && q.y <= state.boardH) {
-      state.targetX = q.x;
-      state.targetY = q.y;
-      change(false);
-    } else return;
-  }
+  const target = h?.dataset.handle || 'pan';
   const start = localPoint(e);
-  dragging = { type: target, start, originX: state.mountX, originY: state.mountY };
+  dragging = {
+    type: target, start, originX: state.mountX, originY: state.mountY,
+    clientX: e.clientX, clientY: e.clientY,
+    startPan: vec(panOffset.x, panOffset.y),
+    moved: false,
+  };
+  if (target === 'pan') svg.style.cursor = 'grabbing';
   if (target === 'resize') {
     const sol = calc(vec(state.targetX, state.targetY));
     const P = sol.P || vec(state.targetX, state.targetY);
@@ -37,6 +42,23 @@ svg.addEventListener('pointerdown', (e) => {
 });
 svg.addEventListener('pointermove', (e) => {
   if (!dragging) return;
+  if (dragging.type === 'pan') {
+    const dx = e.clientX - dragging.clientX;
+    const dy = e.clientY - dragging.clientY;
+    if (Math.hypot(dx, dy) > 4) dragging.moved = true;
+    if (!dragging.moved) return;
+    // Pixel deltas are relative to the original camera scale, not its
+    // changing viewBox, so panning remains smooth and stable.
+    const bounds = svg.getBoundingClientRect();
+    const base = sceneViewport(lastSolution);
+    panOffset.x = dragging.startPan.x - dx * base.w / Math.max(1, bounds.width);
+    panOffset.y = dragging.startPan.y - dy * base.h / Math.max(1, bounds.height);
+    clampPan(base);
+    currentView = { ...base, x: base.x + panOffset.x, y: base.y + panOffset.y };
+    render(false);
+    e.preventDefault();
+    return;
+  }
   const q = localPoint(e);
   if (dragging.type === 'mount') {
     state.mountX = dragging.originX + q.x - dragging.start.x;
@@ -59,11 +81,22 @@ svg.addEventListener('pointermove', (e) => {
   e.preventDefault();
 });
 for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture'])
-  svg.addEventListener(ev, () => {
-    if (dragging) {
-      dragging = null;
-      render(false);
+  svg.addEventListener(ev, (e) => {
+    if (!dragging) return;
+    const wasPan = dragging.type === 'pan';
+    const wasClick = wasPan && !dragging.moved && ev === 'pointerup';
+    dragging = null;
+    if (wasPan) svg.style.cursor = 'grab';
+    if (wasClick && !resizeMode) {
+      const q = localPoint(e);
+      if (q.x >= 0 && q.x <= state.boardW && q.y >= 0 && q.y <= state.boardH) {
+        state.targetX = q.x;
+        state.targetY = q.y;
+        change(false);
+        return;
+      }
     }
+    render(false);
   });
 window.addEventListener('resize', () => render(false));
 // New default preset for the public studio. Previous chess-v3 browser settings are kept untouched.
