@@ -383,6 +383,7 @@ function render(recalc = true) {
   updateInspector(sol);
   servoReadout(sol);
   updateMechanicalInspector(sol);
+  if (typeof updateCanvasScale === 'function') updateCanvasScale();
 }
 function writeControls() {
   document.querySelectorAll('[data-key]').forEach((el) => {
@@ -406,14 +407,11 @@ function setResizeMode(enabled) {
   resizeMode = enabled;
   $('resizeButton').classList.toggle('is-on', enabled);
   $('resizeButton').setAttribute('aria-pressed', String(enabled));
-  $('resizeButton').textContent = enabled ? '✓ Done resizing' : '↔ Resize linkage';
+  $('resizeButton').querySelector('span').textContent = enabled ? 'Finish' : 'Resize';
+  $('resizeButton').setAttribute('aria-label', enabled ? 'Finish resizing linkage' : 'Resize linkage by dragging common joint P');
   $('resizeHint').textContent = enabled
-    ? 'Drag the gold centre joint P to stretch or shrink all 4 links.'
+    ? 'Drag joint P to scale all four bars; motor positions stay fixed.'
     : 'Turn on, then drag the common joint P.';
-  $('resizeHint').classList.toggle('is-on', enabled);
-  $('canvasNote').innerHTML = enabled
-    ? '<strong>Resize linkage active</strong>Drag the <span style="color:#ffd294">gold common joint P</span> to resize all four bars. Mount positions stay fixed.'
-    : '<strong>Interactive XY workspace</strong>Drag the <span style="color:#ffc178">orange gripper</span> to test positions. Drag the <span style="color:#77dce0">blue mount</span> to reposition the linkage.';
   render(false);
 }
 function scaledTargetFromJoint(P, trial) {
