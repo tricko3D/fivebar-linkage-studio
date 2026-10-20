@@ -972,30 +972,5 @@ window.addEventListener('resize',()=>render(false));
 state.outerW=Math.max(state.boardW,state.outerW);state.outerH=Math.max(state.boardH,state.outerH);writeControls();initControls();updateTransmissionReadout();rebuildRoute();render(true);
 })();
 </script>
-<script>
-(() => {
-  'use strict';
-  const config = document.querySelector('.config');
-  const configSections = Array.from(config.querySelectorAll(':scope > .section'));
-  const groups = {board:[0,1], links:[2,3], view:[4], servos:[5], loads:[6], files:[7]};
-  const inspector = document.querySelector('.analysis');
-  const inspectors = Array.from(inspector.querySelectorAll(':scope > .panel'));
-  const results = {servo:[0],forces:[1],position:[2],corners:[3],help:[4]};
-  function choose(tabs, panels, mapping, selected) {
-    Array.from(tabs.querySelectorAll('button[data-setting],button[data-insight]')).forEach(button=>{
-      const yes=(button.dataset.setting || button.dataset.insight)===selected;
-      button.classList.toggle('is-active', yes);
-      button.setAttribute('aria-selected', String(yes));
-    });
-    panels.forEach((el,i) => el.classList.toggle('is-active',(mapping[selected]||[]).includes(i)));
-  }
-  const settingTabs=document.querySelector('.settingsTabs'), resultTabs=document.querySelector('.resultTabs');
-  settingTabs.addEventListener('click',e=>{
-    const btn=e.target.closest('[data-setting]'); if(btn) choose(settingTabs,configSections,groups,btn.dataset.setting);
-  });
-  resultTabs.addEventListener('click',e=>{
-    const btn=e.target.closest('[data-insight]'); if(btn) choose(resultTabs,inspectors,results,btn.dataset.insight);
-  });
-  choose(settingTabs,configSections,groups,'board');
-  choose(resultTabs,inspectors,results,'position');
-  function setDrawer(which, open) {
+<script src="js/ui-tabs.js" defer></script>
+</body></html>
