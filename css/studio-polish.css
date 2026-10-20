@@ -424,3 +424,15 @@
 .mechanicsGroup summary .infoTrigger{margin-left:4px;}
 .mechanicsGroup summary .infoTrigger svg{transform:none;}
 .mechanicsGroup summary:focus-visible{outline:2px solid #4d9bd8;outline-offset:-2px;}
+
+/* Keep the accordion navigation accessible when one property group has many fields. */
+.mechanicsGroup[open] .mechanicsGroupBody {
+  max-height:min(48vh,460px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#aebed1 transparent;
+}
+@media screen and (max-width:850px){
+  .mechanicsGroup[open] .mechanicsGroupBody{max-height:min(36vh,320px);}
+}
