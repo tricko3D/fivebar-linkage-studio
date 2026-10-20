@@ -65,33 +65,16 @@ function initControls() {
     b.addEventListener('click', () => {
       const d = 40,
         bounds = boardBounds();
-      switch (b.dataset.preset) {
-        case 'TL':
-          state.mountX = bounds.x - d;
-          state.mountY = bounds.y;
-          state.angle = 90;
-          break;
-        case 'TR':
-          state.mountX = bounds.x + bounds.w + d;
-          state.mountY = bounds.y;
-          state.angle = 90;
-          break;
-        case 'BL':
-          state.mountX = bounds.x - d;
-          state.mountY = bounds.y + bounds.h;
-          state.angle = 90;
-          break;
-        case 'BR':
-          state.mountX = bounds.x + bounds.w + d;
-          state.mountY = bounds.y + bounds.h;
-          state.angle = 90;
-          break;
-        case 'EDGE':
-          state.mountX = state.boardW / 2;
-          state.mountY = bounds.y - d;
-          state.angle = 0;
-          break;
-      }
+      const left = bounds.x - d, right = bounds.x + bounds.w + d;
+      const top = bounds.y - d, bottom = bounds.y + bounds.h + d;
+      const midX = state.boardW / 2, midY = state.boardH / 2;
+      const presets = {
+        TL: [left,top,90], TC:[midX,top,0],TR:[right,top,90],
+        ML:[left,midY,90],MR:[right,midY,90],
+        BL:[left,bottom,90],BC:[midX,bottom,-180],BR:[right,bottom,90],
+      };
+      if (!presets[b.dataset.preset]) return;
+      [state.mountX,state.mountY,state.angle] = presets[b.dataset.preset];
       writeControls();
       change();
     }),
@@ -156,8 +139,8 @@ function initControls() {
     stopRoute();
     setRouteCursor(Number($('routeScrub').value) / 1000);
   });
-  $('reportButton').onclick = downloadAuditText;
-  $('printButton').onclick = openPrintableAudit;
+  $('reportButton').onclick = downloadAuditMarkdown;
+  $('swVariablesButton').onclick = downloadSolidWorksVariables;
   $('importButton').onclick = () => $('importFile').click();
   $('importFile').onchange = async (e) => {
     const file = e.target.files?.[0];
