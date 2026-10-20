@@ -21,6 +21,19 @@ const fs = require('node:fs');
   if(await page.locator('#canvasScale').count()!==1)throw Error('Canvas ruler missing');
   if(await page.locator('#svgButton').count()!==1)throw Error('SVG tool missing');
 
+  // Compact Motion Study should remain under the viewport, with all live values intact.
+  const route=page.locator('#routePanel');
+  if(!(await route.evaluate(el=>el.parentElement.classList.contains('workarea'))))throw Error('Motion Study left workspace');
+  await page.locator('#routeCollapse').click();
+  if(!(await page.locator('#torqueGraph').isVisible())||!(await page.locator('#rpmGraph').isVisible()))throw Error('Motion graphs not visible when expanded');
+  const panelHeight=await route.evaluate(el=>el.getBoundingClientRect().height);
+  console.log('Motion Study '+width+'px expanded height '+Math.round(panelHeight)+'px');
+  if(width>=1500 && panelHeight>400)throw Error('Expanded Motion Study is not compact enough');
+  if(!(await page.locator('#routeTorqueNow').isVisible())||!(await page.locator('#routeScrub').isVisible()))throw Error('Motion readouts missing');
+  await page.locator('#routeCollapse').click();
+  if(await page.locator('#torqueGraph').isVisible())throw Error('Collapse does not hide graphs');
+
+
   await page.locator('#fileMenuButton').click();
   await page.waitForTimeout(400);
   if(!(await page.locator('#fileMenu').isVisible()))throw Error('File menu did not open');
