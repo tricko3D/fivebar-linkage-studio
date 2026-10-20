@@ -196,6 +196,7 @@ function redrawRouteGraphs() {
       name+' demand in '+unit+'; left and right motors, limit '+limit.toFixed(name==='Torque'?3:0):
       name+' demand unavailable for current route');
   }
+  if(typeof drawMotionOverlayGraph==='function')drawMotionOverlayGraph();
 }
 function updateRouteGraphCursor() {
   if(!routeData?.valid)return;
@@ -215,6 +216,7 @@ function updateRouteGraphCursor() {
   $('routeTorqueNow').textContent=`${s.tauL.toFixed(3)} / ${s.tauR.toFixed(3)} N·m`;
   $('routeSpeedNow').textContent=`${s.rpmL.toFixed(1)} / ${s.rpmR.toFixed(1)} RPM`;
   $('routeScrub').value=Math.round(routeCursor*1000);
+  if(typeof updateMotionOverlayCursor==='function')updateMotionOverlayCursor();
 }
 function rebuildRoute() {
   routeData = buildRouteData();
