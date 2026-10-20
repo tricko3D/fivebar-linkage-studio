@@ -9,7 +9,7 @@ const auditVector = (v, p = 4) => (v ? `(${auditNum(v.x, p)}, ${auditNum(v.y, p)
 const auditRadians = (x) => `${auditNum(x, 10)} rad`;
 const auditTag = (title, lines) => [
   '',
-  '## ' + title.replace(/^\\d+\\s+/, ''),
+  '## ' + title.replace(/^\d+\s+/, ''),
   '',
   '```text',
   ...lines,
@@ -378,7 +378,7 @@ function buildSolidWorksVariables() {
     "' Mechanical inputs such as PETG Young's modulus, torque, efficiency and payload",
     "' are intentionally excluded from geometry variables.",
     ''
-  ].join('\\n');
+  ].join('\n');
 }
 function downloadSolidWorksVariables() {
   download('fivebar-solidworks-variables.txt',buildSolidWorksVariables(),'text/plain;charset=utf-8');
