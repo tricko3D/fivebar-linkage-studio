@@ -10,11 +10,12 @@ function updateCanvasScale() {
   const pxPerMm=Math.hypot(m.a,m.b);
   if(!Number.isFinite(pxPerMm)||pxPerMm<=0)return;
   const choices=[1,2,5,10,20,50,100,200,500,1000];
-  const millimetres=choices.reduce((best,mm)=>Math.abs(Math.log(mm*pxPerMm/118))<Math.abs(Math.log(best*pxPerMm/118))?mm:best,choices[0]);
+  const millimetres=choices.reduce((best,mm)=>Math.abs(Math.log(mm*pxPerMm/65))<Math.abs(Math.log(best*pxPerMm/65))?mm:best,choices[0]);
   const pixels=millimetres*pxPerMm;
   ticks.style.width=pixels.toFixed(1)+'px';
-  label.textContent=millimetres+' mm';
-  document.getElementById('canvasScale').setAttribute('aria-label','Scale bar: '+millimetres+' millimetres');
+  ticks.style.height=pixels.toFixed(1)+'px';
+  label.textContent=millimetres+' × '+millimetres+' mm';
+  document.getElementById('canvasScale').setAttribute('aria-label','Scale square: '+millimetres+' by '+millimetres+' millimetres');
 }
 function refreshMountPicker() {
   const padX=(state.outerW-state.boardW)/2,padY=(state.outerH-state.boardH)/2;
