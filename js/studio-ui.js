@@ -75,6 +75,19 @@ function refreshMountPicker() {
     header.append(btn);
     for(const description of descriptions)description.classList.add('inspectorHintCollapsed');
   }
+  for (const group of document.querySelectorAll('.mechanicsGroup')) {
+    const summary=group.querySelector('summary');
+    const hints=Array.from(group.querySelectorAll('.mechanicsGroupBody > p.hint'));
+    if(!summary||!hints.length)continue;
+    const trigger=document.createElement('button');
+    trigger.type='button';
+    trigger.className='infoTrigger';
+    trigger.setAttribute('aria-label','More about '+summary.textContent.trim());
+    trigger.innerHTML='<i data-lucide="info"></i>';
+    trigger._tooltipDescriptions=hints;
+    summary.insertBefore(trigger,summary.querySelector(':scope > svg'));
+    hints.forEach(x=>x.classList.add('inspectorHintCollapsed'));
+  }
   const route=document.getElementById('routePanel');
   const routeHeader=route?.querySelector('.routeTop .sectheader');
   const routeDescriptions=Array.from(route?.querySelectorAll('.routeTop .mini,.routepanel > p.hint')||[]);
@@ -102,7 +115,10 @@ function refreshMountPicker() {
   });
   document.addEventListener('click',e=>{
     const b=e.target.closest?.(tipSelector);
-    if(b){openTooltip(b,true);return}
+    if(b){
+      if(b.closest('summary'))e.preventDefault();
+      openTooltip(b,true);return
+    }
     if(!pop.contains(e.target))closeTooltip(true);
   });
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTooltip(true)});
