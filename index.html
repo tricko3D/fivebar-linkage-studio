@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/cad-theme.css" />
     <link rel="stylesheet" href="css/toolbar.css" />
+    <link rel="stylesheet" href="css/studio-polish.css" />
   </head>
   <body>
     <header class="appHeader">
@@ -36,9 +37,8 @@
               <button type="button" role="menuitem" id="exportButton"><i data-lucide="save"></i> Save configuration <span>JSON</span></button>
               <div class="fileMenuDivider" role="separator"></div>
               <div class="fileMenuHeading">EXPORT</div>
-              <button type="button" role="menuitem" id="svgButton"><i data-lucide="image"></i> Export drawing <span>SVG</span></button>
-              <button type="button" role="menuitem" id="reportButton"><i data-lucide="file-text"></i> Calculation report <span>TXT</span></button>
-              <button type="button" role="menuitem" id="printButton"><i data-lucide="printer"></i> Print / Save PDF <span>PDF</span></button>
+              <button type="button" role="menuitem" id="swVariablesButton"><i data-lucide="wrench"></i> SolidWorks variables <span>TXT</span></button>
+              <button type="button" role="menuitem" id="reportButton"><i data-lucide="file-text"></i> Calculation report <span>MD</span></button>
             </div>
           </div>
           <input id="importFile" accept="application/json,.json" type="file" hidden />
@@ -109,13 +109,7 @@
               ><input id="angle" data-key="angle" type="number" min="-360" max="360" step="5" />
             </div>
           </div>
-          <div class="compactset">
-            <button class="preset" data-preset="TL">↖ Top left</button
-            ><button class="preset" data-preset="TR">↗ Top right</button
-            ><button class="preset" data-preset="BL">↙ Bottom left</button
-            ><button class="preset" data-preset="BR">↘ Bottom right</button
-            ><button class="preset" data-preset="EDGE">↑ Edge centre</button>
-          </div>
+          <div class="mountPicker" role="group" aria-label="Snap motor mount around the board"><button class="mountSpot" data-preset="TL" type="button" aria-label="Mount Top left" data-tip="Top left: place the motor baseline just outside this edge of the board."><i data-lucide="corner-up-left"></i></button><button class="mountSpot" data-preset="TC" type="button" aria-label="Mount Top centre" data-tip="Top centre: place the motor baseline just outside this edge of the board."><i data-lucide="arrow-up"></i></button><button class="mountSpot" data-preset="TR" type="button" aria-label="Mount Top right" data-tip="Top right: place the motor baseline just outside this edge of the board."><i data-lucide="corner-up-right"></i></button><button class="mountSpot" data-preset="ML" type="button" aria-label="Mount Left edge" data-tip="Left edge: place the motor baseline just outside this edge of the board."><i data-lucide="arrow-left"></i></button><div class="mountBoardPreview" aria-hidden="true"><span>8 × 8</span></div><button class="mountSpot" data-preset="MR" type="button" aria-label="Mount Right edge" data-tip="Right edge: place the motor baseline just outside this edge of the board."><i data-lucide="arrow-right"></i></button><button class="mountSpot" data-preset="BL" type="button" aria-label="Mount Bottom left" data-tip="Bottom left: place the motor baseline just outside this edge of the board."><i data-lucide="corner-down-left"></i></button><button class="mountSpot" data-preset="BC" type="button" aria-label="Mount Bottom centre" data-tip="Bottom centre: place the motor baseline just outside this edge of the board."><i data-lucide="arrow-down"></i></button><button class="mountSpot" data-preset="BR" type="button" aria-label="Mount Bottom right" data-tip="Bottom right: place the motor baseline just outside this edge of the board."><i data-lucide="corner-down-right"></i></button></div>
           <p class="hint">
             Drag the blue mounting midpoint on the diagram. Drag the small rotation handle to turn
             both motors as a rigid assembly.
@@ -602,20 +596,6 @@
             <div class="s">Gripper to mounting midpoint</div>
           </div>
         </div>
-        <div class="resizebar" style="padding: 1px 2px 1px">
-          <button class="ghost" id="resizeButton" type="button" aria-pressed="false">
-            ↔ Resize linkage</button
-          ><small id="resizeHint"
-            >Turn on, then drag the common joint P. The four link lengths update live.</small
-          >
-        </div>
-        <div class="liveLengths" id="liveLengths" aria-live="polite">
-          <span>Lengths:</span><span>L1 <strong id="liveL1">--</strong></span
-          ><span>L2 <strong id="liveL2">--</strong></span
-          ><span>R1 <strong id="liveR1">--</strong></span
-          ><span>R2 <strong id="liveR2">--</strong></span
-          ><span class="annot">mm · sections stay unchanged</span>
-        </div>
         <div class="canvasbox">
           <svg
             id="scene"
@@ -623,11 +603,21 @@
             role="img"
             aria-label="Interactive chessboard with five-bar linkage, draggable target and motor mount"
           ></svg>
-          <div class="canvasnote" id="canvasNote">
-            <strong>Interactive XY workspace</strong>Drag the
-            <span style="color: #ffc178">orange gripper</span> to test positions. Drag the
-            <span style="color: #77dce0">blue mount</span> to reposition the linkage.
-          </div>
+<div class="canvasToolkit" aria-label="Workspace tools">
+ <div class="toolkitRow">
+ <button class="toolkitButton" id="svgButton" type="button" data-tip="Export the XY workspace as an SVG drawing."><i data-lucide="image-down"></i><span>SVG</span></button>
+ <label class="toolkitSquare">Square <select id="squareSelect" aria-label="Test chess square"></select></label>
+ <button class="toolkitButton" id="centreTarget" type="button"><i data-lucide="crosshair"></i><span>Centre</span></button>
+ <button class="toolkitButton" id="resizeButton" type="button" aria-pressed="false" data-tip="Turn on, then drag the common joint P to scale all four links."><i data-lucide="move-diagonal-2"></i><span>Resize</span></button>
+ <button class="toolkitButton iconOnly" id="canvasHelp" type="button" aria-label="Canvas help" data-tip="Drag the orange gripper for XY positions, and the blue motor midpoint for mounting. Select Resize to drag joint P and scale all four links."><i data-lucide="info"></i></button>
+ </div>
+ <div class="toolkitLengths liveLengths" id="liveLengths" aria-live="polite">
+ <span>L1 <strong id="liveL1">--</strong></span><span>L2 <strong id="liveL2">--</strong></span>
+ <span>R1 <strong id="liveR1">--</strong></span><span>R2 <strong id="liveR2">--</strong></span><span>mm</span>
+ </div>
+ <small id="resizeHint" class="visuallyHidden">Turn on, then drag the common joint P. The four link lengths update live.</small>
+ </div>
+ <div class="canvasScale" id="canvasScale"><div id="scaleTicks" class="scaleTicks"></div><span id="scaleLabel">100 mm</span></div>
           <div class="canvaslegend">
             <span class="legenditem"
               ><span class="sw" style="background: #48d3a5"></span>reachable</span
@@ -641,11 +631,10 @@
               ><span class="sw" style="background: #b4a4fb"></span>right links</span
             >
           </div>
-        </div>
         <div class="routepanel is-collapsed" id="routePanel">
           <div class="routeTop">
             <div>
-              <div class="sectheader">08 / Queen test move · XY trajectory</div>
+              <div class="sectheader">Motion study · XY trajectory</div>
               <div class="mini">
                 Example D1 → D8, an unobstructed queen move. No piece lifting or collision
                 simulation.
@@ -741,13 +730,7 @@
             passes.
           </p>
         </div>
-        <div class="stagefooter">
-          <div class="squarebar">
-            <label for="squareSelect">Test square</label
-            ><select id="squareSelect"></select
-            ><button class="preset" id="centreTarget">Board centre</button>
-          </div>
-          <div>TOP VIEW &nbsp; | &nbsp; XY PLANE &nbsp; | &nbsp; MMGS (mm, g, s)</div>
+
         </div>
       </section>
       <aside class="analysis" aria-label="Live results">
@@ -757,28 +740,7 @@
             ×
           </button>
         </div>
-        <nav class="navtabs resultTabs" aria-label="Analysis categories">
-          <button
-            type="button"
-            class="navtab is-active"
-            data-insight="position"
-            aria-selected="true"
-          >
-            Position
-          </button>
-          <button type="button" class="navtab" data-insight="forces" aria-selected="false">
-            Loads
-          </button>
-          <button type="button" class="navtab" data-insight="servo" aria-selected="false">
-            Motors
-          </button>
-          <button type="button" class="navtab" data-insight="corners" aria-selected="false">
-            Corners
-          </button>
-          <button type="button" class="navtab" data-insight="help" aria-selected="false">
-            Guide
-          </button>
-        </nav>
+<nav class="navtabs resultTabs" aria-label="Analysis categories"><button type="button" class="navtab is-active" data-insight="help" aria-selected="true"><i data-lucide="book-open"></i>Guide</button><button type="button" class="navtab " data-insight="position" aria-selected="false"><i data-lucide="crosshair"></i>Position</button><button type="button" class="navtab " data-insight="forces" aria-selected="false"><i data-lucide="weight"></i>Loads</button><button type="button" class="navtab " data-insight="servo" aria-selected="false"><i data-lucide="gauge"></i>Motors</button><button type="button" class="navtab " data-insight="corners" aria-selected="false"><i data-lucide="square-dashed"></i>Corners</button></nav>
         <div class="panel" id="servoInspector">
           <div class="sectheader">MG90S / motor travel</div>
           <div class="mechbadge" id="servoStatus">Calculating</div>
@@ -895,5 +857,6 @@
     <script defer src="js/reports.js"></script>
     <script defer src="js/bootstrap.js"></script>
     <script defer src="js/layout.js"></script>
+    <script defer src="js/studio-ui.js"></script>
   </body>
 </html>
