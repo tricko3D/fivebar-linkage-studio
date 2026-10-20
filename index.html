@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/cad-theme.css" />
     <link rel="stylesheet" href="css/toolbar.css" />
     <link rel="stylesheet" href="css/studio-polish.css" />
+    <link rel="stylesheet" href="css/motion-compact.css" />
   </head>
   <body>
     <header class="appHeader">
@@ -656,84 +657,58 @@
 
 
         </div>
-        <div class="routepanel is-collapsed" id="routePanel">
+        <div class="routepanel motionCompact" id="routePanel">
           <div class="routeTop">
             <div class="routeHeading">
               <div class="sectheader">Motion study</div>
-              <div class="mini">Straight-line XY path. No Z lift or piece collision simulation.</div>
+              <div class="mini">Straight-line XY motion. The load estimates are not motor torque-speed curves.</div>
             </div>
             <div class="routeFields">
               <label>From <select id="routeFrom" data-key="routeFrom"></select></label>
               <label>To <select id="routeTo" data-key="routeTo"></select></label>
             </div>
-            <div class="routeActions">
-              <button class="action" id="routePlay" type="button"><i data-lucide="play"></i><span>Play</span></button>
-              <button class="ghost" id="routeReset" type="button" aria-label="Reset motion" data-tip="Return the simulated movement to the start."><i data-lucide="rotate-ccw"></i></button>
-              <button class="ghost routeCollapse" id="routeCollapse" aria-expanded="false" type="button">Show graphs</button>
+            <div id="routeSummary" class="routeSummary">Calculating…</div>
+          </div>
+          <div class="motionGraphCard" aria-label="Playback and two motor demand bars">
+            <div class="motionTransport">
+              <button class="action" id="routePlay" type="button" aria-label="Play or pause simulation"><i data-lucide="play"></i><span>Play</span></button>
+              <button class="ghost" id="routeReset" type="button" aria-label="Reset motion" data-tip="Return the simulation to the first square."><i data-lucide="rotate-ccw"></i></button>
+              <div class="motionTimeline">
+                <span id="routeTime" class="routeTimeValue">0.00 s</span>
+                <input type="range" id="routeScrub" aria-label="Scrub simulated movement" min="0" max="1000" value="0" step="1" />
+                <span id="routeDuration" class="routeTimeValue">-- s</span>
+                <span id="routeProgress" class="visuallyHidden" aria-live="off">0%</span>
+              </div>
+            </div>
+            <div class="motionBarRow">
+              <div class="motionMetricName"><strong>Output torque</strong><small>N·m</small></div>
+              <div class="motionTrack" id="motionTorqueTrack" role="img" aria-label="Left and right output torque relative to derated allowance">
+                <div class="motionLane"><span id="motionTorqueLeft" class="motionFill left"></span></div>
+                <div class="motionLane"><span id="motionTorqueRight" class="motionFill right"></span></div>
+                <div class="motionThreshold" id="motionTorqueThreshold"></div>
+              </div>
+              <div class="motionMetricValues">
+                <strong id="routeTorqueNow">-- / -- N·m</strong>
+                <small>Peak <span id="routeTorquePeak">-- / -- N·m</span><span class="motionSeparator">·</span>Limit <span id="motionTorqueLimit">--</span></small>
+              </div>
+            </div>
+            <div class="motionBarRow">
+              <div class="motionMetricName"><strong>Motor speed</strong><small>RPM</small></div>
+              <div class="motionTrack" id="motionRPMTrack" role="img" aria-label="Left and right motor speed relative to configured motor RPM limit">
+                <div class="motionLane"><span id="motionRPMLeft" class="motionFill left"></span></div>
+                <div class="motionLane"><span id="motionRPMRight" class="motionFill right"></span></div>
+                <div class="motionThreshold" id="motionRPMThreshold"></div>
+              </div>
+              <div class="motionMetricValues">
+                <strong id="routeSpeedNow">-- / -- RPM</strong>
+                <small>Peak <span id="routeRPMPeak">-- / -- RPM</span><span class="motionSeparator">·</span>Limit <span id="motionRPMLimit">--</span></small>
+              </div>
             </div>
           </div>
           <div class="routeStatusLine">
             <div id="routeAlert" class="routeAlert">Calculating the path…</div>
-            <div id="routeSummary" class="routeSummary">Calculating…</div>
           </div>
-          <div class="routeScrubRow">
-            <span id="routeTime" class="routeTimeValue">0.00 s</span>
-            <input type="range" aria-label="Scrub test move" id="routeScrub" min="0" max="1000" value="0" step="1" />
-            <span id="routeProgress" class="routeProgressValue">0%</span>
-            <span id="routeDuration" class="routeTimeValue">-- s</span>
-          </div>
-          <div class="routeMetrics">
-            <div>
-              <small>Torque now · L / R</small
-              ><strong id="routeTorqueNow">-- / -- N·m</strong>
-            </div>
-            <div>
-              <small>RPM now · L / R</small
-              ><strong id="routeSpeedNow">-- / -- RPM</strong>
-            </div>
-            <div>
-              <small>Peak torque · L / R</small
-              ><strong id="routeTorquePeak">-- / -- N·m</strong>
-            </div>
-            <div>
-              <small>Peak RPM · L / R</small
-              ><strong id="routeRPMPeak">-- / -- RPM</strong>
-            </div>
-          </div>
-          <div class="routeCharts">
-            <div class="routeChart">
-              <div class="chartTitle">
-                <b>Output torque demand</b
-                ><small>N·m · dashed line is derated output allowance</small>
-              </div>
-              <svg
-                id="torqueGraph"
-                viewBox="0 0 650 170"
-                role="img"
-                aria-label="Motor torque versus time chart"
-              ></svg>
-            </div>
-            <div class="routeChart">
-              <div class="chartTitle">
-                <b>Input motor speed</b
-                ><small>absolute RPM · dashed line is entered motor speed limit</small>
-              </div>
-              <svg
-                id="rpmGraph"
-                viewBox="0 0 650 170"
-                role="img"
-                aria-label="Required motor RPM versus time chart"
-              ></svg>
-            </div>
-          </div>
-          <p class="hint">
-            The graphs evaluate a straight XY path with a triangular/trapezoidal acceleration
-            profile and show estimated torque at the linkage output and RPM at the NEMA 17 shaft.
-            They are comparative planning estimates, not measured motor characteristics or certified
-            dynamic loads. They omit the full links’ rotational inertia, stepper rotor acceleration,
-            motor torque-speed curves, and flex/backlash. A physical motor may stall even if a graph
-            passes.
-          </p>
+          <p class="hint">Bars show instantaneous left (blue) and right (purple) demand as the playback runs. The vertical marker is the entered torque or RPM limit. Peak values refer to the full path, not just the playback cursor. Mechanical and motor estimates are simplified screening calculations, not physical test data.</p>
         </div>
       </section>
       <aside class="analysis" aria-label="Live results">
