@@ -44,6 +44,34 @@ const fs = require('node:fs');
   await page.locator('#routeReset').click();
   if(await page.locator('#routeScrub').inputValue()!=='0')throw Error('Reset did not rewind timeline');
 
+  // Switch to the full overlaid graph, filter specific left/right curves,
+  // switch the scale, and scrub the shared playback directly from the plot.
+  await page.locator('[data-motion-view="graph"]').click();
+  if(!(await page.locator('#motionOverlayGraph').isVisible()))throw Error('Graph view not visible');
+  if(await page.locator('#motionBarsPane').isVisible())throw Error('Bars still visible in graph view');
+  if(await page.locator('#motionOverlayGraph [data-plot-series]').count()!==4)throw Error('Expected four overlaid torque/RPM curves');
+  await page.locator('[data-overlay-series="rpmR"]').uncheck();
+  if(await page.locator('#motionOverlayGraph [data-plot-series="rpmR"]').count())throw Error('Unchecked RPM curve remained visible');
+  if(await page.locator('#motionOverlayGraph [data-plot-series]').count()!==3)throw Error('Other curves disappeared when filtering');
+  await page.locator('#motionGraphScale').selectOption('percent');
+  if(!(await page.locator('#motionOverlayGraph').innerHTML()).includes('%'))throw Error('Percent-of-limit graph was not drawn');
+  const plotted=page.locator('#motionOverlayGraph');
+  await plotted.scrollIntoViewIfNeeded();
+  const bounds=await plotted.boundingBox();
+  if(!bounds)throw Error('Graph has no viewport');
+  // Graph plot occupies x=57..855 in its 920px viewBox.
+  await page.mouse.click(bounds.x+bounds.width*.67,bounds.y+bounds.height*.55);
+  if(Number(await page.locator('#routeScrub').inputValue())<500)throw Error('Graph click did not scrub playback');
+  if(!(await page.locator('[data-overlay-value="tauL"]').innerText()).includes('N·m'))throw Error('Graph legend values did not track playback');
+  await page.locator('#motionGraphScale').selectOption('auto');
+  if(await page.locator('#motionOverlayGraph [data-plot-series]').count()!==3)throw Error('Auto-scale lost selection');
+  await page.locator('[data-motion-view="bars"]').click();
+  if(!(await page.locator('#motionBarsPane').isVisible()))throw Error('Compact bars did not return');
+  if(await page.locator('#motionOverlayPane').isVisible())throw Error('Graph did not hide');
+  await page.locator('[data-motion-view="graph"]').click();
+  if(await page.locator('[data-overlay-series="rpmR"]').isChecked())throw Error('Series selection did not persist across views');
+  await page.locator('[data-motion-view="bars"]').click();
+
   await page.locator('#fileMenuButton').click();
   await page.waitForTimeout(400);
   if(!(await page.locator('#fileMenu').isVisible()))throw Error('File menu did not open');
