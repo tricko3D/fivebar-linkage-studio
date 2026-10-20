@@ -11,14 +11,14 @@ It's built around a chessboard, but the linkage itself can be positioned anywher
 ## What you can play with
 
 - **Board dimensions:** Set the playing area and the outer board size independently, including the padding.
-- **Linkage geometry:** Four separate link lengths, motor spacing, base position and rotation. You can also drag the linkage and use the interactive resize mode.
+- **Linkage geometry:** Four separate link lengths, motor spacing, base position and rotation. You can also drag the linkage and use the interactive resize mode, use the perimeter mounting selector, and check the dimensioned scale square.
 - **Gripper placement:** Put the tool at the common joint, extend it past a link, or give it a custom offset.
 - **Reachability:** See which chess squares are reachable, inspect the full board with a heatmap, and check elbow configurations and singularities.
 - **Servo travel:** Find out whether your geometry fits inside a 180° servo's range, including some margin at the ends.
 - **Mechanical estimates:** Compare link material, section dimensions, approximate sag, bending stress, tool weight and motor torque.
 - **Transmission:** Try direct drive, 2:1, 3:1 or your own gear ratio, and compare estimated torque and RPM.
 - **Movement test:** Animate a queen's path across the board while watching the estimated motor torque and speed graphs.
-- **Reports:** Export/import settings as JSON, save an SVG, and generate an audit TXT report with intermediate calculations or a printable PDF.
+- **Exports:** Import/save JSON configurations, export the canvas as SVG, generate a detailed Markdown calculation audit, and export a SolidWorks-compatible TXT file of named global variables.
 
 ### Mechanical estimates
 
@@ -33,7 +33,7 @@ The live site is published from the `main` branch using GitHub Pages.
 ### How the code is organized
 
 - [`index.html`](index.html): the markup and entry points.
-- [`css/styles.css`](css/styles.css): all the styling and responsive layout.
+- [`css/styles.css`](css/styles.css), [`css/cad-theme.css`](css/cad-theme.css), [`css/toolbar.css`](css/toolbar.css) and [`css/studio-polish.css`](css/studio-polish.css): layouts and CAD styling.
 - [`js/state.js`](js/state.js): defaults, shared state and geometry helpers.
 - [`js/kinematics.js`](js/kinematics.js): the five-bar calculations and elbow branches.
 - [`js/mechanics.js`](js/mechanics.js): bending, sag, loads and motor estimates.
@@ -41,9 +41,10 @@ The live site is published from the `main` branch using GitHub Pages.
 - [`js/render.js`](js/render.js): the SVG board and linkage drawing.
 - [`js/movement.js`](js/movement.js): the queen move simulation and graphs.
 - [`js/controls.js`](js/controls.js): settings, configuration import/export and reset.
-- [`js/reports.js`](js/reports.js): calculation reports and printing.
+- [`js/reports.js`](js/reports.js): Markdown audit and SolidWorks variables exports.
 - [`js/bootstrap.js`](js/bootstrap.js): pointer interaction and initialization.
 - [`js/layout.js`](js/layout.js): mobile panels and tab navigation.
+- [`js/studio-ui.js`](js/studio-ui.js): scale square, mount selection feedback and contextual tooltips.
 
 The scripts run in order and share the simulator's state. Everything stays in vanilla JavaScript so I can work on a single part without digging through a massive HTML file.
 
@@ -53,7 +54,7 @@ My example settings are in [`examples/255mm-board-2to1.json`](examples/255mm-boa
 
 The geometry calculations are useful for comparing different layouts, but a reachable position doesn't automatically mean the mechanism will work well there. Real parts can collide, bend, twist and develop play at the pivots.
 
-The mechanical analysis is deliberately approximate. It uses simplified beam bending and motor-load calculations, **not** a full multibody dynamics simulation, verified motor torque curves or FEA. The estimated safety factors are only as good as the assumptions entered. I added the detailed TXT report so I can check the intermediate numbers and eventually compare them with actual measurements from printed prototypes.
+The mechanical analysis is deliberately approximate. It uses simplified beam bending and motor-load calculations, **not** a full multibody dynamics simulation, verified motor torque curves or FEA. The estimated safety factors are only as good as the assumptions entered. I added the detailed Markdown report so I can check the intermediate numbers and eventually compare them with actual measurements from printed prototypes.
 
 This is a work in progress. The idea is to keep improving the model as I build and test the robot.
 
