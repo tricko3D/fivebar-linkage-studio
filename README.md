@@ -26,9 +26,26 @@ It's built around a chessboard, but the linkage itself can be positioned anywher
 
 ## Running it
 
-The whole simulator is contained in [`index.html`](index.html). You can open that file in your browser, no build step or dependencies needed.
+It's a plain HTML, CSS and JavaScript app. No framework, npm install or build step. For local development, run `python3 -m http.server 8000` in the repo folder, then open `http://localhost:8000`. You can also just use the live GitHub Pages site.
 
 The live site is published from the `main` branch using GitHub Pages.
+
+### How the code is organized
+
+- [`index.html`](index.html): the markup and entry points.
+- [`css/styles.css`](css/styles.css): all the styling and responsive layout.
+- [`js/state.js`](js/state.js): defaults, shared state and geometry helpers.
+- [`js/kinematics.js`](js/kinematics.js): the five-bar calculations and elbow branches.
+- [`js/mechanics.js`](js/mechanics.js): bending, sag, loads and motor estimates.
+- [`js/coverage.js`](js/coverage.js): square coverage and servo range checks.
+- [`js/render.js`](js/render.js): the SVG board and linkage drawing.
+- [`js/movement.js`](js/movement.js): the queen move simulation and graphs.
+- [`js/controls.js`](js/controls.js): settings, configuration import/export and reset.
+- [`js/reports.js`](js/reports.js): calculation reports and printing.
+- [`js/bootstrap.js`](js/bootstrap.js): pointer interaction and initialization.
+- [`js/layout.js`](js/layout.js): mobile panels and tab navigation.
+
+The scripts run in order and share the simulator's state. Everything stays in vanilla JavaScript so I can work on a single part without digging through a massive HTML file.
 
 My example settings are in [`examples/255mm-board-2to1.json`](examples/255mm-board-2to1.json): a 255 × 255 mm playing area, a 300 × 300 mm outer board, hollow PETG links and an assumed 2:1 reduction. They are test values, not proven specifications.
 
