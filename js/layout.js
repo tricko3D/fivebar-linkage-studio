@@ -5,7 +5,7 @@
   'use strict';
   const config = document.querySelector('.config');
   const configSections = Array.from(config.querySelectorAll(':scope > .section'));
-  const groups = { board: [0, 1], links: [2, 3], view: [4], servos: [5], loads: [6], files: [7] };
+  const groups = { board: [0, 1], links: [2, 3], view: [4], servos: [5], loads: [6] };
   const inspector = document.querySelector('.analysis');
   const inspectors = Array.from(inspector.querySelectorAll(':scope > .panel'));
   const results = { servo: [0], forces: [1], position: [2], corners: [3], help: [4] };
@@ -25,7 +25,13 @@
     resultTabs = document.querySelector('.resultTabs');
   settingTabs.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-setting]');
-    if (btn) choose(settingTabs, configSections, groups, btn.dataset.setting);
+    if (btn) {
+      choose(settingTabs, configSections, groups, btn.dataset.setting);
+      if (window.matchMedia('(max-width: 850px)').matches) {
+        setDrawer('insights', false);
+        setDrawer('settings', true);
+      }
+    }
   });
   resultTabs.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-insight]');
@@ -71,6 +77,52 @@
   document.getElementById('routePlay').addEventListener('click', () => {
     if (routePanel.classList.contains('is-collapsed')) routeCollapse.click();
   });
+  // Compact file dropdown. Actual file operations remain handled by controls.js.
+  const fileMenuButton = document.getElementById('fileMenuButton');
+  const fileMenu = document.getElementById('fileMenu');
+  const fileMenuWrap = document.getElementById('fileMenuWrap');
+  function setFileMenu(open) {
+    fileMenu.hidden = !open;
+    fileMenuButton.setAttribute('aria-expanded', String(open));
+    if (open) {
+      setDrawer('settings', false);
+      setDrawer('insights', false);
+    }
+  }
+  fileMenuButton.addEventListener('click', () => {
+    setFileMenu(fileMenu.hidden);
+  });
+  fileMenu.addEventListener('click', (event) => {
+    if (event.target.closest('button[role="menuitem"]')) setFileMenu(false);
+  });
+  document.addEventListener('pointerdown', (event) => {
+    if (!fileMenu.hidden && !fileMenuWrap.contains(event.target)) setFileMenu(false);
+  });
+  fileMenuWrap.addEventListener('keydown', (event) => {
+    const items = Array.from(fileMenu.querySelectorAll('button[role="menuitem"]'));
+    if (event.key === 'Escape') {
+      setFileMenu(false);
+      fileMenuButton.focus();
+      event.preventDefault();
+    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (fileMenu.hidden) setFileMenu(true);
+      const i = items.indexOf(document.activeElement);
+      items[(i + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+      event.preventDefault();
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !fileMenu.hidden) setFileMenu(false);
+  });
+  function updateHeaderHeight() {
+    document.documentElement.style.setProperty(
+      '--studio-header-height',
+      document.querySelector('.appHeader').getBoundingClientRect().height + 'px'
+    );
+  }
+  updateHeaderHeight();
+  window.addEventListener('resize', updateHeaderHeight);
+
   // Make the scene layout responsive without overriding its kinematic viewBox.
   // The original resize listener recalculates the view when the browser size changes.
   if ('ResizeObserver' in window) {
