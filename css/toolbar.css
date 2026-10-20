@@ -147,6 +147,9 @@
   padding: 8px 10px 3px;
 }
 .appHeader .fileMenuDivider {border-top:1px solid #dce4ec; margin:5px 6px;}
+.appHeader .headright .fileMenuList button {
+  display: flex !important; /* Overrides legacy compact-header hiding rules for moved actions. */
+}
 .appHeader .fileMenuList button {
   width: 100%;
   min-height: 34px;
