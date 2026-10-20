@@ -4,6 +4,10 @@ on:
   push:
     paths:
       - .github/workflows/smoke-hosted.yml
+      - .github/scripts/smoke-hosted.cjs
+      - index.html
+      - 'js/**'
+      - 'css/**'
 jobs:
   smoke:
     runs-on: ubuntu-latest
