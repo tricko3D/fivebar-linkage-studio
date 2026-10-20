@@ -11,7 +11,7 @@ const fs = require('node:fs');
   console.log('TEST '+width+'px');
   if(!(await page.locator('.resultTabs [data-insight="help"]').getAttribute('aria-selected')==='true'))throw Error('Guide is not default');
   if(!(await page.locator('#scaleLabel').isVisible()))throw Error('Scale missing');
-  if(!/\\d+ mm/.test(await page.locator('#scaleLabel').innerText()))throw Error('Scale label invalid');
+  if(!/[0-9]+ mm/.test(await page.locator('#scaleLabel').innerText()))throw Error('Scale label invalid');
   if(await page.locator('.topSettingsTabs button').count()!==5)throw Error('Header tabs lost');
   if(await page.locator('.mountSpot').count()!==8)throw Error('Mount picker missing positions');
   if(await page.locator('#canvasScale').count()!==1)throw Error('Canvas ruler missing');
