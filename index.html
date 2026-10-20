@@ -658,65 +658,45 @@
         </div>
         <div class="routepanel is-collapsed" id="routePanel">
           <div class="routeTop">
-            <div>
-              <div class="sectheader">Motion study · XY trajectory</div>
-              <div class="mini">
-                Example D1 → D8, an unobstructed queen move. No piece lifting or collision
-                simulation.
-              </div>
+            <div class="routeHeading">
+              <div class="sectheader">Motion study</div>
+              <div class="mini">Straight-line XY path. No Z lift or piece collision simulation.</div>
+            </div>
+            <div class="routeFields">
+              <label>From <select id="routeFrom" data-key="routeFrom"></select></label>
+              <label>To <select id="routeTo" data-key="routeTo"></select></label>
             </div>
             <div class="routeActions">
-              <button class="action" id="routePlay">▶ Play move</button
-              ><button class="ghost" id="routeReset">↺ Reset</button
-              ><button
-                class="ghost routeCollapse"
-                id="routeCollapse"
-                aria-expanded="false"
-                type="button"
-              >
-                ▸ Show graphs
-              </button>
+              <button class="action" id="routePlay" type="button"><i data-lucide="play"></i><span>Play</span></button>
+              <button class="ghost" id="routeReset" type="button" aria-label="Reset motion" data-tip="Return the simulated movement to the start."><i data-lucide="rotate-ccw"></i></button>
+              <button class="ghost routeCollapse" id="routeCollapse" aria-expanded="false" type="button">Show graphs</button>
             </div>
           </div>
-          <div class="routeFields">
-            <label
-              >From
-              <select id="routeFrom" data-key="routeFrom"></select></label
-            ><label
-              >To
-              <select id="routeTo" data-key="routeTo"></select
-            ></label>
+          <div class="routeStatusLine">
+            <div id="routeAlert" class="routeAlert">Calculating the path…</div>
             <div id="routeSummary" class="routeSummary">Calculating…</div>
           </div>
-          <div id="routeAlert" class="routeAlert">Calculating the path…</div>
-          <input
-            type="range"
-            aria-label="Scrub test move"
-            id="routeScrub"
-            min="0"
-            max="1000"
-            value="0"
-            step="1"
-          />
-          <div class="routeTimes">
-            <span id="routeTime">0.00 s</span><span id="routeProgress">0%</span
-            ><span id="routeDuration">-- s</span>
+          <div class="routeScrubRow">
+            <span id="routeTime" class="routeTimeValue">0.00 s</span>
+            <input type="range" aria-label="Scrub test move" id="routeScrub" min="0" max="1000" value="0" step="1" />
+            <span id="routeProgress" class="routeProgressValue">0%</span>
+            <span id="routeDuration" class="routeTimeValue">-- s</span>
           </div>
           <div class="routeMetrics">
             <div>
-              <small>At cursor, left / right torque</small
+              <small>Torque now · L / R</small
               ><strong id="routeTorqueNow">-- / -- N·m</strong>
             </div>
             <div>
-              <small>At cursor, left / right motor speed</small
+              <small>RPM now · L / R</small
               ><strong id="routeSpeedNow">-- / -- RPM</strong>
             </div>
             <div>
-              <small>Path peak output torque · L / R</small
+              <small>Peak torque · L / R</small
               ><strong id="routeTorquePeak">-- / -- N·m</strong>
             </div>
             <div>
-              <small>Path peak motor RPM · L / R</small
+              <small>Peak RPM · L / R</small
               ><strong id="routeRPMPeak">-- / -- RPM</strong>
             </div>
           </div>
