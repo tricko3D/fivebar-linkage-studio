@@ -24,15 +24,11 @@ It's built around a chessboard, but the linkage itself can be positioned anywher
 
 ![Mechanical analysis controls and results](screenshots/mechanical-analysis.png)
 
-### Smaller screens
-
-![Narrow dashboard layout](screenshots/mobile.png)
-
 ## Running it
 
 The whole simulator is contained in [`index.html`](index.html). You can open that file in your browser, no build step or dependencies needed.
 
-The live site runs through GitHub Pages. There's a workflow in `.github/workflows/pages.yml` for that.
+The live site is published from the `main` branch using GitHub Pages.
 
 My example settings are in [`examples/255mm-board-2to1.json`](examples/255mm-board-2to1.json): a 255 × 255 mm playing area, a 300 × 300 mm outer board, hollow PETG links and an assumed 2:1 reduction. They are test values, not proven specifications.
 
