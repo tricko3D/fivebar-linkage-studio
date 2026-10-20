@@ -14,6 +14,8 @@ const { chromium } = require('playwright');
     if (await page.locator('.config .settingsTabs').count()) throw Error('Settings tabs still inside sidebar');
     if (await page.locator('.topSettingsTabs button').count() !== 5) throw Error('Expected five header tool tabs');
     await page.locator('#fileMenuButton').click();
+    await page.waitForTimeout(500);
+    if (await page.locator('.appHeader svg.lucide').count() < 8) throw Error('Lucide icons failed to render');
     if (!(await page.locator('#fileMenu').isVisible())) throw Error('File menu did not open');
     for (const id of ['importButton','exportButton','svgButton','reportButton','printButton'])
       if (!(await page.locator('#'+id).isVisible())) throw Error('File action missing: '+id);
