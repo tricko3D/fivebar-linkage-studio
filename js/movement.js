@@ -301,7 +301,7 @@ function stopRoute() {
     cancelAnimationFrame(routeFrameHandle);
     routeFrameHandle = null;
   }
-  if ($('routePlay')) $('routePlay').textContent = '▶ Play move';
+  if ($('routePlay')) { const b=$('routePlay'); const label=b.querySelector('span'); if (label) label.textContent='Play'; else b.textContent='Play'; b.classList.remove('is-playing'); }
 }
 function setRouteCursor(v) {
   if (!routeData?.valid) return;
@@ -339,7 +339,7 @@ function toggleRoutePlay() {
   if (resizeMode) setResizeMode(false);
   routePlaying = true;
   routeFrameStamp = null;
-  $('routePlay').textContent = '⏸ Pause';
+  { const b=$('routePlay'); const label=b.querySelector('span'); if (label) label.textContent='Pause'; else b.textContent='Pause'; b.classList.add('is-playing'); }
   currentView = sceneViewport(calc(routeData.start));
   routeFrameHandle = requestAnimationFrame(routeTick);
 }
