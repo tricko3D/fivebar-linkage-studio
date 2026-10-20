@@ -174,77 +174,47 @@ function buildRouteData() {
   }
   return data;
 }
-function plotGraph(id, seriesA, seriesB, limit, title) {
-  const data = routeData.samples,
-    w = 650,
-    h = 170,
-    l = 44,
-    r = 14,
-    top = 13,
-    bottom = 30;
-  const x = (t) => l + ((w - l - r) * t) / routeData.profile.duration;
-  const max = Math.max(
-    limit * 1.2,
-    ...data.map((v) => Math.max(v[seriesA], v[seriesB]) * 1.12),
-    0.001,
-  );
-  const y = (v) => top + (h - top - bottom) * (1 - v / max);
-  const line = (key) =>
-    data.map((v, i) => `${i ? 'L' : 'M'}${x(v.t).toFixed(2)},${y(v[key]).toFixed(2)}`).join(' ');
-  let out = '';
-  for (let j = 0; j <= 4; j++) {
-    const v = (max * j) / 4;
-    out += `<line class="gridline" x1="${l}" y1="${y(v)}" x2="${w - r}" y2="${y(v)}"/><text x="${l - 7}" y="${y(v) + 3}" text-anchor="end">${title === 'rpm' ? v.toFixed(0) : v.toFixed(2)}</text>`;
-  }
-  for (let j = 0; j <= 4; j++) {
-    const t = (routeData.profile.duration * j) / 4;
-    out += `<text x="${x(t)}" y="${h - 9}" text-anchor="middle">${t.toFixed(2)}s</text>`;
-  }
-  out += `<line class="threshold" x1="${l}" y1="${y(limit)}" x2="${w - r}" y2="${y(limit)}"/><text class="limitlabel" x="${w - r - 3}" y="${Math.max(10, y(limit) - 5)}" text-anchor="end">limit ${title === 'rpm' ? limit.toFixed(0) : limit.toFixed(3)}</text>`;
-  out += `<path class="left" d="${line(seriesA)}"/><path class="right" d="${line(seriesB)}"/>`;
-  out += `<line class="cursorline" id="${id}Cursor" x1="${l}" y1="${top}" x2="${l}" y2="${h - bottom}"/><circle id="${id}PointL" class="cursorpoint" cx="${l}" cy="${y(data[0][seriesA])}" r="4" fill="#5bd1db"/><circle id="${id}PointR" class="cursorpoint" cx="${l}" cy="${y(data[0][seriesB])}" r="4" fill="#b4a1fb"/>`;
-  out += `<text class="legend" x="${l + 4}" y="${h - 1}" fill="#5bd1db">● left</text><text class="legend" x="${l + 74}" y="${h - 1}" fill="#b4a1fb">● right</text>`;
-  $(id).innerHTML = out;
-  $(id).dataset.plot = JSON.stringify({ l, w, r, top, h, bottom, max, seriesA, seriesB });
-}
+// Single, space-efficient demand display. Each metric has one horizontal track
+// with left and right lanes, normalized to the same physical scale and limit marker.
 function redrawRouteGraphs() {
-  if (!routeData || !routeData.valid) {
-    $('torqueGraph').innerHTML = '';
-    $('rpmGraph').innerHTML = '';
-    return;
+  const valid=routeData?.valid;
+  const torqueLimit=routeData?.base?.allowTorque || 0;
+  const rpmLimit=Math.max(0,state.motorRPM);
+  const tracks=[
+    ['Torque',torqueLimit,valid?Math.max(routeData.maxTorqueL,routeData.maxTorqueR):0,'N·m'],
+    ['RPM',rpmLimit,valid?Math.max(routeData.maxRPML,routeData.maxRPMR):0,'RPM'],
+  ];
+  for(const [name,limit,peak,unit] of tracks){
+    const el=$('motion'+name+'Track'),marker=$('motion'+name+'Threshold');
+    const scale=Math.max(0.001,limit*1.08,peak*1.08);
+    el.dataset.scale=String(scale);
+    marker.style.left=(100*limit/scale).toFixed(3)+'%';
+    marker.hidden=!valid;
+    $('motion'+name+'Limit').textContent=name==='Torque'?limit.toFixed(3)+' N·m':limit.toFixed(0)+' RPM';
+    for(const side of ['Left','Right']) $('motion'+name+side).style.width='0%';
+    el.setAttribute('aria-label',valid?
+      name+' demand in '+unit+'; left and right motors, limit '+limit.toFixed(name==='Torque'?3:0):
+      name+' demand unavailable for current route');
   }
-  plotGraph('torqueGraph', 'tauL', 'tauR', routeData.base.allowTorque, 'torque');
-  plotGraph('rpmGraph', 'rpmL', 'rpmR', state.motorRPM, 'rpm');
 }
 function updateRouteGraphCursor() {
-  if (!routeData?.valid) return;
-  const idx = Math.min(
-      routeData.samples.length - 1,
-      Math.round(routeCursor * (routeData.samples.length - 1)),
-    ),
-    s = routeData.samples[idx];
-  for (const id of ['torqueGraph', 'rpmGraph']) {
-    const graph = $(id),
-      cfg = JSON.parse(graph.dataset.plot || 'null');
-    if (!cfg) continue;
-    const x = cfg.l + (cfg.w - cfg.l - cfg.r) * routeCursor,
-      y = (v) => cfg.top + (cfg.h - cfg.top - cfg.bottom) * (1 - v / cfg.max);
-    $(id + 'Cursor').setAttribute('x1', x);
-    $(id + 'Cursor').setAttribute('x2', x);
-    for (const [end, key] of [
-      ['L', cfg.seriesA],
-      ['R', cfg.seriesB],
-    ]) {
-      $(id + 'Point' + end).setAttribute('cx', x);
-      $(id + 'Point' + end).setAttribute('cy', y(s[key]));
-    }
+  if(!routeData?.valid)return;
+  const idx=Math.min(routeData.samples.length-1,Math.round(routeCursor*(routeData.samples.length-1)));
+  const s=routeData.samples[idx];
+  for(const [name,left,right] of [['Torque',s.tauL,s.tauR],['RPM',s.rpmL,s.rpmR]]){
+    const track=$('motion'+name+'Track');
+    const scale=Number(track.dataset.scale)||1;
+    $('motion'+name+'Left').style.width=(100*Math.min(1,left/scale)).toFixed(3)+'%';
+    $('motion'+name+'Right').style.width=(100*Math.min(1,right/scale)).toFixed(3)+'%';
+    track.setAttribute('aria-label',
+      name+': left '+left.toFixed(name==='Torque'?3:1)+', right '+right.toFixed(name==='Torque'?3:1));
   }
-  $('routeTime').textContent = (routeCursor * routeData.profile.duration).toFixed(2) + ' s';
-  $('routeDuration').textContent = routeData.profile.duration.toFixed(2) + ' s';
-  $('routeProgress').textContent = (routeCursor * 100).toFixed(0) + '%';
-  $('routeTorqueNow').textContent = `${s.tauL.toFixed(3)} / ${s.tauR.toFixed(3)} N·m`;
-  $('routeSpeedNow').textContent = `${s.rpmL.toFixed(1)} / ${s.rpmR.toFixed(1)} RPM`;
-  $('routeScrub').value = Math.round(routeCursor * 1000);
+  $('routeTime').textContent=(routeCursor*routeData.profile.duration).toFixed(2)+' s';
+  $('routeDuration').textContent=routeData.profile.duration.toFixed(2)+' s';
+  $('routeProgress').textContent=(routeCursor*100).toFixed(0)+'%';
+  $('routeTorqueNow').textContent=`${s.tauL.toFixed(3)} / ${s.tauR.toFixed(3)} N·m`;
+  $('routeSpeedNow').textContent=`${s.rpmL.toFixed(1)} / ${s.rpmR.toFixed(1)} RPM`;
+  $('routeScrub').value=Math.round(routeCursor*1000);
 }
 function rebuildRoute() {
   routeData = buildRouteData();
