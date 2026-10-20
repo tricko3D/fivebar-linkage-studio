@@ -25,8 +25,12 @@ const { chromium } = require('playwright');
     if(!readout.includes('3.00:1'))throw Error('Drive ratio did not update: '+readout);
     await page.locator('.settingsTabs [data-setting="links"]').click();
     if(!(await page.locator('#l1').isVisible()))throw Error('Link length input not visible');
-    await page.locator('.resultTabs [data-insight="position"]').click({force:width<850});
-    if(width>=850 && !(await page.locator('#outX').isVisible()))throw Error('Position results not visible');
+    if(width<850){
+      await page.locator('#closeSettings').click();
+      await page.locator('#toggleInsights').click();
+    }
+    await page.locator('.resultTabs [data-insight="position"]').click();
+    if(!(await page.locator('#outX').isVisible()))throw Error('Position results not visible');
     if(errors.length)throw Error('JavaScript errors: '+errors.join('; '));
     console.log('PASS '+width+'px: tabs, mounts, gear ratio and result panel');
     await page.close();
