@@ -13,6 +13,7 @@ function change(recalc = true) {
   updateTransmissionReadout();
   rebuildRoute();
   render(recalc);
+  if (typeof refreshMountPicker === 'function') refreshMountPicker();
   persist();
 }
 function initControls() {
