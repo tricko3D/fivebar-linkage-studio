@@ -1,0 +1,34 @@
+name: Format source code
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/format-source.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Format HTML, CSS and JavaScript
+        run: |
+          npm install --no-save prettier@3.6.2
+          npx prettier --write index.html css/styles.css js/*.js
+      - name: Commit formatted source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html css/styles.css js/
+          if ! git diff --cached --quiet; then
+            git commit -m "style: format source with Prettier"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
