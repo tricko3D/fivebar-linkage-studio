@@ -21,18 +21,28 @@ const fs = require('node:fs');
   if(await page.locator('#canvasScale').count()!==1)throw Error('Canvas ruler missing');
   if(await page.locator('#svgButton').count()!==1)throw Error('SVG tool missing');
 
-  // Compact Motion Study should remain under the viewport, with all live values intact.
+  // Compact motion monitor combines playback and two live demand tracks.
   const route=page.locator('#routePanel');
   if(!(await route.evaluate(el=>el.parentElement.classList.contains('workarea'))))throw Error('Motion Study left workspace');
-  await page.locator('#routeCollapse').click();
-  if(!(await page.locator('#torqueGraph').isVisible())||!(await page.locator('#rpmGraph').isVisible()))throw Error('Motion graphs not visible when expanded');
-  const panelHeight=await route.evaluate(el=>el.getBoundingClientRect().height);
-  console.log('Motion Study '+width+'px expanded height '+Math.round(panelHeight)+'px');
-  if(width>=1500 && panelHeight>400)throw Error('Expanded Motion Study is not compact enough');
-  if(!(await page.locator('#routeTorqueNow').isVisible())||!(await page.locator('#routeScrub').isVisible()))throw Error('Motion readouts missing');
-  await page.locator('#routeCollapse').click();
-  if(await page.locator('#torqueGraph').isVisible())throw Error('Collapse does not hide graphs');
-
+  if(await page.locator('#torqueGraph,#rpmGraph').count())throw Error('Legacy twin graphs remain');
+  if(await route.locator('.motionBarRow').count()!==2)throw Error('Expected one torque and one RPM bar');
+  if(!(await page.locator('#routeScrub').isVisible()))throw Error('Playback scrub is not integrated into the monitor');
+  if(!(await page.locator('#routePlay').isVisible()))throw Error('Play button is not integrated');
+  const initialHeight=await route.evaluate(el=>el.getBoundingClientRect().height);
+  console.log('Motion monitor '+width+'px height '+Math.round(initialHeight)+'px');
+  if(width>=1500&&initialHeight>220)throw Error('Motion monitor still occupies too much vertical space');
+  if(!(await page.locator('#motionTorqueThreshold').isVisible()))throw Error('Torque safety limit missing');
+  await page.locator('#routeScrub').fill('500');
+  await page.locator('#routeScrub').dispatchEvent('input');
+  if(!(await page.locator('#routeTime').innerText()).includes('s'))throw Error('Playback time readout broken');
+  if(!(await page.locator('#motionRPMLeft').evaluate(el=>parseFloat(el.style.width)>0)))throw Error('RPM bar did not respond to scrub');
+  await page.locator('#routePlay').click();
+  await page.waitForTimeout(120);
+  if(!(await page.locator('#routePlay span').innerText()).includes('Pause'))throw Error('Playback did not start');
+  await page.locator('#routePlay').click();
+  if(!(await page.locator('#routePlay span').innerText()).includes('Play'))throw Error('Playback did not pause');
+  await page.locator('#routeReset').click();
+  if(await page.locator('#routeScrub').inputValue()!=='0')throw Error('Reset did not rewind timeline');
 
   await page.locator('#fileMenuButton').click();
   await page.waitForTimeout(400);
