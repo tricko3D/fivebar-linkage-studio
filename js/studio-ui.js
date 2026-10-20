@@ -121,7 +121,14 @@ function refreshMountPicker() {
     }
     if(!pop.contains(e.target))closeTooltip(true);
   });
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTooltip(true)});
+  // Capture Escape before the layout handler: closing help must not also dismiss the mobile sidebar.
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&!pop.hidden){
+      closeTooltip(true);
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  },true);
   window.addEventListener('resize',()=>{closeTooltip(true);updateCanvasScale()});
   refreshMountPicker();
   requestAnimationFrame(updateCanvasScale);
