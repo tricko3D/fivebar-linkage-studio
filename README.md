@@ -17,7 +17,7 @@ It's built around a chessboard, but the linkage itself can be positioned anywher
 - **Servo travel:** Find out whether your geometry fits inside a 180° servo's range, including some margin at the ends.
 - **Mechanical estimates:** Compare link material, section dimensions, approximate sag, bending stress, tool weight and motor torque.
 - **Transmission:** Try direct drive, 2:1, 3:1 or your own gear ratio, and compare estimated torque and RPM.
-- **Movement test:** Animate a queen's path across the board while watching the estimated motor torque and speed graphs.
+- **Motion study:** Play or scrub a chess move, switch between the compact torque/RPM bars and one overlaid time-series graph, and show or hide left/right torque and RPM independently. The graph offers physical-unit axes or a shared percentage-of-limit scale.
 - **Exports:** Import/save JSON configurations, export the canvas as SVG, generate a detailed Markdown calculation audit, and export a SolidWorks-compatible TXT file of named global variables.
 
 ### Mechanical estimates
@@ -39,7 +39,8 @@ The live site is published from the `main` branch using GitHub Pages.
 - [`js/mechanics.js`](js/mechanics.js): bending, sag, loads and motor estimates.
 - [`js/coverage.js`](js/coverage.js): square coverage and servo range checks.
 - [`js/render.js`](js/render.js): the SVG board and linkage drawing.
-- [`js/movement.js`](js/movement.js): the queen move simulation and graphs.
+- [`js/movement.js`](js/movement.js): motion samples, kinematics-driven torque/RPM estimates, playback and compact bars.
+- [`js/motion-overlay.js`](js/motion-overlay.js) and [`css/motion-overlay.css`](css/motion-overlay.css): switchable overlaid graph, independent series filters and chart interaction.
 - [`js/controls.js`](js/controls.js): settings, configuration import/export and reset.
 - [`js/reports.js`](js/reports.js): Markdown audit and SolidWorks variables exports.
 - [`js/bootstrap.js`](js/bootstrap.js): pointer interaction and initialization.
