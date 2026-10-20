@@ -1,127 +1,926 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Fivebar Linkage Studio | Chessboard Kinematics &amp; Mechanics</title>
-<link rel="stylesheet" href="css/styles.css"/>
-</head>
-<body>
-<header><div class="head"><div class="brand"><div class="mark">⌁</div><div><h1>FIVEBAR <span style="color:#73d9d2">/</span> STUDIO</h1><p>Planar linkage design workbench · millimetres</p></div></div><div class="headright"><button class="ghost layoutToggle" id="toggleSettings" type="button" aria-label="Toggle settings panel" aria-expanded="false">☷ Settings</button><button class="ghost layoutToggle" id="toggleInsights" type="button" aria-label="Toggle results panel" aria-expanded="false">◫ Results</button><button class="ghost" id="resetButton">Reset</button><button class="ghost" id="importButton">Import</button><button class="ghost" id="svgButton">Export SVG</button><button class="ghost" id="reportButton">Report TXT ↓</button><button class="ghost" id="printButton">Print / PDF</button><button class="action" id="exportButton">Save configuration ↓</button><input id="importFile" accept="application/json,.json" type="file" hidden/></div></div></header>
-<main class="app">
-<aside class="panel config" aria-label="Simulation controls">
-<div class="railTitle"><strong>Configuration</strong><small>EDIT PARAMETERS</small><button class="closeRail" type="button" id="closeSettings" aria-label="Close settings">×</button></div>
-<nav class="navtabs settingsTabs" aria-label="Configuration categories">
-<button type="button" class="navtab is-active" data-setting="board" aria-selected="true">Board</button>
-<button type="button" class="navtab" data-setting="links" aria-selected="false">Linkage</button>
-<button type="button" class="navtab" data-setting="servos" aria-selected="false">Servos</button>
-<button type="button" class="navtab" data-setting="loads" aria-selected="false">Loads &amp; drive</button>
-<button type="button" class="navtab" data-setting="view" aria-selected="false">Display</button>
-<button type="button" class="navtab" data-setting="files" aria-selected="false">Exports</button>
-</nav>
-<section class="section"><div class="sectheader">01 / Chessboard <span class="mini">8 × 8</span></div>
-<div class="fieldrow"><div class="field"><label for="boardW">Playing area width · mm</label><input id="boardW" data-key="boardW" type="number" min="80" max="1500" step="0.5"/></div><div class="field"><label for="boardH">Playing area depth · mm</label><input id="boardH" data-key="boardH" type="number" min="80" max="1500" step="0.5"/></div></div>
-<div class="fieldrow"><div class="field"><label for="outerW">Outer board width · mm</label><input id="outerW" data-key="outerW" type="number" min="80" max="1800" step="0.5"/></div><div class="field"><label for="outerH">Outer board depth · mm</label><input id="outerH" data-key="outerH" type="number" min="80" max="1800" step="0.5"/></div></div>
-<div class="derived">Playing area: <strong id="playingSize">255 × 255 mm</strong><br/>Outer top: <strong id="outerSize">300 × 300 mm</strong><br/>Padding: <strong id="paddingSize">22.5 mm on each side</strong></div>
-<p class="hint">The outer top is centred around the playable squares, with equal padding on opposing edges. Reachability tests apply to the 64 square centres and 576 sampled positions, not to the padding.</p></section>
-<section class="section"><div class="sectheader">02 / Motor mounting</div><div class="fieldrow"><div class="field"><label for="mountX">Midpoint X · mm</label><input id="mountX" data-key="mountX" type="number" min="-2000" max="2000" step="5"/></div><div class="field"><label for="mountY">Midpoint Y · mm</label><input id="mountY" data-key="mountY" type="number" min="-2000" max="2000" step="5"/></div></div><div class="fieldrow"><div class="field"><label for="sep">Motor spacing · mm</label><input id="sep" data-key="sep" type="number" min="1" max="1000" step="5"/></div><div class="field"><label for="angle">Baseline angle · °</label><input id="angle" data-key="angle" type="number" min="-360" max="360" step="5"/></div></div><div class="compactset"><button class="preset" data-preset="TL">↖ Top left</button><button class="preset" data-preset="TR">↗ Top right</button><button class="preset" data-preset="BL">↙ Bottom left</button><button class="preset" data-preset="BR">↘ Bottom right</button><button class="preset" data-preset="EDGE">↑ Edge centre</button></div><p class="hint">Drag the blue mounting midpoint on the diagram. Drag the small rotation handle to turn both motors as a rigid assembly.</p></section>
-<section class="section"><div class="sectheader">03 / Link dimensions <span class="mini">independent</span></div><div class="fieldrow"><div class="field"><label for="l1" class="accent-left">L1 · left proximal</label><input id="l1" data-key="l1" type="number" min="5" max="2000" step="5"/></div><div class="field"><label for="l2" class="accent-left">L2 · left distal</label><input id="l2" data-key="l2" type="number" min="5" max="2000" step="5"/></div></div><div class="fieldrow"><div class="field"><label for="r1" class="accent-right">R1 · right proximal</label><input id="r1" data-key="r1" type="number" min="5" max="2000" step="5"/></div><div class="field"><label for="r2" class="accent-right">R2 · right distal</label><input id="r2" data-key="r2" type="number" min="5" max="2000" step="5"/></div></div><div class="field"><label for="branch">Elbow configuration · fixed branch</label><select id="branch" data-key="branch"><option value="+-">Left + / Right −</option><option value="-+">Left − / Right +</option><option value="++">Left + / Right +</option><option value="--">Left − / Right −</option></select></div><p class="hint" id="resizeExplanation">Dragging in resize mode scales all four links together while preserving their individual length ratios. The motor mounts remain fixed. You can still edit each link independently above.</p><p class="hint">Each branch is evaluated independently, not switched square-by-square. Some configurations may need links on different vertical layers.</p></section>
-<section class="section"><div class="sectheader">04 / Gripper placement</div><div class="field"><label for="toolMode">Gripper attached at</label><select id="toolMode" data-key="toolMode"><option value="joint">Common linkage joint (P)</option><option value="left">Beyond left distal link</option><option value="right">Beyond right distal link</option><option value="fixed">Fixed XY offset from joint</option></select></div><div id="extensionSettings" class="fieldrow invisible" style="margin-top:10px"><div class="field"><label for="extension">Extra reach · mm</label><input id="extension" data-key="extension" type="number" min="0" max="1000" step="5"/></div></div><div id="fixedSettings" class="fieldrow invisible" style="margin-top:10px"><div class="field"><label for="offsetX">Offset X · mm</label><input id="offsetX" data-key="offsetX" type="number" min="-1000" max="1000" step="5"/></div><div class="field"><label for="offsetY">Offset Y · mm</label><input id="offsetY" data-key="offsetY" type="number" min="-1000" max="1000" step="5"/></div></div><p id="toolDescription" class="hint">Tool tip coincides with the joint where the distal links meet.</p></section>
-<section class="section"><div class="sectheader">05 / Visualization</div><label class="toggle"><input id="showCoverage" data-key="showCoverage" type="checkbox"/> Heatmap of reachable squares</label><label class="toggle"><input id="showCenters" data-key="showCenters" type="checkbox"/> Show square-centre status</label><label class="toggle"><input id="showRings" data-key="showRings" type="checkbox"/> Show maximum reach circles</label><label class="toggle"><input id="forbidCrossings" data-key="forbidCrossings" type="checkbox"/> Reject link crossings (2D)</label><p class="hint">The crossing test checks ideal centre-lines. Actual rods, bearings, joint limits, motors and piece clearance still need separate checks.</p></section>
-<section class="section" id="servoSection">
-<div class="sectheader">06 / Servo angle travel <span class="mini">MG90S check</span></div>
-<div class="fieldrow"><div class="field"><label for="servoTravel">Rated rotation · degrees</label><input id="servoTravel" data-key="servoTravel" type="number" min="30" max="360" step="5"/></div><div class="field"><label for="servoMargin">Reserve at each end · °</label><input id="servoMargin" data-key="servoMargin" type="number" min="0" max="45" step="5"/></div></div>
-<div class="derived"><span class="mini">Usable travel</span><br/><strong id="servoUsable">--</strong><br/><span class="mini">Measured required sweeps (all 576 sampled board points that have an IK solution)</span><br/>Left M₁: <strong id="servoLeftSweep">--</strong><br/>Right M₂: <strong id="servoRightSweep">--</strong><br/><span class="mini">Both motors must fit their sweep into their usable travel.</span></div>
-<label class="toggle"><input id="showServoArcs" data-key="showServoArcs" type="checkbox"/> Draw motor-angle arcs at pivots</label>
-<p class="hint" id="servoHint">Angle windows are automatically fitted to the reachable sampled positions. This evaluates your selected elbow branch, motor location, link lengths and gripper mounting.</p>
-<p class="hint">Angles wrap through 0° correctly, so a sweep from 350° to 20° is 30°, not 330°. Physical servo calibration and actual end stops still need testing.</p>
-</section>
-<section class="section" id="mechanicsSection">
-<div class="sectheader">07 / Mechanical estimates <span class="mini">screening model</span></div>
-<label class="toggle"><input id="showMechanics" data-key="showMechanics" type="checkbox"/> Enable mechanical overlay</label>
-<div class="field"><label for="heatMode">Heatmap display</label><select id="heatMode" data-key="heatMode"><option value="coverage">Geometric reach</option><option value="motor">Motor torque reserve</option><option value="payload">Vertical load capacity (sag / stress only)</option><option value="combined">Combined screening (vertical + XY motion)</option><option value="singularity">Singularity proximity</option><option value="servo">Servo travel / MG90S</option></select></div>
-<p class="hint">Mechanical colors use square centres only. The vertical load view checks sag and beam stress, not motor torque. The motor view checks approximate XY movement effort, not whether motors can hold a hanging mass. Combined screening is deliberately conservative. All are estimates, not safe lifting ratings.</p>
-<div class="fieldrow" style="margin-top:12px"><div class="field"><label for="material">Printed material</label><select id="material" data-key="material"><option value="pla">PLA (typical)</option><option value="petg">PETG (typical)</option><option value="custom">Custom</option></select></div><div class="field"><label for="sectionType">Link cross section</label><select id="sectionType" data-key="sectionType"><option value="box">Hollow rectangle</option><option value="solid">Solid rectangle</option></select></div></div>
-<div class="fieldrow"><div class="field"><label for="youngMPa">Elastic modulus · MPa</label><input id="youngMPa" data-key="youngMPa" type="number" min="100" max="10000" step="100"/></div><div class="field"><label for="density">Density · g/cm³</label><input id="density" data-key="density" type="number" min="0.2" max="6" step="0.01"/></div></div>
-<div class="fieldrow"><div class="field"><label for="stiffFactor">Print stiffness factor</label><input id="stiffFactor" data-key="stiffFactor" type="number" min="0.1" max="1" step="0.05"/></div><div class="field"><label for="stressLimit">Allowable bending · MPa</label><input id="stressLimit" data-key="stressLimit" type="number" min="1" max="100" step="1"/></div></div>
-<div class="fieldrow"><div class="field"><label for="wall">Box wall · mm</label><input id="wall" data-key="wall" type="number" min="0.4" max="20" step="0.4"/></div><div class="field"><label for="sagLimit">Max acceptable sag · mm</label><input id="sagLimit" data-key="sagLimit" type="number" min="0.05" max="20" step="0.25"/></div></div>
-<div class="mini" style="margin:10px 0 7px"><strong>Link cross-sections, not link lengths.</strong> Width (in the board plane) and vertical height in mm. The Resize linkage tool changes L1/L2/R1/R2 lengths in Section 03, not these widths/heights.</div>
-<div class="mechtable"><span class="mth">Link</span><span class="mth">Width · mm</span><span class="mth">Height · mm</span>
-<span class="name">L1</span><input aria-label="L1 width in mm" id="l1W" data-key="l1W" type="number" min="2" max="100" step="1"/><input aria-label="L1 height in mm" id="l1H" data-key="l1H" type="number" min="2" max="100" step="1"/>
-<span class="name">L2</span><input aria-label="L2 width in mm" id="l2W" data-key="l2W" type="number" min="2" max="100" step="1"/><input aria-label="L2 height in mm" id="l2H" data-key="l2H" type="number" min="2" max="100" step="1"/>
-<span class="name">R1</span><input aria-label="R1 width in mm" id="r1W" data-key="r1W" type="number" min="2" max="100" step="1"/><input aria-label="R1 height in mm" id="r1H" data-key="r1H" type="number" min="2" max="100" step="1"/>
-<span class="name">R2</span><input aria-label="R2 width in mm" id="r2W" data-key="r2W" type="number" min="2" max="100" step="1"/><input aria-label="R2 height in mm" id="r2H" data-key="r2H" type="number" min="2" max="100" step="1"/></div>
-<div class="fieldrow" style="margin-top:12px"><div class="field"><label for="headG">Moving tool + Z mass · g</label><input id="headG" data-key="headG" type="number" min="0" max="5000" step="10"/></div><div class="field"><label for="payloadG">Piece / payload · g</label><input id="payloadG" data-key="payloadG" type="number" min="0" max="5000" step="10"/></div></div>
-<div class="fieldrow"><div class="field"><label for="accel">XY acceleration · mm/s²</label><input id="accel" data-key="accel" type="number" min="0" max="10000" step="50"/></div><div class="field"><label for="dragN">XY resistance · N</label><input id="dragN" data-key="dragN" type="number" min="0" max="50" step="0.1"/></div></div>
-<div class="fieldrow"><div class="field"><label for="motorNm">Motor torque at speed · N·m</label><input id="motorNm" data-key="motorNm" type="number" min="0.005" max="5" step="0.01"/></div><div class="field"><label for="motorSF">Motor safety factor</label><input id="motorSF" data-key="motorSF" type="number" min="1" max="10" step="0.1"/></div></div>
-<div class="fieldrow"><div class="field"><label for="ratio">Gear ratio · :1</label><input id="ratio" data-key="ratio" type="number" min="1" max="100" step="0.1"/></div><div class="field"><label for="efficiency">Transmission efficiency · %</label><input id="efficiency" data-key="efficiency" type="number" min="10" max="100" step="5"/></div></div>
-<div class="derived" id="gearReadout">Transmission estimate loading…</div>
-<div class="fieldrow"><div class="field"><label for="motorRPM">Usable motor speed · RPM</label><input id="motorRPM" data-key="motorRPM" type="number" min="1" max="6000" step="10"/></div><div class="field"><label for="xySpeed">Requested XY speed · mm/s</label><input id="xySpeed" data-key="xySpeed" type="number" min="1" max="1000" step="5"/></div></div>
-<label class="toggle"><input id="speedCap" data-key="speedCap" type="checkbox"/> Automatically limit XY speed to motor RPM</label>
-<p class="hint">Gear ratio is motor revolutions per one output revolution (1:1 = direct, 3:1 = three motor turns per output turn). RPM is an assumed usable motor speed, not a torque-speed curve. The path animation checks both motor RPM and output torque under the simplified dynamics assumptions.</p>
-<div class="field"><label for="bearingFrictionNm">Joint friction allowance · N·m per motor</label><input id="bearingFrictionNm" data-key="bearingFrictionNm" type="number" min="0" max="2" step="0.005"/></div>
-<p class="hint">Motor torque must be the <strong>available running torque at your intended speed</strong>, not the motor's holding torque. A 1:1 ratio means direct drive. XY torque uses a conservative acceleration-direction estimate, an approximate fraction of link inertia and an assumed drag force, not a full dynamics model.</p>
-<p class="hint">Structural model approximates the four links as two parallel idealized cantilever chains. It is not FEA and does not include pivot play, tool overhang, Z guide flex, buckling, print defects or motor speed curves.</p>
-</section>
-<section class="section"><div class="sectheader">08 / Save & calculation report</div>
-<p class="hint">Save configuration exports importable JSON. The TXT calculation audit includes inputs, intermediate numeric values, the 64-square table and a 201-sample queen movement trace. Print / PDF uses your browser's PDF printer, with no extra libraries.</p>
-<div class="compactset" style="margin-top:12px"><button class="preset" id="sideReportButton">Download TXT report</button><button class="preset" id="sidePrintButton">Print / Save PDF</button></div>
-</section>
-</aside>
-<section class="workarea"><div class="workTitle"><span class="workTitleLabel">Workspace <b>·</b> XY linkage</span><span class="workSub">Interactive plan view <i>•</i> all units in mm</span></div><div class="statbar"><div class="stat"><div class="k">Reachable centres</div><div class="v" id="centerStat">-- / 64</div><div class="s">Fixed linkage branch</div></div><div class="stat"><div class="k">Board area sampled</div><div class="v" id="sampleStat">--%</div><div class="s">576 points across 64 squares</div></div><div class="stat"><div class="k">Farthest square</div><div class="v" id="farStat">-- mm</div><div class="s">Gripper to mounting midpoint</div></div></div><div class="resizebar" style="padding:1px 2px 1px"><button class="ghost" id="resizeButton" type="button" aria-pressed="false">↔ Resize linkage</button><small id="resizeHint">Turn on, then drag the common joint P. The four link lengths update live.</small></div><div class="liveLengths" id="liveLengths" aria-live="polite"><span>Lengths:</span><span>L1 <strong id="liveL1">--</strong></span><span>L2 <strong id="liveL2">--</strong></span><span>R1 <strong id="liveR1">--</strong></span><span>R2 <strong id="liveR2">--</strong></span><span class="annot">mm · sections stay unchanged</span></div><div class="canvasbox"><svg id="scene" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Interactive chessboard with five-bar linkage, draggable target and motor mount"></svg><div class="canvasnote" id="canvasNote"><strong>Interactive XY workspace</strong>Drag the <span style="color:#ffc178">orange gripper</span> to test positions. Drag the <span style="color:#77dce0">blue mount</span> to reposition the linkage.</div><div class="canvaslegend"><span class="legenditem"><span class="sw" style="background:#48d3a5"></span>reachable</span><span class="legenditem"><span class="sw" style="background:#f0b660"></span>partial</span><span class="legenditem"><span class="sw" style="background:#e16e7a"></span>unreachable / over limit</span><span class="legenditem"><span class="sw" style="background:#66cbd3"></span>left links</span><span class="legenditem"><span class="sw" style="background:#b4a4fb"></span>right links</span></div></div>
-<div class="routepanel is-collapsed" id="routePanel">
-<div class="routeTop"><div><div class="sectheader">08 / Queen test move · XY trajectory</div><div class="mini">Example D1 → D8, an unobstructed queen move. No piece lifting or collision simulation.</div></div><div class="routeActions"><button class="action" id="routePlay">▶ Play move</button><button class="ghost" id="routeReset">↺ Reset</button><button class="ghost routeCollapse" id="routeCollapse" aria-expanded="false" type="button">▸ Show graphs</button></div></div>
-<div class="routeFields"><label>From <select id="routeFrom" data-key="routeFrom"></select></label><label>To <select id="routeTo" data-key="routeTo"></select></label><div id="routeSummary" class="routeSummary">Calculating…</div></div>
-<div id="routeAlert" class="routeAlert">Calculating the path…</div>
-<input type="range" aria-label="Scrub test move" id="routeScrub" min="0" max="1000" value="0" step="1"/>
-<div class="routeTimes"><span id="routeTime">0.00 s</span><span id="routeProgress">0%</span><span id="routeDuration">-- s</span></div>
-<div class="routeMetrics"><div><small>At cursor, left / right torque</small><strong id="routeTorqueNow">-- / -- N·m</strong></div><div><small>At cursor, left / right motor speed</small><strong id="routeSpeedNow">-- / -- RPM</strong></div><div><small>Path peak output torque · L / R</small><strong id="routeTorquePeak">-- / -- N·m</strong></div><div><small>Path peak motor RPM · L / R</small><strong id="routeRPMPeak">-- / -- RPM</strong></div></div>
-<div class="routeCharts"><div class="routeChart"><div class="chartTitle"><b>Output torque demand</b><small>N·m · dashed line is derated output allowance</small></div><svg id="torqueGraph" viewBox="0 0 650 170" role="img" aria-label="Motor torque versus time chart"></svg></div><div class="routeChart"><div class="chartTitle"><b>Input motor speed</b><small>absolute RPM · dashed line is entered motor speed limit</small></div><svg id="rpmGraph" viewBox="0 0 650 170" role="img" aria-label="Required motor RPM versus time chart"></svg></div></div>
-<p class="hint">The graphs evaluate a straight XY path with a triangular/trapezoidal acceleration profile and show estimated torque at the linkage output and RPM at the NEMA 17 shaft. They are comparative planning estimates, not measured motor characteristics or certified dynamic loads. They omit the full links’ rotational inertia, stepper rotor acceleration, motor torque-speed curves, and flex/backlash. A physical motor may stall even if a graph passes.</p>
-</div>
-<div class="stagefooter"><div class="squarebar"><label for="squareSelect">Test square</label><select id="squareSelect"></select><button class="preset" id="centreTarget">Board centre</button></div><div>XY only · board plane viewed from above · all dimensions in mm</div></div></section>
-<aside class="analysis" aria-label="Live results">
-<div class="railTitle"><strong>Live results</strong><small>COMPUTED</small><button class="closeRail" type="button" id="closeInsights" aria-label="Close results">×</button></div>
-<nav class="navtabs resultTabs" aria-label="Analysis categories">
-<button type="button" class="navtab is-active" data-insight="position" aria-selected="true">Position</button>
-<button type="button" class="navtab" data-insight="forces" aria-selected="false">Loads</button>
-<button type="button" class="navtab" data-insight="servo" aria-selected="false">Motors</button>
-<button type="button" class="navtab" data-insight="corners" aria-selected="false">Corners</button>
-<button type="button" class="navtab" data-insight="help" aria-selected="false">Guide</button>
-</nav><div class="panel" id="servoInspector"><div class="sectheader">MG90S / motor travel</div>
-<div class="mechbadge" id="servoStatus">Calculating</div>
-<div class="datarow sm"><span>Usable rotation</span><b id="servoMaxDisp">--</b></div>
-<div class="datarow sm"><span>Left motor required arc</span><b id="servoLArc">--</b></div>
-<div class="datarow sm"><span>Right motor required arc</span><b id="servoRArc">--</b></div>
-<div class="datarow sm"><span>Left fitted angle window</span><b id="servoLWindow">--</b></div>
-<div class="datarow sm"><span>Right fitted angle window</span><b id="servoRWindow">--</b></div>
-<div class="datarow sm"><span>Square centres within both limits</span><b id="servoCentres">--</b></div>
-<div class="datarow sm"><span>Board points within both limits</span><b id="servoSamples">--</b></div>
-<div class="datarow sm"><span>At current gripper position</span><b id="servoTarget">--</b></div>
-<p class="hint">Angles measured counterclockwise from world +X, not PWM pulses or manufacturer-specific horn zero. Windows auto-position for each motor; motors are assumed independently orientable on assembly. Coverage is sampled, not continuous-path certification.</p></div>
-<div class="panel" id="mechInspector"><div class="sectheader">Mechanical analysis <span class="mini">estimates</span></div>
-<div id="mechStatus" class="mechbadge">Calculating</div>
-<div class="datarow sm"><span>Printed link mass</span><b id="mechLinkMass">--</b></div>
-<div class="datarow sm"><span>Estimated tip sag</span><b id="mechSag">--</b></div>
-<div class="datarow sm"><span>Worst beam stress</span><b id="mechStress">--</b></div>
-<div class="datarow sm"><span>Left motor torque</span><b id="mechTorqueL">--</b></div>
-<div class="datarow sm"><span>Right motor torque</span><b id="mechTorqueR">--</b></div>
-<div class="datarow sm"><span>Torque allowance / motor</span><b id="mechTorqueAllow">--</b></div>
-<div class="datarow sm"><span>Vertical-only payload estimate</span><b id="mechMaxPayload">--</b></div><div class="datarow sm"><span>XY motor-limited proxy</span><b id="mechMotorPayload">--</b></div><div class="datarow sm"><span>Combined screening estimate</span><b id="mechCombinedPayload">--</b></div>
-<div class="datarow sm"><span>Limiting assumption</span><b id="mechLimitation">--</b></div>
-<div class="datarow sm"><span>Worst combined square screen</span><b id="mechBoardLimit">--</b></div>
-<div class="datarow sm"><span>Near-singular square centres</span><b id="mechSingularCount">--</b></div>
-<p class="hint">Vertical-only payload assumes hanging weight, and uses a simplified beam proxy that is currently the same at all XY positions. The XY motor proxy is about acceleration/resistance and assumes a worst-case force direction, so exceeding it does not mean the tool cannot lift. These are NOT validated working loads. * “≥2,000 g” means the model reached its search cap.</p></div><div class="panel"><div class="sectheader">Selected gripper position</div><div class="status" id="positionStatus"><i class="dot"></i><span>Calculating</span></div><p class="hint" id="positionReason"></p><div class="datarow"><span>Gripper X</span><b id="outX">--</b></div><div class="datarow"><span>Gripper Y</span><b id="outY">--</b></div><div class="datarow"><span>Five-bar joint P</span><b id="outP">--</b></div><div class="datarow"><span>Left motor angle</span><b id="outLA">--</b></div><div class="datarow"><span>Right motor angle</span><b id="outRA">--</b></div><div class="datarow"><span>Singularity margin</span><b id="outMargin">--</b></div></div><div class="panel"><h3 class="subheading">Board corner checks</h3><div id="corners"></div><p class="hint">These are square centres, not the outer corners of the wooden board.</p></div><div class="panel"><h3 class="subheading">How to read the model</h3><div class="modehint">P is where the two distal links meet. G is the gripper tip. With a tool extension G moves beyond P along a selected distal link, so it changes the inverse kinematics, not just the drawing.</div><div class="notice" style="margin-top:12px">The mechanical estimates are simplified screening calculations, not FEA or a verified safe working load. Check pivot clearances, bearing stiffness, Z-axis overhang, print orientation, impacts and the motor torque-speed curves experimentally. The Z actuator is represented only by its mass.</div></div></aside>
-</main><footer class="foot">Built using ChatGPT (GPT-6, OpenAI). Kinematics and code referenced from <a href="https://github.com/unswei/fivebar" target="_blank" rel="noopener noreferrer">unswei/fivebar</a> by Oliver Obst (UNSW). Settings stay in your browser.</footer>
-<script defer src="js/state.js"></script>
-<script defer src="js/kinematics.js"></script>
-<script defer src="js/mechanics.js"></script>
-<script defer src="js/coverage.js"></script>
-<script defer src="js/render.js"></script>
-<script defer src="js/movement.js"></script>
-<script defer src="js/controls.js"></script>
-<script defer src="js/reports.js"></script>
-<script defer src="js/bootstrap.js"></script>
-<script defer src="js/layout.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Fivebar Linkage Studio | Chessboard Kinematics &amp; Mechanics</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="head">
+        <div class="brand">
+          <div class="mark">⌁</div>
+          <div>
+            <h1>FIVEBAR <span style="color: #73d9d2">/</span> STUDIO</h1>
+            <p>Planar linkage design workbench · millimetres</p>
+          </div>
+        </div>
+        <div class="headright">
+          <button
+            class="ghost layoutToggle"
+            id="toggleSettings"
+            type="button"
+            aria-label="Toggle settings panel"
+            aria-expanded="false"
+          >
+            ☷ Settings</button
+          ><button
+            class="ghost layoutToggle"
+            id="toggleInsights"
+            type="button"
+            aria-label="Toggle results panel"
+            aria-expanded="false"
+          >
+            ◫ Results</button
+          ><button class="ghost" id="resetButton">Reset</button
+          ><button class="ghost" id="importButton">Import</button
+          ><button class="ghost" id="svgButton">Export SVG</button
+          ><button class="ghost" id="reportButton">Report TXT ↓</button
+          ><button class="ghost" id="printButton">Print / PDF</button
+          ><button class="action" id="exportButton">Save configuration ↓</button
+          ><input id="importFile" accept="application/json,.json" type="file" hidden />
+        </div>
+      </div>
+    </header>
+    <main class="app">
+      <aside class="panel config" aria-label="Simulation controls">
+        <div class="railTitle">
+          <strong>Configuration</strong><small>EDIT PARAMETERS</small
+          ><button class="closeRail" type="button" id="closeSettings" aria-label="Close settings">
+            ×
+          </button>
+        </div>
+        <nav class="navtabs settingsTabs" aria-label="Configuration categories">
+          <button type="button" class="navtab is-active" data-setting="board" aria-selected="true">
+            Board
+          </button>
+          <button type="button" class="navtab" data-setting="links" aria-selected="false">
+            Linkage
+          </button>
+          <button type="button" class="navtab" data-setting="servos" aria-selected="false">
+            Servos
+          </button>
+          <button type="button" class="navtab" data-setting="loads" aria-selected="false">
+            Loads &amp; drive
+          </button>
+          <button type="button" class="navtab" data-setting="view" aria-selected="false">
+            Display
+          </button>
+          <button type="button" class="navtab" data-setting="files" aria-selected="false">
+            Exports
+          </button>
+        </nav>
+        <section class="section">
+          <div class="sectheader">01 / Chessboard <span class="mini">8 × 8</span></div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="boardW">Playing area width · mm</label
+              ><input id="boardW" data-key="boardW" type="number" min="80" max="1500" step="0.5" />
+            </div>
+            <div class="field">
+              <label for="boardH">Playing area depth · mm</label
+              ><input id="boardH" data-key="boardH" type="number" min="80" max="1500" step="0.5" />
+            </div>
+          </div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="outerW">Outer board width · mm</label
+              ><input id="outerW" data-key="outerW" type="number" min="80" max="1800" step="0.5" />
+            </div>
+            <div class="field">
+              <label for="outerH">Outer board depth · mm</label
+              ><input id="outerH" data-key="outerH" type="number" min="80" max="1800" step="0.5" />
+            </div>
+          </div>
+          <div class="derived">
+            Playing area: <strong id="playingSize">255 × 255 mm</strong><br />Outer top:
+            <strong id="outerSize">300 × 300 mm</strong><br />Padding:
+            <strong id="paddingSize">22.5 mm on each side</strong>
+          </div>
+          <p class="hint">
+            The outer top is centred around the playable squares, with equal padding on opposing
+            edges. Reachability tests apply to the 64 square centres and 576 sampled positions, not
+            to the padding.
+          </p>
+        </section>
+        <section class="section">
+          <div class="sectheader">02 / Motor mounting</div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="mountX">Midpoint X · mm</label
+              ><input id="mountX" data-key="mountX" type="number" min="-2000" max="2000" step="5" />
+            </div>
+            <div class="field">
+              <label for="mountY">Midpoint Y · mm</label
+              ><input id="mountY" data-key="mountY" type="number" min="-2000" max="2000" step="5" />
+            </div>
+          </div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="sep">Motor spacing · mm</label
+              ><input id="sep" data-key="sep" type="number" min="1" max="1000" step="5" />
+            </div>
+            <div class="field">
+              <label for="angle">Baseline angle · °</label
+              ><input id="angle" data-key="angle" type="number" min="-360" max="360" step="5" />
+            </div>
+          </div>
+          <div class="compactset">
+            <button class="preset" data-preset="TL">↖ Top left</button
+            ><button class="preset" data-preset="TR">↗ Top right</button
+            ><button class="preset" data-preset="BL">↙ Bottom left</button
+            ><button class="preset" data-preset="BR">↘ Bottom right</button
+            ><button class="preset" data-preset="EDGE">↑ Edge centre</button>
+          </div>
+          <p class="hint">
+            Drag the blue mounting midpoint on the diagram. Drag the small rotation handle to turn
+            both motors as a rigid assembly.
+          </p>
+        </section>
+        <section class="section">
+          <div class="sectheader">03 / Link dimensions <span class="mini">independent</span></div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="l1" class="accent-left">L1 · left proximal</label
+              ><input id="l1" data-key="l1" type="number" min="5" max="2000" step="5" />
+            </div>
+            <div class="field">
+              <label for="l2" class="accent-left">L2 · left distal</label
+              ><input id="l2" data-key="l2" type="number" min="5" max="2000" step="5" />
+            </div>
+          </div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="r1" class="accent-right">R1 · right proximal</label
+              ><input id="r1" data-key="r1" type="number" min="5" max="2000" step="5" />
+            </div>
+            <div class="field">
+              <label for="r2" class="accent-right">R2 · right distal</label
+              ><input id="r2" data-key="r2" type="number" min="5" max="2000" step="5" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="branch">Elbow configuration · fixed branch</label
+            ><select id="branch" data-key="branch">
+              <option value="+-">Left + / Right −</option>
+              <option value="-+">Left − / Right +</option>
+              <option value="++">Left + / Right +</option>
+              <option value="--">Left − / Right −</option>
+            </select>
+          </div>
+          <p class="hint" id="resizeExplanation">
+            Dragging in resize mode scales all four links together while preserving their individual
+            length ratios. The motor mounts remain fixed. You can still edit each link independently
+            above.
+          </p>
+          <p class="hint">
+            Each branch is evaluated independently, not switched square-by-square. Some
+            configurations may need links on different vertical layers.
+          </p>
+        </section>
+        <section class="section">
+          <div class="sectheader">04 / Gripper placement</div>
+          <div class="field">
+            <label for="toolMode">Gripper attached at</label
+            ><select id="toolMode" data-key="toolMode">
+              <option value="joint">Common linkage joint (P)</option>
+              <option value="left">Beyond left distal link</option>
+              <option value="right">Beyond right distal link</option>
+              <option value="fixed">Fixed XY offset from joint</option>
+            </select>
+          </div>
+          <div id="extensionSettings" class="fieldrow invisible" style="margin-top: 10px">
+            <div class="field">
+              <label for="extension">Extra reach · mm</label
+              ><input
+                id="extension"
+                data-key="extension"
+                type="number"
+                min="0"
+                max="1000"
+                step="5"
+              />
+            </div>
+          </div>
+          <div id="fixedSettings" class="fieldrow invisible" style="margin-top: 10px">
+            <div class="field">
+              <label for="offsetX">Offset X · mm</label
+              ><input
+                id="offsetX"
+                data-key="offsetX"
+                type="number"
+                min="-1000"
+                max="1000"
+                step="5"
+              />
+            </div>
+            <div class="field">
+              <label for="offsetY">Offset Y · mm</label
+              ><input
+                id="offsetY"
+                data-key="offsetY"
+                type="number"
+                min="-1000"
+                max="1000"
+                step="5"
+              />
+            </div>
+          </div>
+          <p id="toolDescription" class="hint">
+            Tool tip coincides with the joint where the distal links meet.
+          </p>
+        </section>
+        <section class="section">
+          <div class="sectheader">05 / Visualization</div>
+          <label class="toggle"
+            ><input id="showCoverage" data-key="showCoverage" type="checkbox" /> Heatmap of
+            reachable squares</label
+          ><label class="toggle"
+            ><input id="showCenters" data-key="showCenters" type="checkbox" /> Show square-centre
+            status</label
+          ><label class="toggle"
+            ><input id="showRings" data-key="showRings" type="checkbox" /> Show maximum reach
+            circles</label
+          ><label class="toggle"
+            ><input id="forbidCrossings" data-key="forbidCrossings" type="checkbox" /> Reject link
+            crossings (2D)</label
+          >
+          <p class="hint">
+            The crossing test checks ideal centre-lines. Actual rods, bearings, joint limits, motors
+            and piece clearance still need separate checks.
+          </p>
+        </section>
+        <section class="section" id="servoSection">
+          <div class="sectheader">
+            06 / Servo angle travel <span class="mini">MG90S check</span>
+          </div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="servoTravel">Rated rotation · degrees</label
+              ><input
+                id="servoTravel"
+                data-key="servoTravel"
+                type="number"
+                min="30"
+                max="360"
+                step="5"
+              />
+            </div>
+            <div class="field">
+              <label for="servoMargin">Reserve at each end · °</label
+              ><input
+                id="servoMargin"
+                data-key="servoMargin"
+                type="number"
+                min="0"
+                max="45"
+                step="5"
+              />
+            </div>
+          </div>
+          <div class="derived">
+            <span class="mini">Usable travel</span><br /><strong id="servoUsable">--</strong
+            ><br /><span class="mini"
+              >Measured required sweeps (all 576 sampled board points that have an IK
+              solution)</span
+            ><br />Left M₁: <strong id="servoLeftSweep">--</strong><br />Right M₂:
+            <strong id="servoRightSweep">--</strong><br /><span class="mini"
+              >Both motors must fit their sweep into their usable travel.</span
+            >
+          </div>
+          <label class="toggle"
+            ><input id="showServoArcs" data-key="showServoArcs" type="checkbox" /> Draw motor-angle
+            arcs at pivots</label
+          >
+          <p class="hint" id="servoHint">
+            Angle windows are automatically fitted to the reachable sampled positions. This
+            evaluates your selected elbow branch, motor location, link lengths and gripper mounting.
+          </p>
+          <p class="hint">
+            Angles wrap through 0° correctly, so a sweep from 350° to 20° is 30°, not 330°. Physical
+            servo calibration and actual end stops still need testing.
+          </p>
+        </section>
+        <section class="section" id="mechanicsSection">
+          <div class="sectheader">
+            07 / Mechanical estimates <span class="mini">screening model</span>
+          </div>
+          <label class="toggle"
+            ><input id="showMechanics" data-key="showMechanics" type="checkbox" /> Enable mechanical
+            overlay</label
+          >
+          <div class="field">
+            <label for="heatMode">Heatmap display</label
+            ><select id="heatMode" data-key="heatMode">
+              <option value="coverage">Geometric reach</option>
+              <option value="motor">Motor torque reserve</option>
+              <option value="payload">Vertical load capacity (sag / stress only)</option>
+              <option value="combined">Combined screening (vertical + XY motion)</option>
+              <option value="singularity">Singularity proximity</option>
+              <option value="servo">Servo travel / MG90S</option>
+            </select>
+          </div>
+          <p class="hint">
+            Mechanical colors use square centres only. The vertical load view checks sag and beam
+            stress, not motor torque. The motor view checks approximate XY movement effort, not
+            whether motors can hold a hanging mass. Combined screening is deliberately conservative.
+            All are estimates, not safe lifting ratings.
+          </p>
+          <div class="fieldrow" style="margin-top: 12px">
+            <div class="field">
+              <label for="material">Printed material</label
+              ><select id="material" data-key="material">
+                <option value="pla">PLA (typical)</option>
+                <option value="petg">PETG (typical)</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="sectionType">Link cross section</label
+              ><select id="sectionType" data-key="sectionType">
+                <option value="box">Hollow rectangle</option>
+                <option value="solid">Solid rectangle</option>
+              </select>
+            </div>
+          </div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="youngMPa">Elastic modulus · MPa</label
+              ><input
+                id="youngMPa"
+                data-key="youngMPa"
+                type="number"
+                min="100"
+                max="10000"
+                step="100"
+              />
+            </div>
+            <div class="field">
+              <label for="density">Density · g/cm³</label
+              ><input id="density" data-key="density" type="number" min="0.2" max="6" step="0.01" />
+            </div>
+          </div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="stiffFactor">Print stiffness factor</label
+              ><input
+                id="stiffFactor"
+                data-key="stiffFactor"
+                type="number"
+                min="0.1"
+                max="1"
+                step="0.05"
+              />
+            </div>
+            <div class="field">
+              <label for="stressLimit">Allowable bending · MPa</label
+              ><input
+                id="stressLimit"
+                data-key="stressLimit"
+                type="number"
+                min="1"
+                max="100"
+                step="1"
+              />
+            </div>
+          </div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="wall">Box wall · mm</label
+              ><input id="wall" data-key="wall" type="number" min="0.4" max="20" step="0.4" />
+            </div>
+            <div class="field">
+              <label for="sagLimit">Max acceptable sag · mm</label
+              ><input
+                id="sagLimit"
+                data-key="sagLimit"
+                type="number"
+                min="0.05"
+                max="20"
+                step="0.25"
+              />
+            </div>
+          </div>
+          <div class="mini" style="margin: 10px 0 7px">
+            <strong>Link cross-sections, not link lengths.</strong> Width (in the board plane) and
+            vertical height in mm. The Resize linkage tool changes L1/L2/R1/R2 lengths in Section
+            03, not these widths/heights.
+          </div>
+          <div class="mechtable">
+            <span class="mth">Link</span><span class="mth">Width · mm</span
+            ><span class="mth">Height · mm</span> <span class="name">L1</span
+            ><input
+              aria-label="L1 width in mm"
+              id="l1W"
+              data-key="l1W"
+              type="number"
+              min="2"
+              max="100"
+              step="1"
+            /><input
+              aria-label="L1 height in mm"
+              id="l1H"
+              data-key="l1H"
+              type="number"
+              min="2"
+              max="100"
+              step="1"
+            />
+            <span class="name">L2</span
+            ><input
+              aria-label="L2 width in mm"
+              id="l2W"
+              data-key="l2W"
+              type="number"
+              min="2"
+              max="100"
+              step="1"
+            /><input
+              aria-label="L2 height in mm"
+              id="l2H"
+              data-key="l2H"
+              type="number"
+              min="2"
+              max="100"
+              step="1"
+            />
+            <span class="name">R1</span
+            ><input
+              aria-label="R1 width in mm"
+              id="r1W"
+              data-key="r1W"
+              type="number"
+              min="2"
+              max="100"
+              step="1"
+            /><input
+              aria-label="R1 height in mm"
+              id="r1H"
+              data-key="r1H"
+              type="number"
+              min="2"
+              max="100"
+              step="1"
+            />
+            <span class="name">R2</span
+            ><input
+              aria-label="R2 width in mm"
+              id="r2W"
+              data-key="r2W"
+              type="number"
+              min="2"
+              max="100"
+              step="1"
+            /><input
+              aria-label="R2 height in mm"
+              id="r2H"
+              data-key="r2H"
+              type="number"
+              min="2"
+              max="100"
+              step="1"
+            />
+          </div>
+          <div class="fieldrow" style="margin-top: 12px">
+            <div class="field">
+              <label for="headG">Moving tool + Z mass · g</label
+              ><input id="headG" data-key="headG" type="number" min="0" max="5000" step="10" />
+            </div>
+            <div class="field">
+              <label for="payloadG">Piece / payload · g</label
+              ><input
+                id="payloadG"
+                data-key="payloadG"
+                type="number"
+                min="0"
+                max="5000"
+                step="10"
+              />
+            </div>
+          </div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="accel">XY acceleration · mm/s²</label
+              ><input id="accel" data-key="accel" type="number" min="0" max="10000" step="50" />
+            </div>
+            <div class="field">
+              <label for="dragN">XY resistance · N</label
+              ><input id="dragN" data-key="dragN" type="number" min="0" max="50" step="0.1" />
+            </div>
+          </div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="motorNm">Motor torque at speed · N·m</label
+              ><input
+                id="motorNm"
+                data-key="motorNm"
+                type="number"
+                min="0.005"
+                max="5"
+                step="0.01"
+              />
+            </div>
+            <div class="field">
+              <label for="motorSF">Motor safety factor</label
+              ><input id="motorSF" data-key="motorSF" type="number" min="1" max="10" step="0.1" />
+            </div>
+          </div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="ratio">Gear ratio · :1</label
+              ><input id="ratio" data-key="ratio" type="number" min="1" max="100" step="0.1" />
+            </div>
+            <div class="field">
+              <label for="efficiency">Transmission efficiency · %</label
+              ><input
+                id="efficiency"
+                data-key="efficiency"
+                type="number"
+                min="10"
+                max="100"
+                step="5"
+              />
+            </div>
+          </div>
+          <div class="derived" id="gearReadout">Transmission estimate loading…</div>
+          <div class="fieldrow">
+            <div class="field">
+              <label for="motorRPM">Usable motor speed · RPM</label
+              ><input
+                id="motorRPM"
+                data-key="motorRPM"
+                type="number"
+                min="1"
+                max="6000"
+                step="10"
+              />
+            </div>
+            <div class="field">
+              <label for="xySpeed">Requested XY speed · mm/s</label
+              ><input id="xySpeed" data-key="xySpeed" type="number" min="1" max="1000" step="5" />
+            </div>
+          </div>
+          <label class="toggle"
+            ><input id="speedCap" data-key="speedCap" type="checkbox" /> Automatically limit XY
+            speed to motor RPM</label
+          >
+          <p class="hint">
+            Gear ratio is motor revolutions per one output revolution (1:1 = direct, 3:1 = three
+            motor turns per output turn). RPM is an assumed usable motor speed, not a torque-speed
+            curve. The path animation checks both motor RPM and output torque under the simplified
+            dynamics assumptions.
+          </p>
+          <div class="field">
+            <label for="bearingFrictionNm">Joint friction allowance · N·m per motor</label
+            ><input
+              id="bearingFrictionNm"
+              data-key="bearingFrictionNm"
+              type="number"
+              min="0"
+              max="2"
+              step="0.005"
+            />
+          </div>
+          <p class="hint">
+            Motor torque must be the
+            <strong>available running torque at your intended speed</strong>, not the motor's
+            holding torque. A 1:1 ratio means direct drive. XY torque uses a conservative
+            acceleration-direction estimate, an approximate fraction of link inertia and an assumed
+            drag force, not a full dynamics model.
+          </p>
+          <p class="hint">
+            Structural model approximates the four links as two parallel idealized cantilever
+            chains. It is not FEA and does not include pivot play, tool overhang, Z guide flex,
+            buckling, print defects or motor speed curves.
+          </p>
+        </section>
+        <section class="section">
+          <div class="sectheader">08 / Save & calculation report</div>
+          <p class="hint">
+            Save configuration exports importable JSON. The TXT calculation audit includes inputs,
+            intermediate numeric values, the 64-square table and a 201-sample queen movement trace.
+            Print / PDF uses your browser's PDF printer, with no extra libraries.
+          </p>
+          <div class="compactset" style="margin-top: 12px">
+            <button class="preset" id="sideReportButton">Download TXT report</button
+            ><button class="preset" id="sidePrintButton">Print / Save PDF</button>
+          </div>
+        </section>
+      </aside>
+      <section class="workarea">
+        <div class="workTitle">
+          <span class="workTitleLabel">Workspace <b>·</b> XY linkage</span
+          ><span class="workSub">Interactive plan view <i>•</i> all units in mm</span>
+        </div>
+        <div class="statbar">
+          <div class="stat">
+            <div class="k">Reachable centres</div>
+            <div class="v" id="centerStat">-- / 64</div>
+            <div class="s">Fixed linkage branch</div>
+          </div>
+          <div class="stat">
+            <div class="k">Board area sampled</div>
+            <div class="v" id="sampleStat">--%</div>
+            <div class="s">576 points across 64 squares</div>
+          </div>
+          <div class="stat">
+            <div class="k">Farthest square</div>
+            <div class="v" id="farStat">-- mm</div>
+            <div class="s">Gripper to mounting midpoint</div>
+          </div>
+        </div>
+        <div class="resizebar" style="padding: 1px 2px 1px">
+          <button class="ghost" id="resizeButton" type="button" aria-pressed="false">
+            ↔ Resize linkage</button
+          ><small id="resizeHint"
+            >Turn on, then drag the common joint P. The four link lengths update live.</small
+          >
+        </div>
+        <div class="liveLengths" id="liveLengths" aria-live="polite">
+          <span>Lengths:</span><span>L1 <strong id="liveL1">--</strong></span
+          ><span>L2 <strong id="liveL2">--</strong></span
+          ><span>R1 <strong id="liveR1">--</strong></span
+          ><span>R2 <strong id="liveR2">--</strong></span
+          ><span class="annot">mm · sections stay unchanged</span>
+        </div>
+        <div class="canvasbox">
+          <svg
+            id="scene"
+            xmlns="http://www.w3.org/2000/svg"
+            role="img"
+            aria-label="Interactive chessboard with five-bar linkage, draggable target and motor mount"
+          ></svg>
+          <div class="canvasnote" id="canvasNote">
+            <strong>Interactive XY workspace</strong>Drag the
+            <span style="color: #ffc178">orange gripper</span> to test positions. Drag the
+            <span style="color: #77dce0">blue mount</span> to reposition the linkage.
+          </div>
+          <div class="canvaslegend">
+            <span class="legenditem"
+              ><span class="sw" style="background: #48d3a5"></span>reachable</span
+            ><span class="legenditem"
+              ><span class="sw" style="background: #f0b660"></span>partial</span
+            ><span class="legenditem"
+              ><span class="sw" style="background: #e16e7a"></span>unreachable / over limit</span
+            ><span class="legenditem"
+              ><span class="sw" style="background: #66cbd3"></span>left links</span
+            ><span class="legenditem"
+              ><span class="sw" style="background: #b4a4fb"></span>right links</span
+            >
+          </div>
+        </div>
+        <div class="routepanel is-collapsed" id="routePanel">
+          <div class="routeTop">
+            <div>
+              <div class="sectheader">08 / Queen test move · XY trajectory</div>
+              <div class="mini">
+                Example D1 → D8, an unobstructed queen move. No piece lifting or collision
+                simulation.
+              </div>
+            </div>
+            <div class="routeActions">
+              <button class="action" id="routePlay">▶ Play move</button
+              ><button class="ghost" id="routeReset">↺ Reset</button
+              ><button
+                class="ghost routeCollapse"
+                id="routeCollapse"
+                aria-expanded="false"
+                type="button"
+              >
+                ▸ Show graphs
+              </button>
+            </div>
+          </div>
+          <div class="routeFields">
+            <label
+              >From
+              <select id="routeFrom" data-key="routeFrom"></select></label
+            ><label
+              >To
+              <select id="routeTo" data-key="routeTo"></select
+            ></label>
+            <div id="routeSummary" class="routeSummary">Calculating…</div>
+          </div>
+          <div id="routeAlert" class="routeAlert">Calculating the path…</div>
+          <input
+            type="range"
+            aria-label="Scrub test move"
+            id="routeScrub"
+            min="0"
+            max="1000"
+            value="0"
+            step="1"
+          />
+          <div class="routeTimes">
+            <span id="routeTime">0.00 s</span><span id="routeProgress">0%</span
+            ><span id="routeDuration">-- s</span>
+          </div>
+          <div class="routeMetrics">
+            <div>
+              <small>At cursor, left / right torque</small
+              ><strong id="routeTorqueNow">-- / -- N·m</strong>
+            </div>
+            <div>
+              <small>At cursor, left / right motor speed</small
+              ><strong id="routeSpeedNow">-- / -- RPM</strong>
+            </div>
+            <div>
+              <small>Path peak output torque · L / R</small
+              ><strong id="routeTorquePeak">-- / -- N·m</strong>
+            </div>
+            <div>
+              <small>Path peak motor RPM · L / R</small
+              ><strong id="routeRPMPeak">-- / -- RPM</strong>
+            </div>
+          </div>
+          <div class="routeCharts">
+            <div class="routeChart">
+              <div class="chartTitle">
+                <b>Output torque demand</b
+                ><small>N·m · dashed line is derated output allowance</small>
+              </div>
+              <svg
+                id="torqueGraph"
+                viewBox="0 0 650 170"
+                role="img"
+                aria-label="Motor torque versus time chart"
+              ></svg>
+            </div>
+            <div class="routeChart">
+              <div class="chartTitle">
+                <b>Input motor speed</b
+                ><small>absolute RPM · dashed line is entered motor speed limit</small>
+              </div>
+              <svg
+                id="rpmGraph"
+                viewBox="0 0 650 170"
+                role="img"
+                aria-label="Required motor RPM versus time chart"
+              ></svg>
+            </div>
+          </div>
+          <p class="hint">
+            The graphs evaluate a straight XY path with a triangular/trapezoidal acceleration
+            profile and show estimated torque at the linkage output and RPM at the NEMA 17 shaft.
+            They are comparative planning estimates, not measured motor characteristics or certified
+            dynamic loads. They omit the full links’ rotational inertia, stepper rotor acceleration,
+            motor torque-speed curves, and flex/backlash. A physical motor may stall even if a graph
+            passes.
+          </p>
+        </div>
+        <div class="stagefooter">
+          <div class="squarebar">
+            <label for="squareSelect">Test square</label
+            ><select id="squareSelect"></select
+            ><button class="preset" id="centreTarget">Board centre</button>
+          </div>
+          <div>XY only · board plane viewed from above · all dimensions in mm</div>
+        </div>
+      </section>
+      <aside class="analysis" aria-label="Live results">
+        <div class="railTitle">
+          <strong>Live results</strong><small>COMPUTED</small
+          ><button class="closeRail" type="button" id="closeInsights" aria-label="Close results">
+            ×
+          </button>
+        </div>
+        <nav class="navtabs resultTabs" aria-label="Analysis categories">
+          <button
+            type="button"
+            class="navtab is-active"
+            data-insight="position"
+            aria-selected="true"
+          >
+            Position
+          </button>
+          <button type="button" class="navtab" data-insight="forces" aria-selected="false">
+            Loads
+          </button>
+          <button type="button" class="navtab" data-insight="servo" aria-selected="false">
+            Motors
+          </button>
+          <button type="button" class="navtab" data-insight="corners" aria-selected="false">
+            Corners
+          </button>
+          <button type="button" class="navtab" data-insight="help" aria-selected="false">
+            Guide
+          </button>
+        </nav>
+        <div class="panel" id="servoInspector">
+          <div class="sectheader">MG90S / motor travel</div>
+          <div class="mechbadge" id="servoStatus">Calculating</div>
+          <div class="datarow sm"><span>Usable rotation</span><b id="servoMaxDisp">--</b></div>
+          <div class="datarow sm"><span>Left motor required arc</span><b id="servoLArc">--</b></div>
+          <div class="datarow sm">
+            <span>Right motor required arc</span><b id="servoRArc">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>Left fitted angle window</span><b id="servoLWindow">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>Right fitted angle window</span><b id="servoRWindow">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>Square centres within both limits</span><b id="servoCentres">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>Board points within both limits</span><b id="servoSamples">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>At current gripper position</span><b id="servoTarget">--</b>
+          </div>
+          <p class="hint">
+            Angles measured counterclockwise from world +X, not PWM pulses or manufacturer-specific
+            horn zero. Windows auto-position for each motor; motors are assumed independently
+            orientable on assembly. Coverage is sampled, not continuous-path certification.
+          </p>
+        </div>
+        <div class="panel" id="mechInspector">
+          <div class="sectheader">Mechanical analysis <span class="mini">estimates</span></div>
+          <div id="mechStatus" class="mechbadge">Calculating</div>
+          <div class="datarow sm"><span>Printed link mass</span><b id="mechLinkMass">--</b></div>
+          <div class="datarow sm"><span>Estimated tip sag</span><b id="mechSag">--</b></div>
+          <div class="datarow sm"><span>Worst beam stress</span><b id="mechStress">--</b></div>
+          <div class="datarow sm"><span>Left motor torque</span><b id="mechTorqueL">--</b></div>
+          <div class="datarow sm"><span>Right motor torque</span><b id="mechTorqueR">--</b></div>
+          <div class="datarow sm">
+            <span>Torque allowance / motor</span><b id="mechTorqueAllow">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>Vertical-only payload estimate</span><b id="mechMaxPayload">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>XY motor-limited proxy</span><b id="mechMotorPayload">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>Combined screening estimate</span><b id="mechCombinedPayload">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>Limiting assumption</span><b id="mechLimitation">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>Worst combined square screen</span><b id="mechBoardLimit">--</b>
+          </div>
+          <div class="datarow sm">
+            <span>Near-singular square centres</span><b id="mechSingularCount">--</b>
+          </div>
+          <p class="hint">
+            Vertical-only payload assumes hanging weight, and uses a simplified beam proxy that is
+            currently the same at all XY positions. The XY motor proxy is about
+            acceleration/resistance and assumes a worst-case force direction, so exceeding it does
+            not mean the tool cannot lift. These are NOT validated working loads. * “≥2,000 g” means
+            the model reached its search cap.
+          </p>
+        </div>
+        <div class="panel">
+          <div class="sectheader">Selected gripper position</div>
+          <div class="status" id="positionStatus"><i class="dot"></i><span>Calculating</span></div>
+          <p class="hint" id="positionReason"></p>
+          <div class="datarow"><span>Gripper X</span><b id="outX">--</b></div>
+          <div class="datarow"><span>Gripper Y</span><b id="outY">--</b></div>
+          <div class="datarow"><span>Five-bar joint P</span><b id="outP">--</b></div>
+          <div class="datarow"><span>Left motor angle</span><b id="outLA">--</b></div>
+          <div class="datarow"><span>Right motor angle</span><b id="outRA">--</b></div>
+          <div class="datarow"><span>Singularity margin</span><b id="outMargin">--</b></div>
+        </div>
+        <div class="panel">
+          <h3 class="subheading">Board corner checks</h3>
+          <div id="corners"></div>
+          <p class="hint">These are square centres, not the outer corners of the wooden board.</p>
+        </div>
+        <div class="panel">
+          <h3 class="subheading">How to read the model</h3>
+          <div class="modehint">
+            P is where the two distal links meet. G is the gripper tip. With a tool extension G
+            moves beyond P along a selected distal link, so it changes the inverse kinematics, not
+            just the drawing.
+          </div>
+          <div class="notice" style="margin-top: 12px">
+            The mechanical estimates are simplified screening calculations, not FEA or a verified
+            safe working load. Check pivot clearances, bearing stiffness, Z-axis overhang, print
+            orientation, impacts and the motor torque-speed curves experimentally. The Z actuator is
+            represented only by its mass.
+          </div>
+        </div>
+      </aside>
+    </main>
+    <footer class="foot">
+      Built using ChatGPT (GPT-6, OpenAI). Kinematics and code referenced from
+      <a href="https://github.com/unswei/fivebar" target="_blank" rel="noopener noreferrer"
+        >unswei/fivebar</a
+      >
+      by Oliver Obst (UNSW). Settings stay in your browser.
+    </footer>
+    <script defer src="js/state.js"></script>
+    <script defer src="js/kinematics.js"></script>
+    <script defer src="js/mechanics.js"></script>
+    <script defer src="js/coverage.js"></script>
+    <script defer src="js/render.js"></script>
+    <script defer src="js/movement.js"></script>
+    <script defer src="js/controls.js"></script>
+    <script defer src="js/reports.js"></script>
+    <script defer src="js/bootstrap.js"></script>
+    <script defer src="js/layout.js"></script>
+  </body>
 </html>
