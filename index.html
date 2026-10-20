@@ -109,7 +109,17 @@
               ><input id="angle" data-key="angle" type="number" min="-360" max="360" step="5" />
             </div>
           </div>
-          <div class="mountPicker" role="group" aria-label="Snap motor mount around the board"><button class="mountSpot" data-preset="TL" type="button" aria-label="Mount Top left" data-tip="Top left: place the motor baseline just outside this edge of the board."><i data-lucide="corner-up-left"></i></button><button class="mountSpot" data-preset="TC" type="button" aria-label="Mount Top centre" data-tip="Top centre: place the motor baseline just outside this edge of the board."><i data-lucide="arrow-up"></i></button><button class="mountSpot" data-preset="TR" type="button" aria-label="Mount Top right" data-tip="Top right: place the motor baseline just outside this edge of the board."><i data-lucide="corner-up-right"></i></button><button class="mountSpot" data-preset="ML" type="button" aria-label="Mount Left edge" data-tip="Left edge: place the motor baseline just outside this edge of the board."><i data-lucide="arrow-left"></i></button><div class="mountBoardPreview" aria-hidden="true"><span>8 × 8</span></div><button class="mountSpot" data-preset="MR" type="button" aria-label="Mount Right edge" data-tip="Right edge: place the motor baseline just outside this edge of the board."><i data-lucide="arrow-right"></i></button><button class="mountSpot" data-preset="BL" type="button" aria-label="Mount Bottom left" data-tip="Bottom left: place the motor baseline just outside this edge of the board."><i data-lucide="corner-down-left"></i></button><button class="mountSpot" data-preset="BC" type="button" aria-label="Mount Bottom centre" data-tip="Bottom centre: place the motor baseline just outside this edge of the board."><i data-lucide="arrow-down"></i></button><button class="mountSpot" data-preset="BR" type="button" aria-label="Mount Bottom right" data-tip="Bottom right: place the motor baseline just outside this edge of the board."><i data-lucide="corner-down-right"></i></button></div>
+          <div class="mountPicker" role="group" aria-label="Choose the mounting position around the board">
+            <button type="button" class="mountSpot" data-preset="TL" aria-label="Mount Top left" aria-pressed="false" data-tip="Top left: snap the motor baseline outside the board."><span class="visuallyHidden">Top left</span></button>
+            <button type="button" class="mountSpot" data-preset="TC" aria-label="Mount Top centre" aria-pressed="false" data-tip="Top centre: snap the motor baseline outside the board."><span class="visuallyHidden">Top centre</span></button>
+            <button type="button" class="mountSpot" data-preset="TR" aria-label="Mount Top right" aria-pressed="false" data-tip="Top right: snap the motor baseline outside the board."><span class="visuallyHidden">Top right</span></button>
+            <button type="button" class="mountSpot" data-preset="ML" aria-label="Mount Left edge" aria-pressed="false" data-tip="Left edge: snap the motor baseline outside the board."><span class="visuallyHidden">Left edge</span></button>
+            <div class="mountBoardPreview" aria-hidden="true"></div>
+            <button type="button" class="mountSpot" data-preset="MR" aria-label="Mount Right edge" aria-pressed="false" data-tip="Right edge: snap the motor baseline outside the board."><span class="visuallyHidden">Right edge</span></button>
+            <button type="button" class="mountSpot" data-preset="BL" aria-label="Mount Bottom left" aria-pressed="false" data-tip="Bottom left: snap the motor baseline outside the board."><span class="visuallyHidden">Bottom left</span></button>
+            <button type="button" class="mountSpot" data-preset="BC" aria-label="Mount Bottom centre" aria-pressed="false" data-tip="Bottom centre: snap the motor baseline outside the board."><span class="visuallyHidden">Bottom centre</span></button>
+            <button type="button" class="mountSpot" data-preset="BR" aria-label="Mount Bottom right" aria-pressed="false" data-tip="Bottom right: snap the motor baseline outside the board."><span class="visuallyHidden">Bottom right</span></button>
+          </div><button class="mountSpot" data-preset="MR" type="button" aria-label="Mount Right edge" data-tip="Right edge: place the motor baseline just outside this edge of the board."><i data-lucide="arrow-right"></i></button><button class="mountSpot" data-preset="BL" type="button" aria-label="Mount Bottom left" data-tip="Bottom left: place the motor baseline just outside this edge of the board."><i data-lucide="corner-down-left"></i></button><button class="mountSpot" data-preset="BC" type="button" aria-label="Mount Bottom centre" data-tip="Bottom centre: place the motor baseline just outside this edge of the board."><i data-lucide="arrow-down"></i></button><button class="mountSpot" data-preset="BR" type="button" aria-label="Mount Bottom right" data-tip="Bottom right: place the motor baseline just outside this edge of the board."><i data-lucide="corner-down-right"></i></button></div>
           <p class="hint">
             Drag the blue mounting midpoint on the diagram. Drag the small rotation handle to turn
             both motors as a rigid assembly.
@@ -287,23 +297,7 @@
             ><input id="showMechanics" data-key="showMechanics" type="checkbox" /> Enable mechanical
             overlay</label
           >
-          <div class="field">
-            <label for="heatMode">Heatmap display</label
-            ><select id="heatMode" data-key="heatMode">
-              <option value="coverage">Geometric reach</option>
-              <option value="motor">Motor torque reserve</option>
-              <option value="payload">Vertical load capacity (sag / stress only)</option>
-              <option value="combined">Combined screening (vertical + XY motion)</option>
-              <option value="singularity">Singularity proximity</option>
-              <option value="servo">Servo travel / MG90S</option>
-            </select>
-          </div>
-          <p class="hint">
-            Mechanical colors use square centres only. The vertical load view checks sag and beam
-            stress, not motor torque. The motor view checks approximate XY movement effort, not
-            whether motors can hold a hanging mass. Combined screening is deliberately conservative.
-            All are estimates, not safe lifting ratings.
-          </p>
+
           <div class="fieldrow" style="margin-top: 12px">
             <div class="field">
               <label for="material">Printed material</label
@@ -379,11 +373,7 @@
               />
             </div>
           </div>
-          <div class="mini" style="margin: 10px 0 7px">
-            <strong>Link cross-sections, not link lengths.</strong> Width (in the board plane) and
-            vertical height in mm. The Resize linkage tool changes L1/L2/R1/R2 lengths in Section
-            03, not these widths/heights.
-          </div>
+          <div class="crossSectionHead"><strong>Link dimensions</strong><button type="button" class="infoTrigger" aria-label="About link cross-sections" data-tip="Link cross-sections, not link lengths. Width is in the board plane and height is vertical, both in millimetres. Dynamic Resize Links changes L1/L2/R1/R2 lengths only, not the widths and heights."><i data-lucide="info"></i></button></div>
           <div class="mechtable">
             <span class="mth">Link</span><span class="mth">Width · mm</span
             ><span class="mth">Height · mm</span> <span class="name">L1</span
@@ -597,6 +587,18 @@
           </div>
         </div>
         <div class="canvasbox">
+          <div class="canvasHeatmap" aria-label="Heatmap display">
+            <i data-lucide="layers" aria-hidden="true"></i>
+            <select id="heatMode" data-key="heatMode" aria-label="Heatmap display">
+              <option value="coverage">Geometric reach</option>
+              <option value="motor">Motor torque reserve</option>
+              <option value="payload">Vertical load capacity</option>
+              <option value="combined">Combined screening</option>
+              <option value="singularity">Singularity proximity</option>
+              <option value="servo">Servo travel</option>
+            </select>
+            <button type="button" class="infoTrigger" aria-label="Heatmap model explanation" data-tip="Mechanical colours are evaluated at square centres. Vertical load estimates check sag and stress, not holding torque. The motor overlay estimates XY motion demand. These are comparative estimates, not safe lifting ratings."><i data-lucide="info"></i></button>
+          </div>
           <svg
             id="scene"
             xmlns="http://www.w3.org/2000/svg"
@@ -608,7 +610,7 @@
  <button class="toolkitButton" id="svgButton" type="button" data-tip="Export the XY workspace as an SVG drawing."><i data-lucide="image-down"></i><span>SVG</span></button>
  <label class="toolkitSquare">Square <select id="squareSelect" aria-label="Test chess square"></select></label>
  <button class="toolkitButton" id="centreTarget" type="button"><i data-lucide="crosshair"></i><span>Centre</span></button>
- <button class="toolkitButton" id="resizeButton" type="button" aria-pressed="false" data-tip="Turn on, then drag the common joint P to scale all four links."><i data-lucide="move-diagonal-2"></i><span>Resize</span></button>
+ <button class="toolkitButton" id="resizeButton" type="button" aria-pressed="false" data-tip="Turn on, then drag the common joint P to scale all four links."><i data-lucide="move-diagonal-2"></i><span>Dynamic Resize Links</span></button>
  <button class="toolkitButton iconOnly" id="canvasHelp" type="button" aria-label="Canvas help" data-tip="Drag the orange gripper for XY positions, and the blue motor midpoint for mounting. Select Resize to drag joint P and scale all four links."><i data-lucide="info"></i></button>
  </div>
  <div class="toolkitLengths liveLengths" id="liveLengths" aria-live="polite">
@@ -631,6 +633,9 @@
               ><span class="sw" style="background: #b4a4fb"></span>right links</span
             >
           </div>
+
+
+        </div>
         <div class="routepanel is-collapsed" id="routePanel">
           <div class="routeTop">
             <div>
@@ -729,8 +734,6 @@
             motor torque-speed curves, and flex/backlash. A physical motor may stall even if a graph
             passes.
           </p>
-        </div>
-
         </div>
       </section>
       <aside class="analysis" aria-label="Live results">
