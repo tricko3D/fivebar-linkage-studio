@@ -11,6 +11,21 @@ const { chromium } = require('playwright');
     await page.waitForTimeout(250);
     const initial = await page.locator('#mountX').inputValue();
     console.log('Testing '+url+' at '+width+'px; initial mountX='+initial);
+    if (await page.locator('.config .settingsTabs').count()) throw Error('Settings tabs still inside sidebar');
+    if (await page.locator('.topSettingsTabs button').count() !== 5) throw Error('Expected five header tool tabs');
+    await page.locator('#fileMenuButton').click();
+    if (!(await page.locator('#fileMenu').isVisible())) throw Error('File menu did not open');
+    for (const id of ['importButton','exportButton','svgButton','reportButton','printButton'])
+      if (!(await page.locator('#'+id).isVisible())) throw Error('File action missing: '+id);
+    await page.keyboard.press('Escape');
+    if (await page.locator('#fileMenu').isVisible()) throw Error('Escape did not close File menu');
+    await page.locator('#fileMenuButton').click();
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.locator('#exportButton').click(),
+    ]);
+    if (!download.suggestedFilename().endsWith('.json')) throw Error('Save configuration did not download JSON');
+    if (await page.locator('#fileMenu').isVisible()) throw Error('File menu did not close after export');
     if(width<850) await page.locator('#toggleSettings').click();
     await page.locator('.settingsTabs [data-setting="board"]').click();
     if(!(await page.locator('#mountX').isVisible()))throw Error('Board settings not visible');
