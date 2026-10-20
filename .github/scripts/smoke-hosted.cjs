@@ -67,6 +67,7 @@ const fs = require('node:fs');
   await page.locator('#sectionsGroup .crossSectionHead .infoTrigger').click();
   if(!(await page.locator('#studioTooltip').innerText()).includes('Link cross-sections, not link lengths'))throw Error('Cross-section explanation missing from tooltip');
   await page.keyboard.press('Escape');
+  await page.locator('#sectionsGroup summary').click();
   await page.locator('#driveGroup summary').click();
   if(!(await page.locator('#ratio').isVisible()))throw Error('Drive section did not open');
   await page.locator('#ratio').fill('3');
