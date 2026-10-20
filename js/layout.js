@@ -67,16 +67,6 @@
       setDrawer('insights', false);
     }
   });
-  const routePanel = document.getElementById('routePanel'),
-    routeCollapse = document.getElementById('routeCollapse');
-  routeCollapse.addEventListener('click', () => {
-    const collapsed = routePanel.classList.toggle('is-collapsed');
-    routeCollapse.textContent = collapsed ? '▸ Show graphs' : '▾ Hide graphs';
-    routeCollapse.setAttribute('aria-expanded', String(!collapsed));
-  });
-  document.getElementById('routePlay').addEventListener('click', () => {
-    if (routePanel.classList.contains('is-collapsed')) routeCollapse.click();
-  });
   // Compact file dropdown. Actual file operations remain handled by controls.js.
   const fileMenuButton = document.getElementById('fileMenuButton');
   const fileMenu = document.getElementById('fileMenu');
