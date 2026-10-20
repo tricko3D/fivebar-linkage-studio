@@ -312,3 +312,20 @@ input[type="checkbox"], input[type="range"] {accent-color:#247bbe;}
 @media print {
   .canvasbox::before {display:none;}
 }
+
+/* Remaining chart and audit labels are tuned for the light property panels. */
+.mechtable .name,.metric,.metaSmall,.routeFields label,.routeTimes,.routeMetrics small,.chartTitle small {color:#5b7388;}
+.metric strong,.routeMetrics strong,.routeSummary {color:#245c89;}
+.routeAlert {background:#e8f5ee;border:1px solid #add4bd;color:#24744e;}
+.routeAlert.warn {background:#fff5e5;border-color:#e1caa2;color:#8f631b;}
+.routeAlert.bad {background:#f9eaed;border-color:#e2bbc2;color:#a73c51;}
+.routeChart svg .left {stroke:#137eb3;}
+.routeChart svg .right {stroke:#7659ae;}
+.routeChart svg .cursorline {stroke:#586c7e;}
+.routeChart svg .phase {stroke:#b9c9d8;}
+.routeChart svg .legend,.routeChart svg .limitlabel {fill:#586d82;}
+.routepanel input[type="range"] {accent-color:#247bbe;}
+@media screen and (max-width:850px) {
+  .config .navtabs {grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;padding:7px;}
+  .config .navtab {min-height:30px;padding:5px 7px;}
+}
