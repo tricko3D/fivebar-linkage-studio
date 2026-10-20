@@ -298,6 +298,9 @@
             overlay</label
           >
 
+          <details class="mechanicsGroup" id="materialGroup" open>
+            <summary><span>Material & bending limits</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+            <div class="mechanicsGroupBody">
           <div class="fieldrow" style="margin-top: 12px">
             <div class="field">
               <label for="material">Printed material</label
@@ -373,6 +376,11 @@
               />
             </div>
           </div>
+            </div>
+          </details>
+          <details class="mechanicsGroup" id="sectionsGroup">
+            <summary><span>Link cross-sections</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+            <div class="mechanicsGroupBody">
           <div class="crossSectionHead"><strong>Link dimensions</strong><button type="button" class="infoTrigger" aria-label="About link cross-sections" data-tip="Link cross-sections, not link lengths. Width is in the board plane and height is vertical, both in millimetres. Dynamic Resize Links changes L1/L2/R1/R2 lengths only, not the widths and heights."><i data-lucide="info"></i></button></div>
           <div class="mechtable">
             <span class="mth">Link</span><span class="mth">Width · mm</span
@@ -449,6 +457,11 @@
               step="1"
             />
           </div>
+            </div>
+          </details>
+          <details class="mechanicsGroup" id="loadsGroup">
+            <summary><span>Moving mass & resistance</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+            <div class="mechanicsGroupBody">
           <div class="fieldrow" style="margin-top: 12px">
             <div class="field">
               <label for="headG">Moving tool + Z mass · g</label
@@ -476,6 +489,11 @@
               ><input id="dragN" data-key="dragN" type="number" min="0" max="50" step="0.1" />
             </div>
           </div>
+            </div>
+          </details>
+          <details class="mechanicsGroup" id="driveGroup">
+            <summary><span>Motor & transmission</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+            <div class="mechanicsGroupBody">
           <div class="fieldrow">
             <div class="field">
               <label for="motorNm">Motor torque at speed · N·m</label
@@ -561,6 +579,8 @@
             chains. It is not FEA and does not include pivot play, tool overhang, Z guide flex,
             buckling, print defects or motor speed curves.
           </p>
+            </div>
+          </details>
         </section>
         
       </aside>
