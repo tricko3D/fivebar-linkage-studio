@@ -8,39 +8,39 @@
     <link rel="stylesheet" href="css/cad-theme.css" />
   </head>
   <body>
-    <header>
+    <header class="appHeader">
       <div class="head">
-        <div class="brand">
-          <div class="mark">⌁</div>
-          <div>
-            <h1>FIVEBAR <span style="color: #2678b8">/</span> STUDIO</h1>
-            <p>Planar linkage design · engineering workspace</p>
-          </div>
+        <div class="brand" aria-label="Fivebar Linkage Studio">
+          <span class="mark" aria-hidden="true"><i data-lucide="workflow"></i></span>
+          <h1>Fivebar <span>Studio</span></h1>
         </div>
+        <nav class="navtabs settingsTabs topSettingsTabs" aria-label="Design tools">
+          <button type="button" class="navtab is-active" data-setting="board" aria-selected="true"><i data-lucide="grid-3x3"></i><span>Board</span></button>
+          <button type="button" class="navtab" data-setting="links" aria-selected="false"><i data-lucide="git-branch"></i><span>Linkage</span></button>
+          <button type="button" class="navtab" data-setting="servos" aria-selected="false"><i data-lucide="gauge"></i><span>Servos</span></button>
+          <button type="button" class="navtab" data-setting="loads" aria-selected="false"><i data-lucide="settings-2"></i><span>Loads &amp; drive</span></button>
+          <button type="button" class="navtab" data-setting="view" aria-selected="false"><i data-lucide="eye"></i><span>Display</span></button>
+        </nav>
         <div class="headright">
-          <button
-            class="ghost layoutToggle"
-            id="toggleSettings"
-            type="button"
-            aria-label="Toggle settings panel"
-            aria-expanded="false"
-          >
-            ☷ Settings</button
-          ><button
-            class="ghost layoutToggle"
-            id="toggleInsights"
-            type="button"
-            aria-label="Toggle results panel"
-            aria-expanded="false"
-          >
-            ◫ Results</button
-          ><button class="ghost" id="resetButton">Reset</button
-          ><button class="ghost" id="importButton">Import</button
-          ><button class="ghost" id="svgButton">Export SVG</button
-          ><button class="ghost" id="reportButton">Report TXT ↓</button
-          ><button class="ghost" id="printButton">Print / PDF</button
-          ><button class="action" id="exportButton">Save configuration ↓</button
-          ><input id="importFile" accept="application/json,.json" type="file" hidden />
+          <button class="ghost layoutToggle headerIconButton" id="toggleSettings" type="button" aria-label="Toggle settings panel" title="Settings panel" aria-expanded="false"><i data-lucide="panel-left"></i><span class="compactLabel">Settings</span></button>
+          <button class="ghost layoutToggle headerIconButton" id="toggleInsights" type="button" aria-label="Toggle results panel" title="Results panel" aria-expanded="false"><i data-lucide="chart-no-axes-column"></i><span class="compactLabel">Results</span></button>
+          <button class="ghost headerIconButton" id="resetButton" type="button" aria-label="Reset configuration" title="Reset configuration"><i data-lucide="rotate-ccw"></i></button>
+          <div class="fileMenuWrap" id="fileMenuWrap">
+            <button class="action headerIconButton fileMenuTrigger" id="fileMenuButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="fileMenu" title="Import and export">
+              <i data-lucide="folder-down"></i><span class="compactLabel">File</span><i class="chevron" data-lucide="chevron-down"></i>
+            </button>
+            <div class="fileMenuList" id="fileMenu" role="menu" aria-label="File operations" hidden>
+              <div class="fileMenuHeading">PROJECT</div>
+              <button type="button" role="menuitem" id="importButton"><i data-lucide="folder-open"></i> Import configuration <span>JSON</span></button>
+              <button type="button" role="menuitem" id="exportButton"><i data-lucide="save"></i> Save configuration <span>JSON</span></button>
+              <div class="fileMenuDivider" role="separator"></div>
+              <div class="fileMenuHeading">EXPORT</div>
+              <button type="button" role="menuitem" id="svgButton"><i data-lucide="image"></i> Export drawing <span>SVG</span></button>
+              <button type="button" role="menuitem" id="reportButton"><i data-lucide="file-text"></i> Calculation report <span>TXT</span></button>
+              <button type="button" role="menuitem" id="printButton"><i data-lucide="printer"></i> Print / Save PDF <span>PDF</span></button>
+            </div>
+          </div>
+          <input id="importFile" accept="application/json,.json" type="file" hidden />
         </div>
       </div>
     </header>
@@ -52,26 +52,7 @@
             ×
           </button>
         </div>
-        <nav class="navtabs settingsTabs" aria-label="Configuration categories">
-          <button type="button" class="navtab is-active" data-setting="board" aria-selected="true">
-            Board
-          </button>
-          <button type="button" class="navtab" data-setting="links" aria-selected="false">
-            Linkage
-          </button>
-          <button type="button" class="navtab" data-setting="servos" aria-selected="false">
-            Servos
-          </button>
-          <button type="button" class="navtab" data-setting="loads" aria-selected="false">
-            Loads &amp; drive
-          </button>
-          <button type="button" class="navtab" data-setting="view" aria-selected="false">
-            Display
-          </button>
-          <button type="button" class="navtab" data-setting="files" aria-selected="false">
-            Exports
-          </button>
-        </nav>
+
         <section class="section">
           <div class="sectheader">01 / Chessboard <span class="mini">8 × 8</span></div>
           <div class="fieldrow">
@@ -596,18 +577,7 @@
             buckling, print defects or motor speed curves.
           </p>
         </section>
-        <section class="section">
-          <div class="sectheader">08 / Save & calculation report</div>
-          <p class="hint">
-            Save configuration exports importable JSON. The TXT calculation audit includes inputs,
-            intermediate numeric values, the 64-square table and a 201-sample queen movement trace.
-            Print / PDF uses your browser's PDF printer, with no extra libraries.
-          </p>
-          <div class="compactset" style="margin-top: 12px">
-            <button class="preset" id="sideReportButton">Download TXT report</button
-            ><button class="preset" id="sidePrintButton">Print / Save PDF</button>
-          </div>
-        </section>
+        
       </aside>
       <section class="workarea">
         <div class="workTitle">
@@ -913,6 +883,7 @@
       >
       by Oliver Obst (UNSW). Settings stay in your browser.
     </footer>
+    <script async src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" onload="window.lucide && window.lucide.createIcons()"></script>
     <script defer src="js/state.js"></script>
     <script defer src="js/kinematics.js"></script>
     <script defer src="js/mechanics.js"></script>
