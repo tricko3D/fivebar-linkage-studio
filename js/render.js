@@ -407,8 +407,8 @@ function setResizeMode(enabled) {
   resizeMode = enabled;
   $('resizeButton').classList.toggle('is-on', enabled);
   $('resizeButton').setAttribute('aria-pressed', String(enabled));
-  $('resizeButton').querySelector('span').textContent = enabled ? 'Finish' : 'Resize';
-  $('resizeButton').setAttribute('aria-label', enabled ? 'Finish resizing linkage' : 'Resize linkage by dragging common joint P');
+  $('resizeButton').querySelector('span').textContent = 'Dynamic Resize Links';
+  $('resizeButton').setAttribute('aria-label', enabled ? 'Disable Dynamic Resize Links' : 'Enable Dynamic Resize Links');
   $('resizeHint').textContent = enabled
     ? 'Drag joint P to scale all four bars; motor positions stay fixed.'
     : 'Turn on, then drag the common joint P.';
