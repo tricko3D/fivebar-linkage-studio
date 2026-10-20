@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/toolbar.css" />
     <link rel="stylesheet" href="css/studio-polish.css" />
     <link rel="stylesheet" href="css/motion-compact.css" />
+    <link rel="stylesheet" href="css/motion-overlay.css" />
   </head>
   <body>
     <header class="appHeader">
@@ -679,7 +680,12 @@
                 <span id="routeDuration" class="routeTimeValue">-- s</span>
                 <span id="routeProgress" class="visuallyHidden" aria-live="off">0%</span>
               </div>
+              <div class="motionViewSwitch" role="group" aria-label="Motion chart view">
+                <button class="is-active" type="button" data-motion-view="bars" aria-pressed="true"><i data-lucide="chart-no-axes-column"></i> Bars</button>
+                <button type="button" data-motion-view="graph" aria-pressed="false"><i data-lucide="chart-line"></i> Graph</button>
+              </div>
             </div>
+            <div class="motionBarsPane" id="motionBarsPane">
             <div class="motionBarRow">
               <div class="motionMetricName"><strong>Output torque</strong><small>N·m</small></div>
               <div class="motionTrack" id="motionTorqueTrack" role="img" aria-label="Left and right output torque relative to derated allowance">
@@ -703,6 +709,21 @@
                 <strong id="routeSpeedNow">-- / -- RPM</strong>
                 <small>Peak <span id="routeRPMPeak">-- / -- RPM</span><span class="motionSeparator">·</span>Limit <span id="motionRPMLimit">--</span></small>
               </div>
+            </div>
+            </div>
+            <div class="motionOverlayPane" id="motionOverlayPane" hidden>
+              <div class="motionOverlayFilters" aria-label="Plot series">
+                <label class="motionSeriesChip" data-series="tauL"><input type="checkbox" data-overlay-series="tauL" checked /><span class="seriesDot"></span>Left torque <output data-overlay-value="tauL">--</output></label>
+                <label class="motionSeriesChip" data-series="tauR"><input type="checkbox" data-overlay-series="tauR" checked /><span class="seriesDot"></span>Right torque <output data-overlay-value="tauR">--</output></label>
+                <label class="motionSeriesChip" data-series="rpmL"><input type="checkbox" data-overlay-series="rpmL" checked /><span class="seriesDot"></span>Left RPM <output data-overlay-value="rpmL">--</output></label>
+                <label class="motionSeriesChip" data-series="rpmR"><input type="checkbox" data-overlay-series="rpmR" checked /><span class="seriesDot"></span>Right RPM <output data-overlay-value="rpmR">--</output></label>
+                <label class="motionGraphScaleLabel" for="motionGraphScale">Scale <select id="motionGraphScale" aria-label="Graph scale"><option value="auto">Auto · N·m / RPM</option><option value="percent">% of limits</option></select></label>
+              </div>
+              <div class="motionOverlayPlot">
+                <svg id="motionOverlayGraph" viewBox="0 0 920 240" role="img" tabindex="0" aria-label="Overlaid motor torque and RPM plot versus time. Click or drag to scrub the playback."></svg>
+                <div class="motionOverlayEmpty" id="motionOverlayEmpty" hidden>Choose at least one series to plot.</div>
+              </div>
+              <p class="motionOverlayCaption">Click or drag the graph to scrub playback. Auto uses separate torque and RPM axes; % compares each series against its configured limit.</p>
             </div>
           </div>
           <div class="routeStatusLine">
@@ -836,5 +857,6 @@
     <script defer src="js/bootstrap.js"></script>
     <script defer src="js/layout.js"></script>
     <script defer src="js/studio-ui.js"></script>
+    <script defer src="js/motion-overlay.js"></script>
   </body>
 </html>
