@@ -1,0 +1,44 @@
+name: Capture simulator screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [index.html, .github/workflows/screenshots.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Run simulator locally
+        run: |
+          python3 -m http.server 8765 >/tmp/fivebar-http.log 2>&1 &
+          sleep 2
+      - name: Capture screenshots
+        run: node .github/scripts/capture-screenshots.cjs
+      - name: Commit screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add screenshots/
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: refresh simulator screenshots"
+            for attempt in 1 2 3 4; do
+              git pull --rebase origin main
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+              sleep 3
+            done
+            echo "Could not push screenshot updates after 4 attempts"
+            exit 1
+          fi

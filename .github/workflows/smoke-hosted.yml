@@ -1,0 +1,26 @@
+name: Smoke test simulator UI
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/smoke-hosted.yml
+      - .github/scripts/smoke-hosted.cjs
+      - index.html
+      - 'js/**'
+      - 'css/**'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Start local simulator server
+        run: |
+          python3 -m http.server 8765 >/tmp/simulator-http.log 2>&1 &
+          sleep 2
+      - name: Test simulator controls
+        run: node .github/scripts/smoke-hosted.cjs

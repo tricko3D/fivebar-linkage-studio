@@ -1,0 +1,115 @@
+/* Motion Study: switch between the instant bar meter and selectable overlay graph.
+   Both views share the same transport, route data and cursor. */
+.motionCompact .motionViewSwitch {
+ display:inline-flex;flex:none;align-items:center;gap:2px;
+ margin-left:auto;padding:2px;border:1px solid #c3d2df;
+ background:#edf3f8;border-radius:4px;
+}
+.motionCompact .motionViewSwitch button{
+ display:inline-flex;align-items:center;justify-content:center;gap:5px;
+ height:24px;min-width:57px;
+ padding:3px 8px;cursor:pointer;
+ border:1px solid transparent;border-radius:3px;
+ color:#56738b;background:transparent;
+ font-size:10px;font-weight:700;
+}
+.motionCompact .motionViewSwitch button svg {width:13px;height:13px;}
+.motionCompact .motionViewSwitch button.is-active {
+ background:#fff;color:#1667a6;
+ border:1px solid #a9c4dc;
+ box-shadow:0 1px 2px #1943661a;
+}
+.motionCompact .motionViewSwitch button:focus-visible {
+ outline:2px solid #237ebf;outline-offset:1px;
+}
+.motionCompact .motionBarsPane{
+ display:flex;flex-direction:column;gap:5px;
+}
+.motionCompact .motionBarsPane[hidden],
+.motionCompact .motionOverlayPane[hidden],
+.motionCompact .motionOverlayEmpty[hidden] {display:none!important;}
+.motionCompact .motionOverlayPane{
+ display:flex;flex-direction:column;gap:5px;
+ min-width:0;
+}
+.motionCompact .motionOverlayFilters{
+ display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;
+ padding:1px 0;
+}
+.motionCompact .motionSeriesChip{
+ --series-color:#137eb8;
+ display:inline-flex;align-items:center;gap:5px;
+ padding:4px 7px;
+ background:#f6f9fc;border:1px solid #d1dce6;
+ border-radius:4px;color:#38556d;
+ font-size:10px;line-height:1.1;white-space:nowrap;
+ cursor:pointer;user-select:none;
+}
+.motionCompact .motionSeriesChip[data-series=tauR] {--series-color:#8b5eb8;}
+.motionCompact .motionSeriesChip[data-series=rpmL] {--series-color:#009b82;}
+.motionCompact .motionSeriesChip[data-series=rpmR] {--series-color:#d6872d;}
+.motionCompact .motionSeriesChip:has(input:checked) {
+ background:#fff;border-color:#9eb9ce;box-shadow:0 0 0 1px #e4f0fa inset;
+}
+.motionCompact .motionSeriesChip:not(:has(input:checked)) {opacity:.58;}
+.motionCompact .motionSeriesChip input{
+ margin:0;width:13px;height:13px;
+ accent-color:var(--series-color);
+}
+.motionCompact .motionSeriesChip .seriesDot{
+ width:8px;height:8px;border-radius:50%;
+ background:var(--series-color);
+ flex:none;
+}
+.motionCompact .motionSeriesChip output {
+ font-variant-numeric:tabular-nums;font-weight:700;color:#265574;
+ margin-left:2px;
+}
+.motionCompact .motionGraphScaleLabel{
+ display:inline-flex;align-items:center;gap:5px;
+ margin-left:auto;color:#60798e;font-size:10px;font-weight:650;white-space:nowrap;
+}
+.motionCompact .motionGraphScaleLabel select{
+ appearance:none;
+ height:26px;max-width:190px;min-width:0;
+ padding:3px 25px 3px 8px;
+ border:1px solid #b7c9d9;border-radius:3px;
+ background:#fff;color:#31546d;font:600 10px "Segoe UI",Arial,sans-serif;
+ background-image:linear-gradient(45deg,transparent 50%,#496e8e 50%),linear-gradient(135deg,#496e8e 50%,transparent 50%);
+ background-position:calc(100% - 14px) 50%,calc(100% - 9px) 50%;
+ background-size:5px 5px;background-repeat:no-repeat;
+}
+.motionCompact .motionOverlayPlot{
+ position:relative;min-width:0;
+ border:1px solid #d2dee9;border-radius:4px;
+ background:#fff;overflow:hidden;
+}
+.motionCompact #motionOverlayGraph{
+ display:block;width:100%;height:178px;
+ touch-action:none;cursor:crosshair;outline:none;
+}
+.motionCompact #motionOverlayGraph:focus-visible{outline:2px solid #327fbc;outline-offset:-3px;}
+.motionCompact #motionOverlayGraph .motionPlotHitArea {cursor:ew-resize;}
+.motionCompact .motionOverlayEmpty{
+ position:absolute;inset:0;
+ display:grid;place-items:center;
+ color:#667e92;font-size:12px;
+ background:#ffffffd9;
+ pointer-events:none;
+}
+.motionCompact .motionOverlayCaption{
+ margin:0;padding:0 2px;
+ color:#718699;font-size:10px;line-height:1.3;
+}
+@media (max-width:960px){
+ .motionCompact .motionTransport{flex-wrap:wrap;}
+ .motionCompact .motionViewSwitch{margin-left:auto;}
+ .motionCompact .motionTimeline{flex:1 1 45%;}
+ .motionCompact .motionGraphScaleLabel{margin-left:0;}
+}
+@media (max-width:650px){
+ .motionCompact .motionSeriesChip{padding:4px 6px;font-size:9px;}
+ .motionCompact .motionSeriesChip output{font-size:9px;}
+ .motionCompact #motionOverlayGraph{height:164px;}
+ .motionCompact .motionViewSwitch button {min-width:49px;padding:3px 6px;font-size:9px;}
+}

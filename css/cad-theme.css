@@ -1,0 +1,331 @@
+/* CAD-inspired presentation layer for Fivebar Linkage Studio.
+   The original geometry, state management, and interaction logic remain unchanged.
+   Loaded after styles.css so it can override the older dark dashboard aesthetic. */
+:root {
+  color-scheme: light;
+  --bg: #e4e8ed;
+  --panel: #fbfcfd;
+  --panel2: #edf1f6;
+  --line: #bfc9d4;
+  --text: #233347;
+  --muted: #647589;
+  --blue: #176cb8;
+  --lblue: #176ca8;
+  --violet: #7956a5;
+  --amber: #a7610d;
+  --good: #14805c;
+  --bad: #c34951;
+}
+body { background: var(--bg); color:var(--text); font-family: "Segoe UI", Arial, system-ui, sans-serif; }
+header {
+  background:linear-gradient(180deg,#fdfefe 0%,#e9eef3 100%);
+  border-top:3px solid #176cb8;
+  border-bottom:1px solid #acb9c8;
+  box-shadow:0 2px 5px #20364b16;
+}
+.head { min-height:58px; padding:8px 14px; gap:12px; }
+.brand { gap:9px; }
+.brand .mark {
+  background:linear-gradient(145deg,#fff,#d8e8fa);
+  border:1px solid #9bb5d5;
+  color:#1768ab;
+  border-radius:4px;
+  box-shadow:inset 0 1px 0 #fff,0 1px 2px #172b3a1a;
+}
+.brand h1 {color:#22364c;font-size:16px;font-weight:750;letter-spacing:-.035em}
+.brand h1 span { color:#207abd !important; }
+.brand p { color:#647487;font-size:10px;letter-spacing:.02em; }
+.headright { gap:4px; }
+.headright .ghost,.headright .action,.preset,.resizebar .ghost,.routeActions .ghost,.routeActions .action {
+  background:linear-gradient(#fff,#e5eaf0);
+  color:#30455d;
+  border:1px solid #b5c1ce;
+  border-radius:4px;
+  box-shadow:inset 0 1px 0 #fff,0 1px 1px #13293c12;
+  font-weight:600;
+  transition:background-color .12s,border-color .12s;
+}
+.headright .ghost:hover,.preset:hover,.resizebar .ghost:hover,.routeActions .ghost:hover {
+  background:linear-gradient(#f5faff,#d9e8fa);
+  border-color:#7ca7d3;
+  color:#155994;
+}
+.headright .ghost:active,.preset:active { background:#cbdff3; }
+.headright .action,.routeActions .action {
+  background:linear-gradient(#398fd3,#176aad);
+  border-color:#135a9a;
+  color:#fff;
+  box-shadow:inset 0 1px 0 #89c5ef;
+}
+.headright .action:hover,.routeActions .action:hover {background:linear-gradient(#4aa1e2,#2177bb);}
+.ghost.is-on,.preset.is-on {
+  color:#0f508f!important;
+  background:#d8eafe!important;
+  border-color:#6ca2d2!important;
+  box-shadow:inset 0 0 0 1px #8fbce4;
+}
+.app {gap:6px;padding:7px;grid-template-columns:278px minmax(0,1fr) 260px;}
+.panel,.stat,.routepanel,.routeChart {
+  background:var(--panel);
+  border:1px solid #b7c4d2;
+  border-radius:3px;
+  box-shadow:0 1px 2px #34435414;
+}
+.config,.analysis {
+  background:#fbfcfe;
+  border:1px solid #aebbc9;
+  border-radius:3px;
+  box-shadow:inset 0 1px 0 #fff;
+}
+.railTitle {
+  background:linear-gradient(#f5f7fa,#dce5ee);
+  border-bottom:1px solid #b3c0ce;
+  color:#2a435d;
+  padding:0 11px;
+  box-shadow:inset 0 1px 0 #fff;
+}
+.railTitle strong { color:#2b4158; font-size:12px; }
+.railTitle small { color:#758599; letter-spacing:.03em; }
+.closeRail {background:#eef3f8;border-color:#b0bece;color:#35516e;}
+.config .navtabs {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:1px;
+  padding:7px 7px 9px;
+  background:#f6f8fa;
+  border-bottom:1px solid #c9d2dc;
+}
+.config .navtab {
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  padding:5px 10px;
+  min-height:29px;
+  text-align:left;
+  font-size:11px;
+  font-weight:550;
+  color:#43586d;
+  border:1px solid transparent;
+  border-radius:2px;
+  background:transparent;
+}
+.config .navtab::before {
+  content:"▸";
+  color:#8d9daa;
+  font-size:11px;
+  width:17px;
+  flex-shrink:0;
+}
+.config .navtab[data-setting="board"]::after {content:"  ▦";color:#6485ad;margin-left:auto;}
+.config .navtab[data-setting="links"]::after {content:"  ⛓";color:#6485ad;margin-left:auto;}
+.config .navtab[data-setting="servos"]::after {content:"  ◉";color:#6485ad;margin-left:auto;}
+.config .navtab[data-setting="loads"]::after {content:"  ∑";color:#6485ad;margin-left:auto;}
+.config .navtab[data-setting="view"]::after {content:"  ◈";color:#6485ad;margin-left:auto;}
+.config .navtab[data-setting="files"]::after {content:"  ⇩";color:#6485ad;margin-left:auto;}
+.config .navtab:hover,.analysis .navtab:hover {
+  color:#155995;
+  background:#e7f0fa;
+  border-color:#c2d5e8;
+}
+.config .navtab.is-active,.analysis .navtab.is-active {
+  background:linear-gradient(#e8f2fe,#d8e9fa);
+  color:#135a97;
+  border-color:#98b7d7;
+  border-radius:2px;
+  box-shadow:inset 3px 0 0 #2179c4;
+}
+.config .navtab.is-active::before {content:"▾";color:#176bb1;}
+.analysis .navtabs {
+  background:#f2f5f9;
+  border-bottom:1px solid #c3cdd8;
+  gap:3px;
+  padding:7px;
+}
+.analysis .navtab {
+  background:#fff;
+  color:#587084;
+  border:1px solid #cbd5df;
+  border-radius:3px;
+  font-size:10px;
+  padding:6px 4px;
+}
+.config > .section, .analysis > .panel {background:#fbfcfe;}
+.config > .section { scrollbar-color:#aab9c7 transparent; border-color:#e0e6ed; }
+.analysis > .panel {border-color:#d3dbe3; scrollbar-color:#aab9c7 transparent;}
+.sectheader {
+  color:#416283;
+  letter-spacing:.055em;
+  font-size:10px;
+  font-weight:750;
+  border-bottom:1px solid #dee5ec;
+  padding:0 0 7px;
+  margin-bottom:11px;
+}
+.sectheader::before {content:"◇";margin-right:6px;color:#2c83c4;font-size:12px;}
+.field label,.hint,.mini {color:#66778a;}
+.field label {font-size:10px;font-weight:600;}
+.field input,.field select,.mechtable input,select {
+  background:#fff;
+  color:#263a4e;
+  border:1px solid #b7c4d0;
+  border-radius:3px;
+  box-shadow:inset 0 1px 2px #263a4a0d;
+}
+.field input:focus,.field select:focus,select:focus,.mechtable input:focus {
+  outline:2px solid #78b6e6;
+  outline-offset:0;
+  border-color:#4389c1;
+}
+.field select option { background:#fff; color:#263a4e; }
+input[type="checkbox"], input[type="range"] {accent-color:#247bbe;}
+.derived,.modehint {
+  background:#edf4fc;
+  color:#3d5b78;
+  border:1px solid #cadaea;
+  border-radius:3px;
+}
+.derived strong {color:#174e7f;}
+.accent-left {color:#1265a1;}
+.accent-right {color:#744f9b;}
+.notice {background:#fff8e9;color:#8a631d;border:1px solid #edddb7;border-radius:3px;}
+.mechbadge {background:#e9f6ee;color:#187148;border-color:#add8bf;border-radius:3px;}
+.mechbadge.warn {background:#fff5df;color:#976010;border-color:#e7c994;}
+.mechbadge.bad {background:#fdf0f0;color:#aa4147;border-color:#e6b4b8;}
+.workarea {gap:6px;}
+.workTitle {
+  background:linear-gradient(#fafcfe,#e6ecf3);
+  border:1px solid #b9c6d3;
+  border-radius:3px;
+  padding:5px 10px;
+  min-height:30px;
+}
+.workTitleLabel {color:#315473;font-size:12px;}
+.workTitle b {color:#2b7dbb;}
+.workSub,.workSub i {color:#6d8295;}
+.statbar {gap:5px;}
+.stat {
+  background:linear-gradient(180deg,#fff,#f1f5f9);
+  padding:7px 10px;
+}
+.stat .k,.stat .s {color:#63788d;}
+.stat .v {color:#24679f;font-size:19px;}
+.resizebar {
+  padding:3px 7px!important;
+  background:#f5f7fa;
+  border:1px solid #c3cdd8;
+  border-radius:3px;
+  min-height:32px;
+}
+.resizebar small {color:#627b90;}
+.resizebar small.is-on {color:#187bb0;}
+.liveLengths {
+  background:#f0f5fa;
+  border:1px solid #c7d4df;
+  border-radius:3px;
+  color:#586e84;
+}
+.liveLengths strong {color:#245b89;}
+.canvasbox {
+  border:1px solid #9eafbf;
+  border-radius:2px;
+  background:radial-gradient(ellipse at 48% 30%,#fff 0%,#f1f5f9 58%,#dce5ed 100%);
+  box-shadow:inset 0 1px 10px #6483a014;
+}
+.canvasbox::before {
+  content:"TOP  /  XY PLANE";
+  position:absolute;top:9px;right:10px;z-index:1;
+  background:#ffffffd9;color:#5c768e;
+  border:1px solid #c5d1dd;border-radius:2px;
+  padding:5px 7px;font-size:9px;letter-spacing:.11em;font-weight:750;
+  pointer-events:none;
+}
+.canvasnote {
+  background:#ffffffeb;
+  border:1px solid #bfd0de;
+  color:#48647f;
+  border-radius:3px;
+  box-shadow:0 2px 9px #26445e12;
+}
+.canvasnote strong {color:#27445f;}
+.canvasnote span[style] {color:#177ab4!important;}
+.canvaslegend {
+  background:#ffffffed;
+  border:1px solid #bdcad6;
+  color:#465f75;
+  border-radius:3px;
+  box-shadow:0 1px 3px #1c365c12;
+}
+#scene text {
+  fill:#2b4561!important;
+  stroke:#f4f8fc;
+  stroke-width:2px;
+  stroke-linejoin:round;
+  paint-order:stroke fill;
+}
+#scene line[stroke="#66cfdd"],#scene line[stroke="#93edf0"] {stroke:#1277a8;}
+#scene line[stroke="#b0a3fc"],#scene line[stroke="#d3baff"] {stroke:#855baa;}
+#scene circle[stroke="#71dee2"] {stroke:#1889c1;}
+.stagefooter {
+  min-height:29px;
+  background:#f3f6fa;
+  border:1px solid #c3ced9;
+  border-radius:3px;
+  padding:0 8px;
+  color:#698095;
+}
+.squarebar select,.routeFields select {
+  background:#fff;border:1px solid #b7c4d0;border-radius:3px;color:#244057;
+}
+.routepanel {
+  background:#f8fafc;
+  border:1px solid #b6c4d0;
+  border-radius:3px;
+}
+.routeChart,.routeMetrics > div {
+  background:#fff;
+  border:1px solid #d3dee8;
+  border-radius:3px;
+}
+.routeSummary,.routeAlert {border-radius:3px;}
+.routeChart svg text {fill:#536a80!important;}
+.routeChart svg .gridline {stroke:#c3cfdc!important;}
+.datarow {color:#586d7f;border-color:#e0e6ec;}
+.datarow b {color:#294763;}
+.analysis .subheading {color:#294763;}
+.foot {color:#76889a;}
+.foot a {color:#246fa9;}
+@media screen and (max-width:1340px) {
+  .app {grid-template-columns:255px minmax(0,1fr) 240px;gap:5px;padding:6px;}
+}
+@media screen and (max-width:1100px) {
+  .app {grid-template-columns:258px minmax(0,1fr);}
+  .analysis {box-shadow:0 14px 40px #2941583f;}
+}
+@media screen and (max-width:850px) {
+  .app {display:flex;flex-direction:column;}
+  .config {box-shadow:0 14px 40px #2941583f;}
+}
+@media screen and (max-width:600px) {
+  .brand h1 {font-size:13px;}
+  .canvasbox::before {top:7px;right:7px;font-size:8px;}
+}
+@media print {
+  .canvasbox::before {display:none;}
+}
+
+/* Remaining chart and audit labels are tuned for the light property panels. */
+.mechtable .name,.metric,.metaSmall,.routeFields label,.routeTimes,.routeMetrics small,.chartTitle small {color:#5b7388;}
+.metric strong,.routeMetrics strong,.routeSummary {color:#245c89;}
+.routeAlert {background:#e8f5ee;border:1px solid #add4bd;color:#24744e;}
+.routeAlert.warn {background:#fff5e5;border-color:#e1caa2;color:#8f631b;}
+.routeAlert.bad {background:#f9eaed;border-color:#e2bbc2;color:#a73c51;}
+.routeChart svg .left {stroke:#137eb3;}
+.routeChart svg .right {stroke:#7659ae;}
+.routeChart svg .cursorline {stroke:#586c7e;}
+.routeChart svg .phase {stroke:#b9c9d8;}
+.routeChart svg .legend,.routeChart svg .limitlabel {fill:#586d82;}
+.routepanel input[type="range"] {accent-color:#247bbe;}
+@media screen and (max-width:850px) {
+  .config .navtabs {grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;padding:7px;}
+  .config .navtab {min-height:30px;padding:5px 7px;}
+}

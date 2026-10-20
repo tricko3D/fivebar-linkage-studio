@@ -1,0 +1,332 @@
+/* Unified, compact Motion Study display.
+   Two tracks replace the large line charts, keeping the original per-motor
+   torque/RPM data and the movement controls in a single analysis surface. */
+.workarea > .motionCompact {
+  display:flex;
+  flex-direction:column;
+  gap:5px!important;
+  padding:7px 9px!important;
+  min-height:0;
+  background:#f3f7fb;
+}
+.workarea > .motionCompact .routeTop {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  min-height:25px;
+  gap:5px 12px;
+  justify-content:flex-start;
+}
+.workarea > .motionCompact .routeHeading {
+  min-width:0;
+}
+.workarea > .motionCompact .routeHeading .sectheader {
+  font-size:11px;
+  letter-spacing:.015em;
+  white-space:nowrap;
+}
+.workarea > .motionCompact .routeFields {
+  flex:0 0 auto;
+  min-height:26px;
+  gap:7px;
+}
+.workarea > .motionCompact .routeFields select {
+  min-height:25px;height:25px;
+}
+.workarea > .motionCompact .routeSummary {
+  margin-left:auto;
+  flex:0 1 auto;
+  font-size:10px;
+  color:#456b8a;
+  white-space:normal;
+  text-align:right;
+}
+.motionCompact .motionGraphCard {
+  background:#fff;
+  border:1px solid #c6d4e1;
+  border-radius:4px;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  padding:7px 9px;
+}
+.motionCompact .motionTransport {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  min-width:0;
+  padding:0 0 5px;
+  border-bottom:1px solid #e0e7ef;
+}
+.motionCompact .motionTransport button {
+  flex:none;
+  height:27px;
+  min-height:27px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:3px 9px;
+  font-size:11px;
+  border-radius:3px;
+}
+.motionCompact .motionTransport button svg {
+  height:14px;width:14px;
+}
+.motionCompact .motionTransport #routeReset {
+  width:28px;
+  padding:4px;
+}
+.motionCompact .motionTransport #routePlay.is-playing {
+  color:#fff;
+  background:linear-gradient(#d5a044,#b97723);
+}
+.motionCompact .motionTimeline {
+  min-width:0;
+  flex:1 1 auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding-left:8px;
+}
+.motionCompact .motionTimeline .routeTimeValue {
+  color:#587289;
+  font-weight:600;
+  font-size:10px;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.motionCompact .motionTimeline input[type=range] {
+  flex:1 1 auto;
+  width:100%;
+  min-width:0;
+  height:20px;
+  margin:0;
+  cursor:pointer;
+  accent-color:#237fbf;
+}
+.motionCompact .motionBarRow {
+  display:grid;
+  grid-template-columns:105px minmax(90px,1fr) minmax(155px,220px);
+  gap:11px;
+  align-items:center;
+  min-width:0;
+  min-height:31px;
+}
+.motionCompact .motionMetricName {
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  line-height:1.15;
+  gap:2px;
+}
+.motionCompact .motionMetricName strong {
+  color:#345777;
+  font-size:11px;
+  white-space:nowrap;
+}
+.motionCompact .motionMetricName small {
+  color:#8092a2;
+  font-size:9px;
+}
+.motionCompact .motionTrack {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  position:relative;
+  gap:3px;
+  height:27px;
+  padding:3px 4px;
+  background:#f0f4f8;
+  border:1px solid #cbd6e1;
+  border-radius:3px;
+  overflow:hidden;
+  min-width:0;
+}
+.motionCompact .motionLane {
+  width:100%;
+  height:7px;
+  border-radius:2px;
+  background:#dbe4ed;
+  overflow:hidden;
+}
+.motionCompact .motionFill {
+  height:100%;
+  display:block;
+  width:0%;
+  transition:width 65ms linear;
+  border-radius:1px;
+}
+.motionCompact .motionFill.left {background:#1682c1;}
+.motionCompact .motionFill.right {background:#8c66ba;}
+.motionCompact .motionThreshold {
+  pointer-events:none;
+  position:absolute;
+  z-index:2;
+  top:0;bottom:0;
+  width:0;
+  border-left:2px dashed #c27f2b;
+}
+.motionCompact .motionMetricValues {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:2px;
+  line-height:1.15;
+  min-width:0;
+  font-variant-numeric:tabular-nums;
+}
+.motionCompact .motionMetricValues strong {
+  color:#27597f;
+  font-size:11px;
+  white-space:nowrap;
+}
+.motionCompact .motionMetricValues small {
+  color:#70869a;
+  font-size:9px;
+  white-space:normal;
+}
+.motionCompact .motionSeparator {padding:0 4px;color:#98a9b9;}
+.workarea > .motionCompact .routeStatusLine {
+  display:block;
+  margin:0;
+}
+.workarea > .motionCompact .routeAlert {
+  display:block;
+  width:100%;
+  min-height:0;
+  padding:3px 8px;
+  font-size:10px;
+  line-height:1.3;
+  white-space:normal;
+}
+.workarea > .motionCompact .routeAlert:not(.warn):not(.bad) {
+  color:#2b755a;
+  background:#f1f9f5;
+}
+@media (max-width:1150px) {
+  .motionCompact .motionBarRow {
+    grid-template-columns:92px minmax(55px,1fr) minmax(120px,190px);
+    gap:7px;
+  }
+  .workarea > .motionCompact .routeSummary {
+    margin-left:0;
+    font-size:9px;
+  }
+}
+@media (max-width:650px) {
+  .workarea > .motionCompact .routeFields {order:0;}
+  .workarea > .motionCompact .routeHeading {margin-right:0;}
+  .workarea > .motionCompact .routeSummary {
+    order:2;
+    flex:1 1 100%;
+    margin-left:0;
+    text-align:left;
+  }
+  .motionCompact .motionGraphCard {padding:6px;}
+  .motionCompact .motionBarRow {
+    grid-template-columns:75px minmax(35px,1fr) minmax(94px,140px);
+    gap:5px;
+  }
+  .motionCompact .motionMetricValues strong {font-size:10px;}
+  .motionCompact .motionMetricValues small {font-size:8px;}
+  .motionCompact .motionMetricName strong {font-size:10px;}
+  .motionCompact .motionTimeline {gap:5px;padding-left:2px;}
+  .motionCompact .motionTransport button {padding:3px 6px;}
+}
+
+/* Compact, accessible collapse control for the Motion Study row. */
+.workarea > .motionCompact .motionStudyContent {
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-width:0;
+}
+.workarea > .motionCompact .motionStudyContent[hidden] { display:none!important; }
+.workarea > .motionCompact .motionStudyToggle {
+  display:inline-flex;
+  flex:none;
+  align-items:center;
+  justify-content:center;
+  margin-left:4px;
+  padding:3px;
+  width:26px;
+  height:26px;
+  min-width:26px;
+  min-height:26px;
+  border:1px solid #bfccda;
+  border-radius:4px;
+  background:#fff;
+  color:#446983;
+  cursor:pointer;
+}
+.workarea > .motionCompact .motionStudyToggle:hover { background:#eaf2fa; }
+.workarea > .motionCompact .motionStudyToggle:focus-visible {
+  outline:2px solid #1976b9;
+  outline-offset:2px;
+}
+.workarea > .motionCompact .motionStudyToggle svg { width:15px;height:15px; }
+.workarea > .motionCompact.is-collapsed { gap:0!important;padding:5px 9px!important; }
+.workarea > .motionCompact.is-collapsed .routeTop {
+  min-height:26px;
+  flex-wrap:nowrap;
+}
+.workarea > .motionCompact.is-collapsed .routeTop > .routeFields,
+.workarea > .motionCompact.is-collapsed .routeTop > .routeSummary {
+  display:none!important;
+}
+.workarea > .motionCompact.is-collapsed .motionStudyToggle { margin-left:auto; }
+
+/* The collapsed header is a complete motion transport; only plots expand. */
+.workarea > .motionCompact {
+  padding:5px 8px!important;
+  gap:4px!important;
+}
+.workarea > .motionCompact .routeTop {
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:center;
+  gap:6px;
+  min-height:26px;
+}
+.workarea > .motionCompact .routeHeading .sectheader {font-size:10px;}
+.workarea > .motionCompact .routeFields {gap:5px;min-height:24px;}
+.workarea > .motionCompact .routeFields label {gap:3px;font-size:10px;}
+.workarea > .motionCompact .routeFields select {height:24px;min-height:24px;padding-top:2px;padding-bottom:2px;}
+.workarea > .motionCompact .routeTop .motionTransport {
+  display:flex;
+  flex:1 1 245px;
+  min-width:160px;
+  align-items:center;
+  gap:4px;
+  padding:0;
+  border:0;
+}
+.workarea > .motionCompact .routeTop .motionTransport button {
+  height:24px;
+  min-height:24px;
+  padding:2px 7px;
+  font-size:10px;
+}
+.workarea > .motionCompact .routeTop .motionTransport #routeReset {width:25px;}
+.workarea > .motionCompact .routeTop .motionTimeline {padding-left:2px;gap:4px;}
+.workarea > .motionCompact .routeTop .motionTimeline input[type=range] {height:20px;}
+.workarea > .motionCompact .motionStudyToggle {width:24px;height:24px;min-width:24px;min-height:24px;margin-left:1px;}
+.workarea > .motionCompact .motionStudyContent .routeSummary {
+  margin:0 0 2px;
+  text-align:left;
+}
+.workarea > .motionCompact .motionGraphCard {padding:5px 7px;gap:4px;}
+.workarea > .motionCompact .motionGraphCard > .motionViewSwitch {
+  align-self:flex-end;
+  margin-left:auto;
+}
+.workarea > .motionCompact.is-collapsed .routeTop > .routeFields {display:flex!important;}
+.workarea > .motionCompact.is-collapsed .routeTop > .motionTransport {display:flex!important;}
+.workarea > .motionCompact .motionStudyContent[hidden] {display:none!important;}
+@media (max-width:900px) {
+  .workarea > .motionCompact .routeTop {flex-wrap:wrap;}
+  .workarea > .motionCompact .routeTop .motionTransport {order:4;flex:1 1 100%;}
+  .workarea > .motionCompact .motionStudyToggle {margin-left:auto;}
+}

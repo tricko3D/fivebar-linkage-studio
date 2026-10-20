@@ -1,0 +1,696 @@
+/* Compact CAD canvas, model mounting selector and accessible UI polish. */
+@media screen {
+  .app {grid-template-columns:330px minmax(0,1fr) 275px;gap:7px;}
+  .config,.analysis {min-width:0;}
+  .config > .section {padding:15px 17px;}
+  .config .fieldrow {grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;}
+  .field label {line-height:1.35;overflow-wrap:normal;word-break:normal;hyphens:none;}
+  .field input,.field select {min-width:0;}
+  .config .sectheader {font-size:11px;letter-spacing:.035em;}
+  .workarea {min-width:0;overflow:hidden;}
+  .canvasbox {min-height:225px;position:relative;}
+  .canvasbox svg#scene {position:relative;z-index:1;}
+  .canvasnote {display:none!important;}
+  .canvasbox::before {display:none;}
+  .stagefooter {display:none!important;}
+}
+@media screen and (max-width:1340px) and (min-width:1101px){
+  .app {grid-template-columns:307px minmax(0,1fr) 250px;gap:5px;}
+}
+@media screen and (max-width:1100px) and (min-width:851px){
+  .app {grid-template-columns:315px minmax(0,1fr);}
+}
+@media screen and (max-width:850px) {
+  .app {display:flex;flex-direction:column;}
+  .config {width:min(350px,calc(100vw - 24px));}
+}
+@media screen and (max-width:600px) {
+  .config {width:min(350px,calc(100vw - 12px));}
+}
+
+/* Live canvas toolbar replaces separate control bars and footer. */
+.canvasToolkit {
+  position:absolute;top:9px;left:9px;right:90px;z-index:12;
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+  pointer-events:none;
+}
+.toolkitRow,.toolkitLengths {
+  pointer-events:auto;
+  display:flex;align-items:center;gap:5px;
+  padding:5px;
+  min-width:0;max-width:100%;
+  background:#ffffffec;
+  border:1px solid #b7c6d6;
+  border-radius:4px;
+  box-shadow:0 2px 9px #334d641c;
+}
+.toolkitRow {flex-wrap:wrap;}
+.toolkitButton,.toolkitSquare {
+  font:600 11px "Segoe UI",Arial,sans-serif;
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  padding:5px 8px;
+  border:1px solid #c5d0db;
+  border-radius:3px;
+  background:linear-gradient(#fff,#f0f4f8);
+  color:#36546e;
+  min-height:29px;
+  white-space:nowrap;
+}
+.toolkitButton:hover {background:#e5f1fd;border-color:#9bbcd9;color:#1766a5;}
+.toolkitButton.is-on {background:#d7eafa!important;color:#125f9f!important;border-color:#80b2dc!important;}
+.toolkitButton.iconOnly {padding:5px 7px;}
+.toolkitButton svg {width:14px;height:14px;stroke-width:1.9;}
+.toolkitSquare {padding:2px 4px 2px 7px;background:#f5f8fc;}
+.toolkitSquare select {margin-left:2px;min-height:24px;max-width:69px;padding:3px 25px 3px 7px;font-size:11px;}
+.toolkitLengths {padding:4px 9px;gap:9px;font-size:10px;color:#617b90;font-variant-numeric:tabular-nums;flex-wrap:wrap;}
+.toolkitLengths strong {color:#24649a;}
+.toolkitLengths span:last-child {color:#7990a2;}
+.visuallyHidden {
+  position:absolute!important;width:1px!important;height:1px!important;
+  padding:0!important;margin:-1px!important;overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+}
+.canvasScale {
+  position:absolute;left:12px;bottom:64px;z-index:11;
+  display:flex;flex-direction:column;gap:3px;
+  pointer-events:none;
+  background:#ffffffd9;color:#355779;
+  border:1px solid #cbd6e1;border-radius:3px;
+  padding:6px 9px;font-size:10px;font-weight:650;
+  box-shadow:0 1px 4px #26435920;
+}
+.scaleTicks {width:100px;height:11px;position:relative;border-bottom:3px solid #344d68;}
+.scaleTicks::before,.scaleTicks::after {
+  content:"";position:absolute;bottom:0;width:2px;height:10px;background:#344d68;
+}
+.scaleTicks::before {left:0;}
+.scaleTicks::after {right:0;}
+.canvaslegend {
+  left:10px;right:auto;bottom:7px;
+  max-width:calc(100% - 20px);padding:5px 8px;
+  font-size:9px;gap:7px;
+}
+
+/* Motion analysis lives inside the canvas as an expandable study pane. */
+.canvasbox .routepanel {
+  position:absolute;bottom:9px;right:9px;z-index:15;
+  width:min(510px,calc(100% - 20px));max-height:min(78%,650px);
+  overflow-y:auto;
+  min-height:0;padding:8px 10px;
+  border:1px solid #b8c7d6;
+  border-radius:5px;
+  background:#f8fbfef7;
+  box-shadow:0 5px 22px #314c6440;
+  gap:6px;
+}
+.canvasbox .routepanel.is-collapsed {width:min(500px,calc(100% - 20px));padding:6px 9px;}
+.canvasbox .routepanel.is-collapsed > .routeFields {display:flex!important;}
+.canvasbox .routeTop {gap:6px;flex-wrap:wrap;}
+.canvasbox .routeTop .sectheader {border:0;padding:0;margin:0;font-size:10px;white-space:normal;}
+.canvasbox .routeTop .sectheader::before {content:"";margin:0;}
+.canvasbox .routeActions {gap:4px;flex-wrap:wrap;}
+.canvasbox .routeActions button {font-size:10px;padding:4px 7px;min-height:27px;}
+.canvasbox .routeFields {min-height:25px;gap:6px;flex-wrap:wrap;}
+.canvasbox .routeFields label {font-size:10px;color:#536c83;gap:4px;}
+.canvasbox .routeFields select {height:26px;font-size:11px;padding:3px 26px 3px 8px;}
+.canvasbox .routeSummary {margin-left:0;white-space:normal;font-size:10px;}
+.canvasbox .routeAlert {padding:5px 7px;font-size:10px;white-space:normal;}
+.canvasbox .routeMetrics {grid-template-columns:repeat(2,minmax(0,1fr));}
+.canvasbox .routeMetrics > div {padding:5px 8px;}
+.canvasbox .routeMetrics strong {font-size:11px;}
+.canvasbox .routeMetrics small {font-size:10px;white-space:normal;}
+.canvasbox .routeCharts {grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+.canvasbox .routeChart {min-width:0;}
+.canvasbox .routeChart svg {height:95px;max-height:95px;min-height:0;}
+.canvasbox .routepanel.is-collapsed > :not(.routeTop):not(.routeFields) {display:none!important;}
+@media screen and (max-width:1350px){
+  .canvasbox .routeCharts {grid-template-columns:1fr;}
+  .canvasbox .routeChart svg {height:105px;max-height:105px;}
+}
+@media screen and (max-width:950px){
+  .canvasToolkit {right:6px;top:7px;left:7px;}
+  .toolkitRow {max-width:100%;gap:3px;padding:4px;}
+  .toolkitButton {padding:5px 6px;font-size:10px;}
+  .canvasbox .routepanel {bottom:7px;right:7px;width:min(400px,calc(100% - 14px));}
+  .canvasbox .routepanel.is-collapsed {width:min(370px,calc(100% - 14px));}
+  .canvaslegend {max-width:56%;}
+  .canvasScale {bottom:75px;left:7px;}
+}
+@media screen and (max-width:600px){
+  .toolkitRow {gap:2px;}
+  .toolkitButton span {display:none;}
+  .toolkitButton svg {width:16px;height:16px;}
+  .toolkitLengths {gap:6px;font-size:9px;padding:3px 6px;}
+  .canvasbox .routepanel {width:calc(100% - 12px);bottom:5px;right:6px;max-height:50%;}
+  .canvasbox .routepanel.is-collapsed {width:calc(100% - 12px);}
+  .canvasbox .routeCharts {grid-template-columns:1fr;}
+  .canvaslegend {bottom:84px;max-width:calc(100% - 12px);}
+  .canvasScale {bottom:138px;}
+}
+
+/* Better checkbox legibility and form fields, with a custom dropdown arrow. */
+.config .toggle {
+  color:#2d4965;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.4;
+  align-items:flex-start;
+  margin:12px 0;
+  opacity:1;
+}
+.config .toggle input {
+  flex:0 0 18px;
+  width:17px;height:17px;
+  margin:1px 2px 0 0;
+  accent-color:#227cbe;
+  filter:none;opacity:1;
+}
+.config .toggle:focus-within {color:#125b99;}
+.config .field select,
+.config .routeFields select,
+.toolkitSquare select,
+.squarebar select,
+.routeFields select {
+  appearance:none;
+  background-color:#fff;
+  background-image:linear-gradient(45deg,transparent 50%,#4b7593 50%),linear-gradient(135deg,#4b7593 50%,transparent 50%);
+  background-position:calc(100% - 14px) 50%,calc(100% - 9px) 50%;
+  background-size:5px 5px;
+  background-repeat:no-repeat;
+  padding-right:25px;
+  border:1px solid #aebed0;
+  border-radius:4px;
+  color:#2d4b67;
+  box-shadow:inset 0 1px 2px #d8e2ed4d;
+  font-weight:600;
+}
+.config .field select:hover,.toolkitSquare select:hover,.routeFields select:hover {
+  border-color:#6ca8d7;background-color:#f6fbff;
+}
+.config .field select:focus-visible,.toolkitSquare select:focus-visible,.routeFields select:focus-visible {
+  border-color:#318cd1;outline:2px solid #8dbfe6;outline-offset:1px;
+}
+.config .mechtable .name {color:#294967;}
+.config .mechtable .mth {color:#58758d;}
+.config .metaSmall {color:#5b748c;}
+.config .field label {color:#475f76;font-weight:600;letter-spacing:0;}
+
+/* Clickable diagram of mounting locations around a simplified chessboard. */
+.mountPicker {
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) 40px;
+  grid-template-rows:35px 112px 35px;
+  gap:5px;
+  width:min(235px,100%);
+  margin:11px auto 12px;
+  padding:8px;
+  background:#edf2f8;
+  border:1px solid #b8c9d9;
+  border-radius:5px;
+}
+.mountSpot {
+  min-width:0;min-height:0;
+  display:grid;place-items:center;
+  color:#426685;
+  background:#fff;
+  border:1px solid #becbd9;
+  border-radius:4px;
+  cursor:pointer;
+  box-shadow:0 1px 2px #1b365019;
+}
+.mountSpot:hover {background:#e0f0ff;border-color:#75abd9;color:#176caf;}
+.mountSpot.is-selected {background:#d1e9fe;border:2px solid #237fc3;color:#125b9c;}
+.mountSpot svg {width:17px;height:17px;pointer-events:none;}
+.mountBoardPreview {
+  position:relative;
+  border:2px solid #59748e;
+  background:conic-gradient(#c7d5e2 25%,#f6f9fc 0 50%,#c7d5e2 0 75%,#f6f9fc 0) 0 0/26px 26px;
+  box-shadow:inset 0 0 0 3px #c1d0dd;
+  border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+.mountBoardPreview span {background:#ffffffda;padding:3px 8px;border-radius:2px;color:#496785;font-size:10px;font-weight:750;letter-spacing:.06em;}
+
+/* Custom descriptive tooltip popovers, mouse, focus and click compatible. */
+.infoTrigger {
+  flex-shrink:0;
+  display:inline-grid;place-items:center;
+  width:22px;height:22px;margin-left:8px;
+  padding:0;border-radius:4px;
+  border:1px solid #c6d5e3;background:#eef5fc;
+  color:#3674a7;cursor:help;
+}
+.infoTrigger:hover,.infoTrigger:focus-visible {
+  background:#daeefe;border-color:#87b8df;color:#1765a3;
+}
+.infoTrigger svg {width:14px;height:14px;}
+.sectheader .infoTrigger,.subheading .infoTrigger {margin-left:auto;}
+.inspectorHintCollapsed {display:none!important;}
+.studioTooltip {
+  position:fixed;z-index:200;
+  max-height:min(56vh,340px);
+  overflow-y:auto;
+  background:#18334b;
+  color:#f5f9fe;
+  border:1px solid #365d7b;
+  border-radius:6px;
+  box-shadow:0 10px 28px #172b3b66;
+  padding:10px 12px;
+  white-space:pre-line;
+  line-height:1.52;
+  font-size:12px;
+  font-weight:450;
+  overflow-wrap:break-word;
+  pointer-events:none;
+}
+.studioTooltip[hidden] {display:none!important;}
+.routepanel .infoTrigger {width:19px;height:19px;margin-left:5px;}
+.routepanel .sectheader {display:flex;align-items:center;gap:2px;}
+.analysis .resultTabs svg {height:13px;width:13px;vertical-align:middle;margin-right:4px;}
+
+/* An on-screen square that represents actual XY model dimensions at current zoom. */
+.canvasScale {bottom:70px;gap:5px;align-items:center;font-size:10px;}
+.scaleTicks {
+  width:65px;height:65px;min-width:0;min-height:0;
+  border:2px solid #4d6f8e;
+  background:conic-gradient(#d7e3ef 25%,#fff 0 50%,#d7e3ef 0 75%,#fff 0) 0 0/20px 20px;
+  box-shadow:inset 0 0 0 2px #ffffff9c;
+}
+.scaleTicks::before,.scaleTicks::after {display:none;}
+@media screen and (max-width:950px) { .canvasScale {bottom:79px;} }
+@media screen and (max-width:600px) { .canvasScale {bottom:142px;} }
+
+/* Revision: minimal eight-node mount alignment diagram */
+.mountPicker{
+  position:relative;
+  width:152px;height:152px;
+  display:grid;grid-template-columns:30px 1fr 30px;
+  grid-template-rows:30px 1fr 30px;
+  gap:0;place-items:center;
+  padding:6px;
+  margin:9px auto 11px;
+  border:0;border-radius:0;background:transparent;
+}
+.mountPicker::before{
+  content:"";position:absolute;inset:21px;
+  border:2px solid #647f96;pointer-events:none;
+}
+.mountSpot{
+  z-index:1;width:23px;height:23px;
+  justify-self:center;align-self:center;
+  border:1.5px solid #647f96;
+  border-radius:2px;
+  background:#f8fbfe;
+  box-shadow:none;
+}
+.mountSpot:hover{background:#e0eefb;border-color:#2279c0;}
+.mountSpot.is-selected{background:#348cd1;border:2px solid #125d95;box-shadow:0 0 0 2px #ffffffd9;}
+.mountBoardPreview{
+  border:0;background:transparent;box-shadow:none;pointer-events:none;
+}
+.mountBoardPreview::before {content:none;}
+/* Keep the 2D scale a simple map-style L, with no floating box or fill. */
+.canvasScale{
+  left:12px;bottom:12px;right:auto;top:auto;
+  padding:0;gap:4px;align-items:flex-start;
+  background:transparent;border:0;border-radius:0;box-shadow:none;
+  color:#486881;font-size:10px;font-weight:700;
+  text-shadow:0 1px 1px #ffffff;
+}
+.scaleTicks{
+  background:none!important;
+  border:0!important;border-left:3px solid #55728a!important;
+  border-bottom:3px solid #55728a!important;
+  box-shadow:none!important;box-sizing:border-box;
+  height:55px; width:55px;
+}
+.scaleTicks::before,.scaleTicks::after{display:none!important;}
+.canvaslegend{left:auto!important;right:9px!important;bottom:8px!important;width:auto;max-width:calc(100% - 150px);}
+
+/* Top-right drawing heatmap control, independent of the sidebar. */
+.canvasHeatmap{
+  position:absolute;z-index:15;top:8px;right:8px;
+  display:flex;align-items:center;gap:6px;
+  max-width:min(285px,58%);
+  padding:4px 6px;
+  background:#fffffff0;
+  border:1px solid #b9c8d5;border-radius:4px;
+  box-shadow:0 2px 5px #213d5620;
+}
+.canvasHeatmap > svg {width:14px;height:14px;color:#366e98;flex-shrink:0;}
+.canvasHeatmap select{
+  appearance:none;min-width:0;max-width:100%;width:176px;height:26px;
+  font-size:11px;padding:4px 22px 4px 7px;
+  font-weight:600;color:#365772;
+  border:1px solid #b9c9d9;border-radius:3px;
+  background-color:white;
+  background-image:linear-gradient(45deg,transparent 50%,#607e99 50%),linear-gradient(135deg,#607e99 50%,transparent 50%);
+  background-position:calc(100% - 12px) 50%,calc(100% - 7px) 50%;
+  background-size:5px 5px;background-repeat:no-repeat;
+}
+.canvasHeatmap select:hover{border-color:#4891c9;}
+.canvasHeatmap .infoTrigger{margin:0;height:24px;width:24px;}
+
+/* Motion study returns to its own row under the canvas. */
+.workarea > .routepanel{
+  position:relative!important;
+  bottom:auto!important;right:auto!important;top:auto!important;left:auto!important;
+  width:100%!important;max-width:none!important;max-height:none!important;
+  flex:0 0 auto;
+  min-width:0;
+  padding:9px 12px;
+  background:#f8fafc;
+  border:1px solid #b6c4d0;border-radius:4px;
+  box-shadow:0 1px 2px #273a4a14;
+  gap:6px;
+}
+.workarea > .routepanel .routeTop{gap:8px;align-items:center;}
+.workarea > .routepanel .sectheader{padding:0;border:0;margin:0;}
+.workarea > .routepanel .sectheader::before{content:"";margin:0;}
+.workarea > .routepanel .routeFields{min-height:28px;gap:10px;}
+.workarea > .routepanel .routeCharts{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+.workarea > .routepanel .routeChart{min-width:0;}
+.workarea > .routepanel .routeChart svg{height:102px;min-height:0;max-height:102px;}
+.workarea > .routepanel .routeMetrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;}
+.workarea > .routepanel .routeMetrics strong{font-size:11px;}
+.workarea > .routepanel .routeMetrics small{font-size:10px;white-space:normal;}
+.workarea > .routepanel.is-collapsed > :not(.routeTop){display:none!important;}
+@media screen and (max-width:1100px){
+  .canvasHeatmap{top:52px;right:7px;max-width:245px;}
+  .workarea > .routepanel .routeCharts{grid-template-columns:1fr;}
+  .workarea > .routepanel .routeMetrics{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media screen and (max-width:600px){
+  .canvasHeatmap{top:45px;right:6px;max-width:min(245px,72%);padding:3px;}
+  .canvasHeatmap select{width:135px;font-size:10px;}
+  .canvasScale{bottom:8px;left:9px;}
+  .canvaslegend{bottom:5px!important;right:5px!important;max-width:calc(100% - 110px);}
+}
+/* Dynamic Resize Links is a named operation, not a large extra bar. */
+.toolkitRow #resizeButton{white-space:nowrap;}
+.toolkitRow #resizeButton span{white-space:nowrap;}
+.crossSectionHead{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:6px;margin:8px 0 9px;
+  color:#456781;font-size:11px;
+}
+.crossSectionHead .infoTrigger{margin-left:auto;}
+
+/* Group related parameters in independently collapsible property cards. */
+.mechanicsGroup{
+  border:1px solid #c3d2df;
+  border-radius:4px;
+  margin:8px 0;
+  background:#f8fbfe;
+  overflow:hidden;
+}
+.mechanicsGroup summary{
+  display:flex;align-items:center;gap:7px;
+  cursor:pointer;list-style:none;
+  background:linear-gradient(#fafcff,#ecf2f7);
+  padding:10px 12px;
+  font-size:12px;font-weight:700;color:#35526d;
+  user-select:none;
+}
+.mechanicsGroup summary::-webkit-details-marker{display:none;}
+.mechanicsGroup summary::before{content:"▸";font-size:11px;color:#4e7595;}
+.mechanicsGroup[open] summary::before{content:"▾";}
+.mechanicsGroup summary > svg{width:14px;height:14px;margin-left:auto;color:#7190a6;transition:transform .15s;}
+.mechanicsGroup[open] summary > svg{transform:rotate(180deg);}
+.mechanicsGroup .mechanicsGroupBody{border-top:1px solid #d6e1eb;padding:11px;}
+.mechanicsGroupBody .fieldrow{grid-template-columns:repeat(2,minmax(0,1fr));}
+.mechanicsGroupBody .infoTrigger{width:20px;height:20px;}
+.mechanicsGroup summary .infoTrigger{margin-left:4px;}
+.mechanicsGroup summary .infoTrigger svg{transform:none;}
+.mechanicsGroup summary:focus-visible{outline:2px solid #4d9bd8;outline-offset:-2px;}
+
+/* Keep the accordion navigation accessible when one property group has many fields. */
+.mechanicsGroup[open] .mechanicsGroupBody {
+  max-height:min(48vh,460px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#aebed1 transparent;
+}
+@media screen and (max-width:850px){
+  .mechanicsGroup[open] .mechanicsGroupBody{max-height:min(36vh,320px);}
+}
+
+/* Motion Study: single compact CAD analysis strip, retaining full route data. */
+@media screen {
+  .workarea > .routepanel {
+    padding: 7px 9px !important;
+    gap: 5px !important;
+    border-radius: 4px;
+  }
+  .workarea > .routepanel .routeTop {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 6px 13px;
+    min-height: 29px;
+  }
+  .workarea > .routepanel .routeHeading {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+  .workarea > .routepanel .routeHeading .sectheader {
+    color: #3a6184;
+    font-weight: 750;
+    font-size: 11px;
+    letter-spacing: .025em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .workarea > .routepanel .routeFields {
+    display: flex;
+    min-width: 0;
+    min-height: 27px;
+    flex: 1 1 165px;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 7px;
+  }
+  .workarea > .routepanel .routeFields label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    color: #60778b;
+    white-space: nowrap;
+    font-size: 10px;
+  }
+  .workarea > .routepanel .routeFields select {
+    min-width: 58px;
+    width: 58px;
+    padding: 3px 22px 3px 7px;
+    height: 27px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  .workarea > .routepanel .routeActions {
+    margin-left: auto;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .workarea > .routepanel .routeActions button {
+    min-height: 27px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 650;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  .workarea > .routepanel .routeActions button svg { width: 13px; height: 13px; }
+  .workarea > .routepanel #routeReset { width: 29px; padding: 5px; }
+  .workarea > .routepanel #routePlay.is-playing { background: linear-gradient(#f4b857,#db8c2c); border-color: #b87824; }
+  .workarea > .routepanel .routeStatusLine {
+    display: flex;
+    align-items: stretch;
+    gap: 7px;
+    min-width: 0;
+  }
+  .workarea > .routepanel .routeAlert {
+    display: flex;
+    flex: 1 1 55%;
+    align-items: center;
+    min-width: 0;
+    padding: 4px 8px;
+    margin: 0;
+    line-height: 1.25;
+    border-radius: 3px;
+    font-size: 10px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .workarea > .routepanel .routeSummary {
+    display: flex;
+    flex: 0 1 auto;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
+    color: #255f91;
+    font-size: 10px;
+    font-weight: 650;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .workarea > .routepanel .routeScrubRow {
+    display: grid;
+    align-items: center;
+    grid-template-columns: auto minmax(0,1fr) 31px auto;
+    gap: 8px;
+    min-height: 20px;
+    color: #60758a;
+  }
+  .workarea > .routepanel .routeScrubRow input[type="range"] {
+    height: 16px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    accent-color: #2d83c5;
+    cursor: pointer;
+  }
+  .workarea > .routepanel .routeTimeValue,
+  .workarea > .routepanel .routeProgressValue {
+    display: inline-block;
+    color: #56748c;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .workarea > .routepanel .routeProgressValue { text-align: center; }
+  .workarea > .routepanel .routeMetrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 5px;
+  }
+  .workarea > .routepanel .routeMetrics > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    border-radius: 3px;
+    min-height: 38px;
+    padding: 5px 8px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #d0dce7;
+    box-shadow: none;
+  }
+  .workarea > .routepanel .routeMetrics small {
+    display: block;
+    font-size: 9px;
+    color: #60768a;
+    line-height: 1.1;
+    white-space: nowrap;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  .workarea > .routepanel .routeMetrics strong {
+    font-size: 11px;
+    color: #215f93;
+    font-weight: 760;
+    line-height: 1.12;
+    white-space: nowrap;
+    max-width: 100%;
+    font-variant-numeric: tabular-nums;
+  }
+  .workarea > .routepanel .routeCharts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 7px;
+  }
+  .workarea > .routepanel .routeChart {
+    min-width: 0;
+    padding: 5px 7px 3px;
+    border: 1px solid #d1dce7;
+    border-radius: 3px;
+    background: #fff;
+    box-shadow: none;
+  }
+  .workarea > .routepanel .chartTitle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 1px;
+    gap: 4px;
+    min-height: 16px;
+  }
+  .workarea > .routepanel .chartTitle b {
+    font-size: 10px;
+    font-weight: 700;
+    color: #314f6b;
+    white-space: nowrap;
+  }
+  .workarea > .routepanel .chartTitle small { display: none; }
+  .workarea > .routepanel .routeChart svg {
+    display: block;
+    height: 104px;
+    min-height: 0;
+    max-height: 104px;
+    width: 100%;
+  }
+  .workarea > .routepanel .infoTrigger { width: 17px; height: 17px; border-radius: 3px; }
+  .workarea > .routepanel .infoTrigger svg { width: 12px; height: 12px; }
+  .workarea > .routepanel.is-collapsed {padding-bottom: 7px!important;}
+  .workarea > .routepanel.is-collapsed > :not(.routeTop) { display: none !important; }
+}
+@media screen and (max-width: 1100px) {
+  .workarea > .routepanel .routeTop { gap: 6px 9px; }
+  .workarea > .routepanel .routeMetrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .workarea > .routepanel .routeMetrics > div { min-height: 32px; padding: 4px 7px; }
+  .workarea > .routepanel .routeChart svg { height: 94px; max-height: 94px; }
+  .workarea > .routepanel .routeSummary {font-size:9px;}
+}
+@media screen and (max-width: 650px) {
+  .workarea > .routepanel .routeHeading {margin-right:auto;}
+  .workarea > .routepanel .routeFields { order: 3; flex: 0 1 auto; }
+  .workarea > .routepanel .routeActions {margin-left:0;}
+  .workarea > .routepanel .routeStatusLine {flex-wrap:wrap;gap:2px;}
+  .workarea > .routepanel .routeAlert {flex:1 0 100%; }
+  .workarea > .routepanel .routeSummary {flex:1 0 100%;justify-content:flex-start;white-space:normal;}
+  .workarea > .routepanel .routeCharts {grid-template-columns:1fr;}
+  .workarea > .routepanel .routeChart svg {height:98px;max-height:98px;}
+}
+
+/* Chess-square coordinates: compact validated text fields, no native 64-row select. */
+.toolkitSquare input.squareInput,
+.workarea > .motionCompact .routeFields input.squareInput,
+.routeFields input.squareInput {
+  box-sizing:border-box;
+  width:45px;
+  max-width:45px;
+  height:25px;
+  min-height:25px;
+  border:1px solid #b9c9d9;
+  border-radius:4px;
+  background:#fff;
+  color:#365772;
+  padding:2px 5px;
+  margin-left:2px;
+  font-size:11px;
+  font-weight:650;
+  text-align:center;
+  text-transform:uppercase;
+  font-family:inherit;
+}
+.toolkitSquare input.squareInput:focus-visible,
+.routeFields input.squareInput:focus-visible {
+  outline:2px solid #237fbf;
+  outline-offset:1px;
+}
