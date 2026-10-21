@@ -49,12 +49,8 @@
     </header>
     <main class="app">
       <aside class="panel config" aria-label="Simulation controls">
-        <div class="railTitle">
-          <strong id="settingsTitle">Board</strong><small id="settingsSubtitle" hidden></small
-          ><button class="closeRail" type="button" id="closeSettings" aria-label="Close settings">
-            ×
-          </button>
-        </div>
+        <!-- Mobile-only close control, with no redundant settings title/header. -->
+        <button class="closeRail settingsClose" type="button" id="closeSettings" aria-label="Close settings">×</button>
 
         <section class="section">
           <div class="sectheader">01 / Chessboard <span class="mini">8 × 8</span></div>
