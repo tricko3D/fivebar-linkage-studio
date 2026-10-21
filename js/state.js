@@ -97,24 +97,24 @@ const materialPresets = Object.fromEntries(
 
 // Material fabrication routes; filter for process-appropriate stock or feedstock.
 // Sheet cutting is waterjet / laser (route depends on material and equipment).
+// Curated public picker: 4 processes with 3-4 materials each.
+// The larger materialPresets catalog remains available for older JSON exports,
+// but unlisted choices load as Custom without discarding their numerical data.
 const manufacturingMethods = [
-  { key: 'fdm', label: 'FDM / FFF', description: 'Extruded thermoplastic filaments', icon: 'layers' },
-  { key: 'sls', label: 'SLS', description: 'Selective laser sintering · polymer powder', icon: 'scan' },
-  { key: 'sla', label: 'SLA / DLP', description: 'Vat-photopolymer resin curing', icon: 'sun' },
-  { key: 'mjf', label: 'MJF', description: 'Multi Jet Fusion · polymer powder', icon: 'hexagon' },
-  { key: 'cnc', label: 'CNC machining', description: 'Milled or turned solid stock', icon: 'settings' },
-  { key: 'sheet', label: 'Sheet cutting', description: 'Laser / waterjet-cut plate', icon: 'scissors' },
-  { key: 'lpbf', label: 'Metal LPBF', description: 'Metal powder-bed fusion / SLM', icon: 'layers-3' },
+  { key: 'fdm', label: 'FDM', code: 1, description: '3D printing with thermoplastic filament', icon: 'layers' },
+  { key: 'sls', label: 'SLS', code: 2, description: 'Laser sintering of polymer powder', icon: 'scan' },
+  { key: 'sla', label: 'SLA', code: 3, description: 'UV-cured resin printing', icon: 'sun' },
+  { key: 'cnc', label: 'CNC', code: 5, description: 'Machining solid metal or plastic stock', icon: 'settings' },
 ];
+// Material IDs and manufacturing codes are intentionally stable in SW exports.
 const materialMethodKeys = {
-  fdm: materialGroups.slice(0, 3).flatMap(group => group.items.map(item => item.key)),
-  sls: materialGroups[4].items.map(item => item.key),
-  mjf: materialGroups[5].items.map(item => item.key),
-  sla: materialGroups[6].items.map(item => item.key),
-  cnc: [...materialGroups[3].items.map(item => item.key), ...materialGroups[7].items.map(item => item.key)],
-  sheet: ['al6061', 'al7075', 'ss304', 'g10-fr4', ...materialGroups[8].items.map(item => item.key)],
-  lpbf: materialGroups[9].items.map(item => item.key),
+  fdm: ['petg', 'pla-cf', 'petg-cf', 'pa6-cf'],
+  sls: ['pa12-sls', 'pa11-sls', 'pa12-gf-sls'],
+  sla: ['resin-tough', 'resin-rigid', 'resin-hightemp'],
+  cnc: ['al6061', 'steel1018', 'ti64', 'pom'],
 };
+const availablePickerMaterial = key =>
+  Object.values(materialMethodKeys).some(keys => keys.includes(key));
 function materialOptionsForMethod(method) {
   return (materialMethodKeys[method] || []).map(key => materialPresets[key]).filter(Boolean);
 }
