@@ -1278,3 +1278,6 @@ body.fileHubOpen{overflow:hidden;}
   #resetButton .resetText,#headerReportButton .reportHeaderLabel{font-size:10px}
   .fileHubFooterButtons{flex-wrap:wrap;justify-content:flex-end}
 }
+
+/* Keep the explicitly labeled Reset action accessible on narrow viewports. */
+@media(max-width:600px){.headright #resetButton{display:inline-flex;}}
