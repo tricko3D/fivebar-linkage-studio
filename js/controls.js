@@ -24,8 +24,46 @@ function change(recalc = true) {
   if (typeof refreshMountPicker === 'function') refreshMountPicker();
   persist();
 }
+// Use current output-joint angles to place hard stops without canvas controls.
+function captureJointStop(key) {
+  const targets = {
+    leftMinAngle: ['angleL', 'Left M₁ minimum'],
+    leftMaxAngle: ['angleL', 'Left M₁ maximum'],
+    rightMinAngle: ['angleR', 'Right M₂ minimum'],
+    rightMaxAngle: ['angleR', 'Right M₂ maximum'],
+  };
+  const target = targets[key];
+  if (!target) return false;
+  const message = $('jointStopSetStatus');
+  // Capture the pose even if it is outside the previously set hard-stop range.
+  const solution = calc(vec(state.targetX, state.targetY), {
+    ...state,
+    useJointLimits: false,
+  });
+  if (!solution.valid || !Number.isFinite(solution[target[0]])) {
+    if (message) {
+      message.textContent = 'Move the gripper to a reachable position before setting a stop.';
+      message.dataset.state = 'error';
+    }
+    return false;
+  }
+  const angle = Math.round(solution[target[0]] * 10) / 10;
+  state[key] = angle;
+  state.useJointLimits = true;
+  $(key).value = String(angle);
+  $('useJointLimits').checked = true;
+  if (message) {
+    message.textContent = target[1] + ' set to ' + angle.toFixed(1) + '°.';
+    message.dataset.state = 'success';
+  }
+  change();
+  return true;
+}
 function initControls() {
   $('resizeButton').addEventListener('click', () => setResizeMode(!resizeMode));
+  document.querySelectorAll('[data-joint-stop]').forEach(button => {
+    button.addEventListener('click', () => captureJointStop(button.dataset.jointStop));
+  });
   document.querySelectorAll('[data-key]').forEach((el) => {
     const key = el.dataset.key;
     const handle = () => {
