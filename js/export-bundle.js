@@ -63,7 +63,7 @@ function bundleOfflineReport(markdown,cadSvg,faviconSvg){
     const math=element.querySelector('.katex-mathml math');
     if(math){element.replaceChildren(math.cloneNode(true));element.classList.remove('mathFallback');}
   }
-  for(const details of holder.querySelectorAll('details'))details.open=true;
+  // Keep detailed audits collapsed in the offline document; native details work without JS.
   const bytes=new TextEncoder().encode(faviconSvg);
   let binary='';for(const byte of bytes)binary+=String.fromCharCode(byte);
   const icon='data:image/svg+xml;base64,'+btoa(binary);
