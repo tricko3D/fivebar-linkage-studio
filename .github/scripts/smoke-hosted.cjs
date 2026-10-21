@@ -88,7 +88,7 @@ const fs = require('node:fs');
   // Unified Files & Export replaces the old dropdown and header Results button.
   if(await page.locator('#toggleInsights,#fileMenu').count())
     throw Error('Legacy Results button or file dropdown remains');
-  if(!((await page.locator('#fileMenuButton').innerText()).includes('Files')))
+  if(!((await page.locator('#fileMenuButton').getAttribute('aria-label')).includes('Files')))
     throw Error('Renamed Files & Export button missing');
   await page.locator('#fileMenuButton').click();
   if(!(await page.locator('#fileHubOverlay').isVisible()))
