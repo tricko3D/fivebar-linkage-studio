@@ -10,6 +10,54 @@ function sanitizeSquareText(v) {
  const rank=raw.slice(1).replace(/[^1-8]/g,'')[0]||'';
  return raw[0]+rank;
 }
+// Single source of truth: dropdown groups, presets and exported material codes
+// are all derived from materialGroups/materialPresets declared in state.js.
+function setupMaterialOptions() {
+  const select = $('material');
+  select.replaceChildren();
+  for (const group of materialGroups) {
+    const options = document.createElement('optgroup');
+    options.label = group.label;
+    for (const preset of group.items) {
+      const option = document.createElement('option');
+      option.value = preset.key;
+      option.textContent = preset.label;
+      options.appendChild(option);
+    }
+    select.appendChild(options);
+  }
+  const custom = document.createElement('option');
+  custom.value = 'custom';
+  custom.textContent = 'Custom values';
+  select.appendChild(custom);
+  if (!materialPresets[state.material] && state.material !== 'custom')
+    state.material = 'custom'; // preserve numeric values from obsolete JSON files
+  select.value = state.material;
+  updateMaterialPresetNote();
+}
+function updateMaterialPresetNote() {
+  const info = $('materialPresetNote');
+  if (!info) return;
+  const preset = materialPresets[state.material];
+  info.textContent = preset
+    ? preset.label + ': ' + preset.note +
+      ' Numbers are approximate, room-temperature screening inputs, not certified design limits.'
+    : 'Custom values: edit modulus, density, effective stiffness factor and allowable bending stress. Validate against actual datasheets and tests.';
+}
+function applyMaterialPreset(key) {
+  const preset = materialPresets[key];
+  if (!preset) {
+    updateMaterialPresetNote();
+    return false;
+  }
+  for (const property of ['youngMPa', 'density', 'stressLimit', 'stiffFactor']) {
+    state[property] = preset[property];
+    $(property).value = String(preset[property]);
+  }
+  updateMaterialPresetNote();
+  return true;
+}
+
 function persist() {
   try {
     localStorage.setItem('fivebar-linkage-studio-v1', JSON.stringify(state));
@@ -126,25 +174,18 @@ function initControls() {
         for (const other of ['boardW', 'boardH', 'outerW', 'outerH']) $(other).value = state[other];
       }
       if (key === 'toolMode') updateToolSettings();
-      if (key === 'material') {
-        if (state.material === 'pla') {
-          state.youngMPa = 2500;
-          state.density = 1.24;
-          state.stressLimit = 12;
-        } else if (state.material === 'petg') {
-          state.youngMPa = 1900;
-          state.density = 1.27;
-          state.stressLimit = 10;
-        }
-        for (const k of ['youngMPa', 'density', 'stressLimit']) $(k).value = state[k];
-      }
-      if (['youngMPa', 'density', 'stressLimit'].includes(key) && state.material !== 'custom') {
+      if (key === 'material') applyMaterialPreset(state.material);
+      if (['youngMPa', 'density', 'stressLimit', 'stiffFactor'].includes(key) &&
+          state.material !== 'custom') {
         state.material = 'custom';
         $('material').value = 'custom';
+        updateMaterialPresetNote();
       }
       change(!['showCoverage', 'showCenters', 'showRings', 'showServoArcs'].includes(key));
     };
-    el.addEventListener('input', handle);
+    // Native selects fire both input and change; applying a material preset
+    // twice needlessly rebuilds the full mechanical heatmap.
+    if (key !== 'material') el.addEventListener('input', handle);
     el.addEventListener('change', handle);
     if (key === 'routeFrom' || key === 'routeTo')
       el.addEventListener('blur', () => { el.value = state[key]; });
