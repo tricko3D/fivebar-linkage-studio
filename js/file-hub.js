@@ -366,9 +366,18 @@ function initFileHub() {
   const openReport=()=>window.open(shareLink('report'),'_blank','noopener');
   document.getElementById('shareReportOpen').addEventListener('click',openReport);
   document.getElementById('fileHubOpenReport').addEventListener('click',openReport);
-  document.getElementById('fileHubViewResults').addEventListener('click',()=>{
-    closeFileHub();
-    window.openStudioResults?.();
+  document.getElementById('fileHubReportDownload').addEventListener('click',async()=>{
+    const button=document.getElementById('fileHubReportDownload');
+    button.disabled=true;
+    fileHubStatus('Preparing offline HTML report…');
+    try {
+      await downloadFivebarHtmlReport(state);
+      fileHubStatus('HTML report downloaded.');
+    }catch(error){
+      fileHubStatus('Report download failed: '+error.message,true);
+    }finally{
+      button.disabled=false;
+    }
   });
   document.addEventListener('keydown',event=>{
     if(overlay.hidden)return;
