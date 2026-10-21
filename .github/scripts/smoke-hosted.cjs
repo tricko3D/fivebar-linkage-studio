@@ -13,6 +13,11 @@ const fs = require('node:fs');
   if(!(await page.locator('#scaleLabel').isVisible()))throw Error('Scale missing');
   if(!/[0-9]+ mm/.test(await page.locator('#scaleLabel').innerText()))throw Error('Scale label invalid');
   if(await page.locator('.topSettingsTabs button').count()!==5)throw Error('Settings tabs missing');
+  const header=await page.locator('body > header').boundingBox();
+  const app=await page.locator('main.app').boundingBox();
+  if(!header||!app||header.x>0.5||app.x>0.5||app.y-header.y-header.height>1)
+    throw Error('Outer header/workspace margins returned');
+  if(Math.abs(app.width-width)>2)throw Error('Workspace does not fill viewport');
   if(await page.locator('.config > .railTitle').count())throw Error('Redundant settings title bar returned');
   if(width>=851){
     const configBox=await page.locator('.config').boundingBox();
@@ -123,7 +128,18 @@ const fs = require('node:fs');
   // Every Linkage section must be independently collapsible.
   await page.locator('.topSettingsTabs [data-setting="linkage"]').click();
   if(await page.locator('.linkageAccordion').count()!==3)throw Error('Expected three linkage accordions');
-  for(const section of await page.locator('.linkageAccordion').all()){
+  if(await page.locator('.config > .section').count()!==5)throw Error('Expected one section per settings tab');
+  const linkageParentCount=await page.locator('.linkageAccordion').evaluateAll(
+    cards => new Set(cards.map(card => card.parentElement)).size
+  );
+  if(linkageParentCount!==1)throw Error('Linkage cards live in separate settings sections');
+  const cards=await page.locator('.linkageAccordion').all();
+  for(let i=1;i<cards.length;i++){
+    const top=await cards[i-1].boundingBox(), bottom=await cards[i].boundingBox();
+    if(!top||!bottom||bottom.y-(top.y+top.height)>15)
+      throw Error('Linkage cards do not stack closely');
+  }
+  for(const section of cards){
     if(!(await section.evaluate(el=>el.open)))throw Error('Linkage accordion did not default to expanded');
     await section.locator('summary').click();
     if(await section.evaluate(el=>el.open))throw Error('Linkage accordion would not collapse');
