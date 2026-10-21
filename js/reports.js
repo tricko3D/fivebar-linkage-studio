@@ -370,8 +370,7 @@ function buildAuditReport() {
     '',
     '## Executive summary',
     '',
-    '### Main finding',
-    '',
+
     /[.!?]$/.test(summary) ? summary : summary+'.',
     '',
     '| Question | Result |',
@@ -391,7 +390,7 @@ function buildAuditReport() {
     `| Maximum output motor torque | ${validTorque?fmt(maxTorque,3,'N·m'):'Unavailable'} | ${fmt(base.allowTorque,3,'N·m')} | ${validTorque?usage(maxTorque,base.allowTorque):'N/A'} |`,
     `| Combined screening payload | ${validTorque?cap(m.finalLimit):'Unavailable'} | ${fmt(s.payloadG,0,'g')+' selected'} | — |`,
     '',
-    'These values are **proxies**, not predictions of real-world load capacity. Vertical bending is position-independent in the current model; XY torque does not represent static vertical lifting.',
+    'XY torque estimates planar movement, not vertical lifting.',
     '',
     '## Model configuration',
     '',
@@ -403,6 +402,7 @@ function buildAuditReport() {
     `| Link lengths (L1, L2, R1, R2) | ${['l1','l2','r1','r2'].map(k=>fmt(s[k],1,'mm')).join(' / ')} |`,
     `| Target (X, Y) | (${fmt(s.targetX,1)}, ${fmt(s.targetY,1)}) mm |`,
     `| Motor output angles | ${sol.valid?fmt(sol.angleL,2,'°')+' / '+fmt(sol.angleR,2,'°'):'Unavailable'} |`,
+    `| Motor hard stops (MIN–MAX) | M₁ ${fmt(s.leftMinAngle,1,'°')}–${fmt(s.leftMaxAngle,1,'°')} / M₂ ${fmt(s.rightMinAngle,1,'°')}–${fmt(s.rightMaxAngle,1,'°')} (${s.useJointLimits?'enforced':'disabled'}) |`,
     `| Tool + payload | ${fmt(s.headG,0,'g')} + ${fmt(s.payloadG,0,'g')} |`,
     `| Idealized total link mass | ${fmt(base.linkMass*1000,1,'g')} |`,
     '',
@@ -416,7 +416,7 @@ function buildAuditReport() {
     '',
     '### 1. Material stiffness and cross section',
     '',
-    'The bending model uses an effective Young modulus and a second moment of area. For a hollow section, the inner rectangle is subtracted:',
+    'Effective Young modulus and hollow-section bending inertia:',
     '',
     String.raw`$$
 E_{\mathrm{eff}} = E_{\mathrm{input}} f_{\mathrm{stiff}},
@@ -450,7 +450,7 @@ $$`,
     '',
     `For **${fmt(s.ratio,2)}:1** reduction and **${fmt(s.efficiency,1,'%')}** efficiency, the allowance is **${fmt(base.allowTorque,3,'N·m')} per motor**.`,
     '',
-    'A finite-difference inverse-kinematics Jacobian estimates the planar torque demand:',
+    'The inverse-kinematics Jacobian estimates planar torque:',
     '',
     String.raw`$$
 \tau_i \approx F_{xy} J_i + \tau_{\mathrm{friction}}
@@ -481,7 +481,7 @@ $$`,
     '',
     '## Detailed numerical audit',
     '',
-    'Each section now explains what the values mean with equations and tables. Open **Raw calculation log — full precision** only when you need the original complete computations.',
+    'Detailed equations and tables; expand **Raw calculation log** for full precision.',
     ''
   ];
   const sections=rep.join('\n').split(/\n(?=## )/);
