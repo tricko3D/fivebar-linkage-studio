@@ -935,6 +935,7 @@
           </button>
         </header>
         <div class="fileHubLayout">
+          <div class="fileHubSidebar">
           <nav class="fileHubTabs" aria-label="File formats">
             <button type="button" class="fileHubTab is-active" data-file-kind="share" aria-pressed="true">
               <i data-lucide="link-2" aria-hidden="true"></i><span><strong>Share links</strong><small>Permalinks · full configuration</small></span>
@@ -952,6 +953,15 @@
               <i data-lucide="ruler" aria-hidden="true"></i><span><strong>CAD drawing</strong><small>SVG · dimensioned plan</small></span>
             </button>
           </nav>
+          <div class="fileHubSidebarActions" aria-label="Report downloads">
+            <button type="button" id="fileHubReportDownload">
+              <i data-lucide="file-down" aria-hidden="true"></i> Download report
+            </button>
+            <button type="button" id="fileHubZip">
+              <i data-lucide="archive" aria-hidden="true"></i> Download ZIP
+            </button>
+          </div>
+          </div>
           <div class="fileHubMain">
             <div class="fileHubTitleRow">
               <div><h3 id="fileHubKindTitle">Share configuration links</h3>
@@ -1001,8 +1011,7 @@
                 <button type="button" id="fileHubOpenReport" hidden><i data-lucide="external-link" aria-hidden="true"></i> Open report</button>
                 <button type="button" id="fileHubCopy"><i data-lucide="copy" aria-hidden="true"></i> Copy</button>
                 <button type="button" id="fileHubSave" class="fileHubPrimary"><i data-lucide="download" aria-hidden="true"></i> Save file</button>
-                <button type="button" id="fileHubViewResults" title="Open the live results panel">View results</button>
-                <button type="button" id="fileHubZip" class="fileHubPrimary"><i data-lucide="archive" aria-hidden="true"></i> Download ZIP</button>
+
               </div>
             </div>
           </div>
