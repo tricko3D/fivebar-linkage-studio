@@ -21,7 +21,7 @@
     <header class="appHeader">
       <div class="head">
         <div class="brand" aria-label="Fivebar Linkage Studio">
-          <span class="mark" aria-hidden="true"><i data-lucide="workflow"></i></span>
+          <span class="mark" aria-hidden="true"><img src="favicon.svg" alt="" width="32" height="32" /></span>
           <h1>Fivebar <span>Studio</span></h1>
         </div>
         <nav class="navtabs settingsTabs topSettingsTabs" aria-label="Design tools">
@@ -34,12 +34,15 @@
         <div class="headright">
           <button class="ghost layoutToggle headerIconButton" id="toggleSettings" type="button" aria-label="Toggle settings panel" title="Settings panel" aria-expanded="false"><i data-lucide="panel-left"></i><span class="compactLabel">Settings</span></button>
 
-          <button class="ghost headerIconButton" id="resetButton" type="button" aria-label="Reset configuration" title="Reset configuration"><i data-lucide="rotate-ccw"></i></button>
+          <button class="ghost headerIconButton" id="resetButton" type="button" aria-label="Reset configuration" title="Reset configuration"><i data-lucide="rotate-ccw"></i><span class="resetText">Reset</span></button>
           <button class="action headerIconButton fileHubTrigger" id="fileMenuButton" type="button"
             aria-label="Files & Export" aria-haspopup="dialog" aria-expanded="false" aria-controls="fileHubOverlay"
             title="Files, previews and exports">
             <i data-lucide="folder-open"></i><span class="compactLabel">Files &amp; Export</span>
           </button>
+          <button class="ghost headerIconButton" id="headerReportButton" type="button"
+            aria-label="Open report in Files & Export" aria-haspopup="dialog" aria-controls="fileHubOverlay"
+            title="View calculation report"><i data-lucide="file-text"></i><span class="reportHeaderLabel">Report</span></button>
           <input id="importFile" accept="application/json,.json" type="file" hidden />
         </div>
       </div>
@@ -936,19 +939,18 @@
             <button type="button" class="fileHubTab is-active" data-file-kind="share" aria-pressed="true">
               <i data-lucide="link-2" aria-hidden="true"></i><span><strong>Share links</strong><small>Permalinks · full configuration</small></span>
             </button>
+            <button type="button" class="fileHubTab" data-file-kind="md" aria-pressed="false">
+              <i data-lucide="file-text" aria-hidden="true"></i><span><strong>Report</strong><small>MD · formatted preview</small></span>
+            </button>
             <button type="button" class="fileHubTab" data-file-kind="json" aria-pressed="false">
-              <i data-lucide="braces" aria-hidden="true"></i><span><strong>Configuration</strong><small>JSON · import / export</small></span>
+              <i data-lucide="braces" aria-hidden="true"></i><span><strong>Config</strong><small>JSON · import / export</small></span>
             </button>
             <button type="button" class="fileHubTab" data-file-kind="sw" aria-pressed="false">
-              <i data-lucide="wrench" aria-hidden="true"></i><span><strong>SolidWorks variables</strong><small>TXT · equations</small></span>
-            </button>
-            <button type="button" class="fileHubTab" data-file-kind="md" aria-pressed="false">
-              <i data-lucide="file-text" aria-hidden="true"></i><span><strong>Calculation report</strong><small>MD · formatted preview</small></span>
+              <i data-lucide="wrench" aria-hidden="true"></i><span><strong>SW variables</strong><small>TXT · equations</small></span>
             </button>
             <button type="button" class="fileHubTab" data-file-kind="svg" aria-pressed="false">
               <i data-lucide="ruler" aria-hidden="true"></i><span><strong>CAD drawing</strong><small>SVG · dimensioned plan</small></span>
             </button>
-
           </nav>
           <div class="fileHubMain">
             <div class="fileHubTitleRow">
@@ -1000,6 +1002,7 @@
                 <button type="button" id="fileHubCopy"><i data-lucide="copy" aria-hidden="true"></i> Copy</button>
                 <button type="button" id="fileHubSave" class="fileHubPrimary"><i data-lucide="download" aria-hidden="true"></i> Save file</button>
                 <button type="button" id="fileHubViewResults" title="Open the live results panel">View results</button>
+                <button type="button" id="fileHubZip" class="fileHubPrimary"><i data-lucide="archive" aria-hidden="true"></i> Download ZIP</button>
               </div>
             </div>
           </div>
