@@ -36,11 +36,14 @@ function renderReportPreview(markdown) {
   const parentStack=[root];
   let parent=root,paragraph=[],list=null;
   const rich=(node,value)=>{
-    for(const part of value.split(/(\*\*[^*]+\*\*)/g)){
+    for(const part of value.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)){
       if(!part)continue;
       if(part.startsWith('**')&&part.endsWith('**')){
         const strong=document.createElement('strong');
         strong.textContent=part.slice(2,-2);node.append(strong);
+      } else if(part.startsWith('*')&&part.endsWith('*')){
+        const em=document.createElement('em');
+        em.textContent=part.slice(1,-1);node.append(em);
       } else node.append(document.createTextNode(part));
     }
   };
