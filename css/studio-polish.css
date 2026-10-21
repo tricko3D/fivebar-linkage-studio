@@ -694,3 +694,28 @@
   outline:2px solid #237fbf;
   outline-offset:1px;
 }
+
+/* Capture each motor's current angle directly beside its hard-stop field. */
+#jointLimitsGroup .jointStopInput {
+  display:flex;align-items:stretch;gap:4px;width:100%;min-width:0;
+}
+#jointLimitsGroup .jointStopInput > input {
+  flex:1 1 auto;min-width:0;width:0;margin:0;
+}
+#jointLimitsGroup .jointStopSet {
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 auto;gap:3px;min-width:46px;min-height:30px;
+  padding:3px 5px;border:1px solid #b8cada;border-radius:4px;
+  background:#eef5fa;color:#335f7d;
+  font-family:inherit;font-size:10px;font-weight:650;line-height:1.1;
+  cursor:pointer;
+}
+#jointLimitsGroup .jointStopSet svg {width:12px;height:12px;flex:none;}
+#jointLimitsGroup .jointStopSet:hover {background:#e0effa;border-color:#80a9c5;}
+#jointLimitsGroup .jointStopSet:focus-visible {outline:2px solid #1877b5;outline-offset:2px;}
+#jointLimitsGroup .jointStopSet:active {background:#c7e3f7;}
+#jointLimitsGroup .jointStopSetStatus {
+  min-height:0;font-size:10px;line-height:1.4;color:#3b6f89;
+}
+#jointLimitsGroup .jointStopSetStatus:empty {display:none;}
+#jointLimitsGroup .jointStopSetStatus[data-state="error"] {color:#a54537;}
