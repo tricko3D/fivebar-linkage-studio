@@ -98,6 +98,15 @@ const fs = require('node:fs');
   if(await page.locator('.fileHubRepositoryLinks a').count()!==2)
     throw Error('GitHub source and MIT license footer links missing');
   const hub=page.locator('#fileHubOverlay');
+  const order=await page.locator('.fileHubTabs [data-file-kind]').evaluateAll(
+    buttons=>buttons.map(button=>button.dataset.fileKind));
+  if(order.join(',')!=='share,json,sw,md,svg')
+    throw Error('Share links must appear first in Files & Export');
+  if(await page.locator('[data-file-kind="share"]').getAttribute('aria-pressed')!=='true')
+    throw Error('Files & Export should open to Share links');
+  if(!(await page.locator('#shareStudioUrl').inputValue()).includes('#c='))
+    throw Error('Default Share links panel did not generate a permalink');
+  await page.locator('[data-file-kind="json"]').click();
   if(!(await page.locator('#fileHubText').inputValue()).includes('"boardW": 255'))
     throw Error('JSON preview lacks current board settings');
 
@@ -239,6 +248,24 @@ const fs = require('node:fs');
     throw Error('Standalone /r/ report link failed to render');
   if(!(await standalone.locator('#reportBack').getAttribute('href')).includes('#c='))
     throw Error('Standalone report cannot return to the exact studio snapshot');
+  const cadImg=standalone.locator('#reportCadImage');
+  if(!(await cadImg.getAttribute('src')).startsWith('blob:') ||
+     !(await standalone.locator('#reportCadTitle').innerText()).includes('Dimensioned CAD'))
+    throw Error('Standalone report is missing its CAD plan image');
+  const cadSource=await standalone.evaluate(()=>standaloneCadSvg);
+  if(!cadSource.includes('EDGE → M') || !cadSource.includes('LINK CROSS SECTIONS'))
+    throw Error('Standalone CAD plan lost board-edge datum or section sketches');
+  await standalone.locator('#reportCadToggle').click();
+  if(await standalone.locator('#reportCadBody').isVisible())
+    throw Error('CAD plan did not collapse');
+  await standalone.locator('#reportCadToggle').click();
+  if(!(await standalone.locator('#reportCadBody').isVisible()))
+    throw Error('CAD plan did not reopen');
+  const [drawingDownload]=await Promise.all([
+    standalone.waitForEvent('download'),standalone.locator('#reportCadSave').click()
+  ]);
+  if(!drawingDownload.suggestedFilename().endsWith('cad.svg'))
+    throw Error('Standalone CAD SVG download not offered');
   await standalone.close();
 
   await page.locator('[data-file-kind="json"]').click();
