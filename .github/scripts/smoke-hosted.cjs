@@ -124,6 +124,27 @@ const fs = require('node:fs');
   if(width<850)await page.locator('#toggleSettings').click();
   await page.locator('.topSettingsTabs [data-setting="board"]').click();
   if(!(await page.locator('#boardW').isVisible()))throw Error('Board settings invisible');
+  // All five tabs use the same accordion component; no duplicated category header.
+  for(const category of ['board','linkage','motors','mechanics','display']){
+    const section=page.locator('.config > .section[data-category="'+category+'"]');
+    if(await section.count()!==1)throw Error('Missing settings section: '+category);
+    if(await section.locator(':scope > .sectheader').count())
+      throw Error('Redundant category title remains: '+category);
+    if(await section.locator('.mechanicsGroup').count()<1)
+      throw Error('Settings category lacks collapsible cards: '+category);
+  }
+  if(await page.locator('.config > .section[data-category="board"] > .mechanicsGroup').count()!==1)
+    throw Error('Board settings are not one collapsible card');
+  const boardCard=page.locator('.config > .section[data-category="board"] > .mechanicsGroup');
+  await boardCard.locator('summary').click();
+  if(await page.locator('#boardW').isVisible())throw Error('Board card did not collapse');
+  await boardCard.locator('summary').click();
+  if(!(await page.locator('#boardW').isVisible()))throw Error('Board card did not reopen');
+  await page.locator('.topSettingsTabs [data-setting="display"]').click();
+  const displayCard=page.locator('.config > .section[data-category="display"] > .mechanicsGroup');
+  if(await displayCard.count()!==1)throw Error('Display overlay controls not inside a card');
+  if(!(await page.locator('#showCoverage').isVisible()))throw Error('Display overlay controls hidden');
+  await page.locator('.topSettingsTabs [data-setting="board"]').click();
 
   // Every Linkage section must be independently collapsible.
   await page.locator('.topSettingsTabs [data-setting="linkage"]').click();
