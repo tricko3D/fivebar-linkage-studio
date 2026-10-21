@@ -134,6 +134,7 @@ setupMaterialOptions();
 writeControls();
 initControls();
 initMaterialPicker();
+initFileHub();
 updateTransmissionReadout();
 rebuildRoute();
 render(true);
