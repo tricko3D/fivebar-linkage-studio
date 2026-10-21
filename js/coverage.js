@@ -161,23 +161,27 @@ function servoReadout(sol) {
   $('servoCentres').textContent = `${a.centers}/64`;
   $('servoSamples').textContent = `${a.samples}/576`;
   $('servoTarget').textContent = !sol.valid
-    ? 'Unreachable'
+    ? (sol.limitedBy === 'joint-stops' ? 'Outside mechanical stops' : 'Unreachable')
     : servoPass(sol, a)
       ? 'Within both windows'
       : 'Beyond configured servo travel';
+  const limitReadout = $('jointLimitReadout');
+  if (limitReadout) limitReadout.textContent = state.useJointLimits
+    ? `Active · M₁ ${state.leftMinAngle}° → ${state.leftMaxAngle}° · M₂ ${state.rightMinAngle}° → ${state.rightMaxAngle}° · ${a.centers}/64 centres meet geometry, stops and servo travel`
+    : 'Disabled · mechanical stops do not constrain reachability';
   const status = $('servoStatus');
   if (a.full) {
     status.className = 'mechbadge';
     status.textContent = 'PASS: All sampled points fit both servo limits.';
   } else if (a.geometricalPoints !== 576) {
     status.className = 'mechbadge warn';
-    status.textContent = 'Some board points are geometrically unreachable.';
+    status.textContent = 'Some board points are outside the linkage geometry or enabled mechanical stops.';
   } else {
     status.className = 'mechbadge bad';
     status.textContent = 'Servo travel insufficient for full-board coverage.';
   }
   $('servoHint').textContent =
     a.leftArc && a.rightArc && a.leftArc.span <= a.usable && a.rightArc.span <= a.usable
-      ? 'Both motors fit within the configured angular travel across all reachable samples. Validate the actual servo limits and physical mounting.'
+      ? 'The servo windows cover the reachable points. Mechanical stops, when enabled, also constrain reachability and motion paths.'
       : 'At least one motor needs more angular travel than allowed, or some squares are unreachable. The fitted windows maximize individual motor coverage where full fit is impossible.';
 }
