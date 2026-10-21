@@ -21,12 +21,8 @@
       el.classList.toggle('is-active', (mapping[selected] || []).includes(i)),
     );
   }
-  const titles = { board:'Board', linkage:'Linkage', motors:'Motors & Drive', mechanics:'Mechanics & Loads', display:'Display' };
-  const railTitle = document.getElementById('settingsTitle');
-  function chooseSettings(selected) {
-    choose(settingTabs, configSections, groups, selected);
-    if (railTitle) railTitle.textContent = titles[selected] || 'Settings';
-  }
+  // Settings tabs are their own labels; no duplicate panel title is needed.
+  const chooseSettings = selected => choose(settingTabs, configSections, groups, selected);
   const settingTabs = document.querySelector('.settingsTabs'),
     resultTabs = document.querySelector('.resultTabs');
   settingTabs.addEventListener('click', (e) => {
