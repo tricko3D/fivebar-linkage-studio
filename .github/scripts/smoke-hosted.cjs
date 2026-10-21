@@ -144,11 +144,14 @@ const fs = require('node:fs');
   const displayCard=page.locator('.config > .section[data-category="display"] > .mechanicsGroup');
   if(await displayCard.count()!==1)throw Error('Display overlay controls not inside a card');
   if(!(await page.locator('#showCoverage').isVisible()))throw Error('Display overlay controls hidden');
+  await auditActiveFieldRows();
   await page.locator('.topSettingsTabs [data-setting="board"]').click();
+  await auditActiveFieldRows();
 
   // Every Linkage section must be independently collapsible.
   await page.locator('.topSettingsTabs [data-setting="linkage"]').click();
   if(await page.locator('.linkageAccordion').count()!==3)throw Error('Expected three linkage accordions');
+  await auditActiveFieldRows();
   if(await page.locator('.config > .section').count()!==5)throw Error('Expected one section per settings tab');
   const linkageParentCount=await page.locator('.linkageAccordion').evaluateAll(
     cards => new Set(cards.map(card => card.parentElement)).size
@@ -175,6 +178,7 @@ const fs = require('node:fs');
   if(!(await page.locator('#sectionsGroup').isVisible()))throw Error('Mechanical sections missing');
   await page.locator('#sectionsGroup').evaluate(el=>el.open=true);
   if(!(await page.locator('#l1W').isVisible()))throw Error('Cross section fields missing');
+  await auditActiveFieldRows();
   await page.locator('#sectionsGroup .crossSectionHead .infoTrigger').click();
   if(!(await page.locator('#studioTooltip').innerText()).includes('Link cross-sections, not link lengths'))
     throw Error('Cross-section explanation missing from tooltip');
@@ -186,6 +190,52 @@ const fs = require('node:fs');
   await page.locator('#ratio').dispatchEvent('change');
   if(!(await page.locator('#gearReadout').innerText()).includes('3.00:1'))
     throw Error('Gear ratio did not recalculate');
+
+  // Every Transmission field needs its own full-width row, even the formerly
+  // half-width standalone friction field.
+  const transmissionWidths=await page.locator('#transmissionGroup .fieldrow').evaluateAll(rows=>
+    rows.flatMap(row => {
+      const box=row.getBoundingClientRect();
+      return [...row.children].filter(n=>n.classList.contains('field'))
+        .map(field=>({key:field.querySelector('input')?.id,
+          w:field.getBoundingClientRect().width, rowWidth:box.width}));
+    })
+  );
+  if(transmissionWidths.length!==3||transmissionWidths.some(f=>f.w<f.rowWidth*.90))
+    throw Error('Transmission inputs are not full width: '+JSON.stringify(transmissionWidths));
+
+  // Audit rendered two-column labels after each category switch. Any field
+  // that wraps due to sharing the row should be promoted to full width.
+  async function auditActiveFieldRows(){
+    await page.waitForTimeout(50);
+    const invalid=await page.locator('.config > .section.is-active .fieldrow').evaluateAll(rows=>{
+      const problems=[];
+      for(const row of rows){
+        if(row.getBoundingClientRect().width<2)continue;
+        const fields=[...row.children].filter(el=>el.classList.contains('field'));
+        if(fields.length===0)continue;
+        const available=row.getBoundingClientRect().width;
+        if(fields.length===1&&fields[0].getBoundingClientRect().width<available*.88)
+          problems.push('Lone field half width: '+fields[0].querySelector('input,select')?.id);
+        for(const field of fields){
+          const label=field.querySelector(':scope > label');
+          if(!label)continue;
+          const range=document.createRange();
+          range.selectNodeContents(label);
+          const rects=[...range.getClientRects()].filter(rc=>rc.width>1&&rc.height>1);
+          const wrapped=rects.length>1&&rects.some(rc=>Math.abs(rc.top-rects[0].top)>3);
+          if(wrapped&&fields.length>1&&!row.classList.contains('wrappedLabelRow')&&
+             !row.closest('.fullWidthInputs'))
+            problems.push('Wrapped label sharing a row: '+label.innerText);
+          if(row.classList.contains('wrappedLabelRow')&&field.getBoundingClientRect().width<available*.88)
+            problems.push('Expanded field not full width: '+label.innerText);
+        }
+      }
+      return problems;
+    });
+    if(invalid.length)throw Error('Input width audit: '+invalid.join('; '));
+  }
+  await auditActiveFieldRows();
 
   // Explicit min/max, per-value reset, and reset-all must all work in the rail.
   const stops=page.locator('#jointLimitsGroup');
@@ -229,6 +279,30 @@ const fs = require('node:fs');
   if(await page.locator('#leftMinAngle').inputValue()!=='0')throw Error('Reset MIN failed');
   await stops.locator('[data-joint-stop="rightMaxAngle"]').click();
   await page.locator('#resetJointLimits').click();
+  // The gripper must be clamped to the first hard-stop boundary, not merely
+  // turn red after an out-of-range pointer event. Disabled mode stays free.
+  const dragAudit=await page.evaluate(()=>{
+    const start=vec(state.targetX,state.targetY);
+    const current=calc(start,{...state,useJointLimits:false});
+    if(!current.valid)return {error:'Starting gripper pose invalid'};
+    const limits={...state,useJointLimits:true,
+      leftMinAngle:(current.angleL-15+360)%360,
+      leftMaxAngle:(current.angleL+15)%360,
+      rightMinAngle:(current.angleR-15+360)%360,
+      rightMaxAngle:(current.angleR+15)%360};
+    const probes=[vec(0,0),vec(255,0),vec(0,255),vec(255,255),
+      vec(start.x,start.y-250),vec(start.x+300,start.y)];
+    const requested=probes.find(p=>!calc(p,limits).valid);
+    if(!requested)return {error:'No outside-hard-stop test position'};
+    const bounded=constrainedTarget(start,requested,limits);
+    const stillValid=calc(bounded,limits).valid;
+    const travelled=dist(start,bounded),distance=dist(start,requested);
+    return {stillValid,travelled,distance,
+      disabledFree:constrainedTarget(start,requested,{...limits,useJointLimits:false})===requested};
+  });
+  if(dragAudit.error||!dragAudit.stillValid||
+     !(dragAudit.travelled<dragAudit.distance)||!dragAudit.disabledFree)
+    throw Error('Hard-stop drag clamping failed: '+JSON.stringify(dragAudit));
   if(await page.locator('#useJointLimits').isChecked())throw Error('Reset all did not disable limits');
   if(await page.locator('#rightMaxAngle').inputValue()!=='360')throw Error('Reset all did not restore max');
 
