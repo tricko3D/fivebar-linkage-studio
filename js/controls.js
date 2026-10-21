@@ -113,6 +113,7 @@ function persist() {
 function change(recalc = true) {
   if (typeof refreshMaterialPickerTrigger === 'function') refreshMaterialPickerTrigger();
   stopRoute();
+  if (typeof shareClearActiveLink === 'function') shareClearActiveLink();
   updateBoardReadout();
   updateTransmissionReadout();
   rebuildRoute();
@@ -232,7 +233,7 @@ function initControls() {
         $('material').value = 'custom';
         updateMaterialPresetNote();
       }
-      change(!['showCoverage', 'showCenters', 'showRings', 'showServoArcs'].includes(key));
+      change(!['showCoverage', 'showCenters', 'showRings', 'showDimensions', 'showServoArcs'].includes(key));
     };
     // Native selects fire both input and change; applying a material preset
     // twice needlessly rebuilds the full mechanical heatmap.
