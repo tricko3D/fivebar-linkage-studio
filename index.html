@@ -368,11 +368,10 @@
             <div class="mechanicsGroupBody">
           <div class="fieldrow" style="margin-top: 12px">
             <div class="field">
-              <label for="material">Printed material</label
+              <label for="material">Link material</label
               ><select id="material" data-key="material">
-                <option value="pla">PLA (typical)</option>
-                <option value="petg">PETG (typical)</option>
-                <option value="custom">Custom</option>
+                <option value="petg">PETG</option>
+                <option value="custom">Custom values</option>
               </select>
             </div>
             <div class="field">
@@ -383,6 +382,7 @@
               </select>
             </div>
           </div>
+          <p class="hint materialPresetNote" id="materialPresetNote" role="status" aria-live="polite">Material values are indicative screening assumptions, not certified allowables. Check the actual product datasheet, print orientation and moisture conditioning.</p>
           <div class="fieldrow">
             <div class="field">
               <label for="youngMPa">Elastic modulus · MPa</label
@@ -390,26 +390,26 @@
                 id="youngMPa"
                 data-key="youngMPa"
                 type="number"
-                min="100"
-                max="10000"
-                step="100"
+                min="1"
+                max="250000"
+                step="any"
               />
             </div>
             <div class="field">
               <label for="density">Density · g/cm³</label
-              ><input id="density" data-key="density" type="number" min="0.2" max="6" step="0.01" />
+              ><input id="density" data-key="density" type="number" min="0.2" max="25" step="any" />
             </div>
           </div>
           <div class="fieldrow">
             <div class="field">
-              <label for="stiffFactor">Print stiffness factor</label
+              <label for="stiffFactor">Effective stiffness factor</label>
               ><input
                 id="stiffFactor"
                 data-key="stiffFactor"
                 type="number"
                 min="0.1"
                 max="1"
-                step="0.05"
+                step="0.01"
               />
             </div>
             <div class="field">
@@ -418,9 +418,9 @@
                 id="stressLimit"
                 data-key="stressLimit"
                 type="number"
-                min="1"
-                max="100"
-                step="1"
+                min="0.1"
+                max="2000"
+                step="any"
               />
             </div>
           </div>
