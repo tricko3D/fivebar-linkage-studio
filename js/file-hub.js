@@ -83,6 +83,17 @@ function renderReportPreview(markdown, container=null) {
       const pre=document.createElement('pre'),code=document.createElement('code');
       code.textContent=parts.join('\n');pre.append(code);parent.append(pre);continue;
     }
+    if(line==='![Dimensioned CAD drawing](drawing.svg)'){
+      flush();
+      const figure=document.createElement('figure');
+      figure.className='fileHubReportDrawing';
+      const graphic=document.createElement('img');
+      graphic.alt='Dimensioned five-bar CAD plan with motor stop angles, link lengths and board datum';
+      graphic.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(buildCadDrawingSvg(state));
+      figure.append(graphic);
+      parent.append(figure);
+      continue;
+    }
     if(line==='<details>'){
       flush();
       const details=document.createElement('details');details.className='fileHubAuditDetails';
