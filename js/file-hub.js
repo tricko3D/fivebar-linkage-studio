@@ -211,7 +211,7 @@ function refreshFileHub() {
   svgPreview.hidden=!showSvg;
   document.getElementById('fileHubSharePreview').hidden=!showShare;
   field.readOnly=!importing;
-  field.placeholder=importing?'Paste a Fivebar Studio JSON configuration here…':'';
+  field.placeholder=importing?'Paste configuration JSON or a shared studio/report URL here…':'';
   if (showShare) {
     try {
       document.getElementById('shareStudioUrl').value=shareLink('studio');
@@ -221,7 +221,7 @@ function refreshFileHub() {
     fileHubContent='';
   } else if (importing) {
     field.value='';
-    fileHubStatus('Paste JSON and Apply, or load a JSON file.');
+    fileHubStatus('Paste JSON or a shared URL and Apply, or load a JSON file.');
   } else {
     try {
       fileHubContent=fileHubGenerate();
