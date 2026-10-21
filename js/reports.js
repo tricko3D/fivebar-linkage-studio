@@ -121,6 +121,7 @@ function buildAuditReport() {
         : []),
     ]),
     ...auditTag('04  MATERIAL, LINK CROSS-SECTIONS, MASSES', [
+      `Manufacturing=${manufacturingMethods.find(method => method.key === s.manufacturing)?.label || 'Unspecified'}`,
       `Material=${materialPresets[s.material]?.label || 'Custom values'} (${s.material}); section=${s.sectionType}; box wall=${s.wall} mm`,
       `Preset assumptions=${materialPresets[s.material]?.note || 'Manually entered material properties'}`,
       'Important: Young modulus and density are indicative only; strength threshold is an adjustable screening input, NOT a certified allowable.',
@@ -426,7 +427,9 @@ function buildSolidWorksVariables() {
     '',
     "' 06 SIMULATION REFERENCE INPUTS (not automatically assigned to CAD materials or forces)",
     "' Unitless reference values include their original units in the variable name.",
+    "' Manufacturing method: " + (manufacturingMethods.find(method => method.key === s.manufacturing)?.label || 'Unspecified'),
     "' Selected link material: " + (materialPresets[s.material]?.label || 'Custom values'),
+    unit('ManufacturingMethodCode', manufacturingMethods.findIndex(method => method.key === s.manufacturing) + 1),
     "' MaterialPresetCode identifiers: Custom=0, PLA=1, PETG=2; remaining codes follow the preset catalog.",
     "' Bending threshold is a manually adjustable screening limit, not a design certification.",
     unit('MaterialPresetCode', materialPresets[s.material]?.code ?? 0),
