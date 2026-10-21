@@ -182,5 +182,9 @@
   scheduleInputRowFit();
   window.addEventListener('resize', scheduleInputRowFit);
   document.querySelector('.settingsTabs')?.addEventListener('click', scheduleInputRowFit);
+  // Details may begin closed. Re-check their labels when opened, and whenever
+  // a conditional field becomes visible (e.g. extension or fixed-offset mode).
+  config.addEventListener('toggle', scheduleInputRowFit, true);
+  config.addEventListener('change', scheduleInputRowFit, true);
   document.fonts?.ready?.then(scheduleInputRowFit);
 })();
