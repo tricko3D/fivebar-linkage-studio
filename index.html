@@ -368,11 +368,18 @@
             <div class="mechanicsGroupBody">
           <div class="fieldrow" style="margin-top: 12px">
             <div class="field">
-              <label for="material">Link material</label
-              ><select id="material" data-key="material">
-                <option value="petg">PETG</option>
-                <option value="custom">Custom values</option>
+              <label for="materialPickerTrigger">Manufacturing & material</label>
+              <select id="material" data-key="material" hidden aria-hidden="true" tabindex="-1">
+                <option value="petg">PETG</option><option value="custom">Custom values</option>
               </select>
+              <button type="button" id="materialPickerTrigger" class="materialPickerTrigger"
+                aria-haspopup="dialog" aria-controls="materialPickerOverlay" aria-expanded="false">
+                <span class="materialPickerTriggerText">
+                  <span id="materialProcessLabel" class="materialProcessLabel">FDM / FFF</span>
+                  <strong id="materialChoiceLabel">PETG</strong>
+                </span>
+                <i data-lucide="chevrons-up-down" aria-hidden="true"></i>
+              </button>
             </div>
             <div class="field">
               <label for="sectionType">Link cross section</label
@@ -909,6 +916,40 @@
         </div>
       </aside>
     </main>
+    <!-- Portal-like full-screen material picker: independent of sidebar scroll/clip. -->
+    <div id="materialPickerOverlay" class="materialPickerOverlay" hidden>
+      <div class="materialPickerBackdrop" data-picker-close="true"></div>
+      <section class="materialPickerDialog" role="dialog" aria-modal="true"
+        aria-labelledby="materialPickerTitle" aria-describedby="materialPickerDescription" tabindex="-1">
+        <header class="materialPickerHeader">
+          <div>
+            <div class="materialPickerEyebrow">MATERIAL LIBRARY</div>
+            <h2 id="materialPickerTitle">Choose manufacturing process</h2>
+            <p id="materialPickerDescription">Select how the links will be made, then choose a material.</p>
+          </div>
+          <button type="button" class="materialPickerClose" id="materialPickerClose"
+            aria-label="Close material picker"><i data-lucide="x" aria-hidden="true"></i></button>
+        </header>
+        <div class="materialPickerLayout">
+          <nav id="materialProcessOptions" class="materialProcessOptions" aria-label="Manufacturing processes"></nav>
+          <div class="materialPickerResults">
+            <div class="materialPickerResultTop">
+              <div><div id="materialPickerProcessName" class="materialPickerProcessName">FDM / FFF</div>
+                <p id="materialPickerProcessHelp" class="materialPickerProcessHelp"></p></div>
+              <span id="materialPickerCount" class="materialPickerCount"></span>
+            </div>
+            <label class="materialPickerSearchWrap" for="materialPickerSearch">
+              <i data-lucide="search" aria-hidden="true"></i>
+              <input id="materialPickerSearch" type="search" placeholder="Search materials…"
+                autocomplete="off" aria-label="Search materials in selected process" />
+            </label>
+            <div id="materialPickerChoices" class="materialPickerChoices" role="group" aria-label="Materials"></div>
+            <p class="materialPickerDisclaimer">Representative mechanical assumptions, not engineering certification.
+              Manufacturing quality, print direction and stock grade affect real strength.</p>
+          </div>
+        </div>
+      </section>
+    </div>
     <footer class="foot">
       Built using ChatGPT (GPT-6, OpenAI). Inspired by
       <a href="https://github.com/unswei/fivebar" target="_blank" rel="noopener noreferrer"
@@ -925,6 +966,7 @@
     <script defer src="js/movement.js"></script>
     <script defer src="js/controls.js"></script>
     <script defer src="js/reports.js"></script>
+    <script defer src="js/material-picker.js"></script>
     <script defer src="js/bootstrap.js"></script>
     <script defer src="js/settings-reorg.js"></script>
     <script defer src="js/layout.js"></script>
