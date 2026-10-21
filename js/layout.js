@@ -21,12 +21,18 @@
       el.classList.toggle('is-active', (mapping[selected] || []).includes(i)),
     );
   }
+  const titles = { board:'Board', linkage:'Linkage', motors:'Motors & Drive', mechanics:'Mechanics & Loads', display:'Display' };
+  const railTitle = document.getElementById('settingsTitle');
+  function chooseSettings(selected) {
+    choose(settingTabs, configSections, groups, selected);
+    if (railTitle) railTitle.textContent = titles[selected] || 'Settings';
+  }
   const settingTabs = document.querySelector('.settingsTabs'),
     resultTabs = document.querySelector('.resultTabs');
   settingTabs.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-setting]');
     if (btn) {
-      choose(settingTabs, configSections, groups, btn.dataset.setting);
+      chooseSettings(btn.dataset.setting);
       if (window.matchMedia('(max-width: 850px)').matches) {
         setDrawer('insights', false);
         setDrawer('settings', true);
@@ -37,7 +43,7 @@
     const btn = e.target.closest('[data-insight]');
     if (btn) choose(resultTabs, inspectors, results, btn.dataset.insight);
   });
-  choose(settingTabs, configSections, groups, 'board');
+  chooseSettings('board');
   choose(resultTabs, inspectors, results, 'help');
   function setDrawer(which, open) {
     document.body.classList.toggle('show-' + which, open);
