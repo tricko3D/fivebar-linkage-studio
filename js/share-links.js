@@ -1,15 +1,6 @@
 // Deterministic, self-contained, shareable Fivebar Studio configuration links.
 // No accounts, server storage or URL shortener: the fragment is the configuration.
 'use strict';
-const SHARE_VERSION=2;
-// v1 links omitted values matching the original unrestricted baseline. Keep
-// that baseline stable when the application's startup preset changes.
-const SHARE_V1_DEFAULTS={
-  ...defaults,
-  targetX:127.5,targetY:127.5,
-  useJointLimits:false,
-  leftMinAngle:0,leftMaxAngle:360,rightMinAngle:0,rightMaxAngle:360
-};
 const SHARE_MAX=8192;
 function shareCanonicalConfig(source=state){
   const values={};
@@ -19,7 +10,7 @@ function shareCanonicalConfig(source=state){
       throw new Error('Invalid parameter '+key);
     if(v!==defaults[key]) values[key]=v;
   }
-  return JSON.stringify({v:SHARE_VERSION,s:values});
+  return JSON.stringify({s:values});
 }
 function shareEncode(source=state){
   const bytes=new TextEncoder().encode(shareCanonicalConfig(source));
@@ -33,10 +24,10 @@ function shareDecode(token){
   const raw=atob(token.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-token.length%4)%4));
   const bytes=Uint8Array.from(raw,ch=>ch.charCodeAt(0));
   const parsed=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
-  if(!parsed || ![1,SHARE_VERSION].includes(parsed.v) || !parsed.s ||
+  if(!parsed || !parsed.s ||
      typeof parsed.s!=='object'||Array.isArray(parsed.s))
     throw new Error('Unsupported configuration link format');
-  const result={...(parsed.v===1?SHARE_V1_DEFAULTS:defaults)};
+  const result={...defaults};
   for(const [key,value] of Object.entries(parsed.s)){
     if(!Object.prototype.hasOwnProperty.call(defaults,key) ||
        typeof value!==typeof defaults[key] ||
@@ -74,7 +65,15 @@ function shareStateFromLink(value){
 function shareCurrentFromUrl(){
   return shareReadUrl(window.location.href);
 }
-function shareClearActiveLink(){
-  if(window.location.hash.startsWith('#c='))
-    history.replaceState(null,'',window.location.pathname+window.location.search);
+// Reflect the current state in the address bar without adding browser-history
+// entries for every input change or drag frame. The first page load has a link too.
+function shareSyncUrl(source=state){
+  const url=new URL(window.location.href);
+  url.searchParams.delete('c');
+  const hash='c='+shareEncode(source);
+  if(url.hash.slice(1)!==hash){
+    url.hash=hash;
+    history.replaceState(history.state,'',url.href);
+  }
+  return url.href;
 }
