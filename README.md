@@ -40,7 +40,9 @@ Open **Mechanics & Loads → Material & bending limits**, then click the manufac
 
 Manufacturing process and material are both saved in the JSON configuration. The selected process is also included in the calculation report and SolidWorks TXT export. Existing PLA/PETG material IDs are preserved. **Custom values** keeps the current modulus, density, stiffness factor and bending limit while assigning a manufacturing process.
 
-Material properties depend on manufacturing route; the SLS and SLA options have process-specific assumptions. Older saved selections that are no longer in the curated menu become Custom while retaining their numeric material parameters. Material-based calculations remain simplified screening estimates. Process choices do not verify machine compatibility.
+Material properties depend on manufacturing route. The SLA picker uses **actual named Formlabs resins**, with representative post-cured *tensile modulus* values: [Tough 2000 Resin V2](https://formlabs.com/eu/products/tough-2000-resin/) (1.8 GPa), [Rigid 4000 Resin](https://formlabs.com/eu/products/rigid-4000-resin/) (4.1 GPa), and [High Temp Resin](https://formlabs.com/eu/products/high-temp-resin/) (2.8 GPa). **Density inputs are approximate**, and the allowable bending stress / stiffness factor are deliberately simplified screening assumptions rather than manufacturer-certified properties. High Temp Resin is primarily heat-resistant, not intended for heavily loaded mechanical parts. Confirm the datasheet, resin formulation, curing schedule, and printer compatibility before designing with these values.
+
+CNC choices are Aluminum 6061-T6, Aluminum 7075-T6, Steel 1018 and Stainless Steel 304. Titanium and POM are no longer selectable. Older saved selections that are no longer in the curated menu become Custom while retaining their numeric material parameters. The dialog's process choices do not verify machine compatibility.
 
 ### Material preset limitations
 
