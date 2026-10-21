@@ -18,7 +18,7 @@ function materialMethodForState() {
 function refreshMaterialPickerTrigger() {
   const process = manufacturingMethods.find(method => method.key === materialMethodForState());
   const label = materialPresets[state.material]?.label || 'Custom values';
-  const methodLabel = process?.label || 'FDM / FFF';
+  const methodLabel = process?.label || 'FDM';
   const processNode = $('materialProcessLabel');
   const materialNode = $('materialChoiceLabel');
   const trigger = $('materialPickerTrigger');
