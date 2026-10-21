@@ -13,13 +13,11 @@
   const rename = (section, name) => {
     section.querySelector(':scope > .sectheader').textContent = name;
   };
-  rename(board, 'Board dimensions');
+  // The navigation already names Board / Linkage / Motors / Mechanics / Display.
+  // Keep section titles only INSIDE collapsible cards, not above them.
   rename(mounting, 'Motor mounting geometry');
   rename(linkage, 'Link lengths & assembly');
   rename(gripper, 'Gripper attachment');
-  rename(motors, 'Motors & Drive');
-  rename(mechanics, 'Mechanics & Loads');
-  rename(display, 'Display');
 
   function setting(id) {
     const element = document.getElementById(id);
@@ -123,6 +121,23 @@
     details.append(summary, body);
     mounting.append(details);
     if (section !== mounting) section.remove();
+  }
+
+  // Use exactly the same mechanicsGroup accordion component in every tab.
+  // Move the existing nodes: their IDs, state binding and event listeners remain intact.
+  function wrapCategoryControls(section, label) {
+    const originalHeader = section.querySelector(':scope > .sectheader');
+    if (originalHeader) originalHeader.remove();
+    const children = Array.from(section.children);
+    section.append(makeGroup(label, [], children));
+  }
+  wrapCategoryControls(board, 'Dimensions & margins');
+  wrapCategoryControls(display, 'Workspace overlays');
+
+  // Motors and Mechanics already contain accordion cards. No category title needed.
+  for (const section of [motors, mechanics]) {
+    const originalHeader = section.querySelector(':scope > .sectheader');
+    if (originalHeader) originalHeader.remove();
   }
 
   // Five actual sections: Board, Linkage, Motors, Mechanics and Display.
