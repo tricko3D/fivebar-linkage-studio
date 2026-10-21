@@ -131,13 +131,13 @@ F_{xy}&=F_{\mathrm{drag}}+m_{\mathrm{eff}}\,a_{xy}
 \frac{\theta_R(y+h)-\theta_R(y-h)}{2h}
 \end{aligned}`),
         ...explain('Angles are converted to radians before division. This measures **motor angle change per millimetre** (rad/mm).'),
+        '### Step 3 — Build and invert the 2 × 2 Jacobian',
+        '',
         ...(derivatives ? [
           ...table(['Derivative','Left θL','Right θR'],[
             ['∂θ/∂x (rad/mm)',fmt(derivatives.x.l,6),fmt(derivatives.x.r,6)],
             ['∂θ/∂y (rad/mm)',fmt(derivatives.y.l,6),fmt(derivatives.y.r,6)]
           ]),
-          '### Step 3 — Build and invert the 2 × 2 Jacobian',
-          '',
           ...eq(String.raw`J_{\theta\leftarrow xy}=
 \begin{bmatrix}
 \frac{\partial\theta_L}{\partial x}&\frac{\partial\theta_L}{\partial y}\\
