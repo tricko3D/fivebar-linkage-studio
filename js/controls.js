@@ -84,7 +84,9 @@ function buildWorkspaceSvg() {
 }
 // Same validation and migration path for uploaded JSON and pasted text.
 function importConfigurationJson(source) {
-  const parsed = JSON.parse(source);
+  // Import either raw JSON or a deterministic /#c= /r/#c= permalink.
+  const input=source.trim();
+  const parsed=/^https?:\/\//i.test(input) ? shareStateFromLink(input) : JSON.parse(input);
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
     throw new Error('Expected a JSON object containing studio settings.');
   const keys = Object.keys(defaults);
