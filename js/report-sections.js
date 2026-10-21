@@ -20,6 +20,7 @@ function buildEngineeringAuditAppendices(ctx) {
   const accel=s.accel/1000;
   const force=s.dragN+moving*accel;
   const safe=(x,unit,d=3)=>Number.isFinite(x)?val(x,unit,d):'Not available';
+  const ceiling=x=>x>=2000-.5?'≥2,000 g (search cap)':safe(x,'g',1);
   const cols=['l1','l2','r1','r2'];
   const xyRows=()=>cols.map(k=>[
     k.toUpperCase(),val(s[k],'mm',2),val(s[k+'W'],'mm',2),val(s[k+'H'],'mm',2),
@@ -92,8 +93,9 @@ C_{\mathrm{tip}}&=\frac{C_L C_R}{C_L+C_R}\\
       ...explain('The estimate excludes pivot flexibility, frame deformation, anisotropic print layers, and position-dependent changes in the real five-bar structure.')
     ],
     () => {
-      const derivatives=grad?.jac;
-      const steps=grad?.samples;
+      const derivatives=grad?.jac?.x && grad?.jac?.y ? grad.jac : null;
+      const steps=grad?.samples?.x?.plus && grad?.samples?.x?.minus &&
+        grad?.samples?.y?.plus && grad?.samples?.y?.minus ? grad.samples : null;
       return [
         ...explain('**What is this section?** We move the gripper by a tiny distance in X and Y and ask how much each motor must rotate. Those four slopes form the *inverse-kinematics Jacobian*. We then use its inverse to estimate mechanical leverage and motor torque.'),
         ...table(['Known motion/load input','Value'],[
@@ -171,11 +173,11 @@ J_R=\frac{\sqrt{b^2+a^2}}{|ad-bc|\,1000}\\
       ...eq(String.raw`m_{\mathrm{screen}}=
 \min\left(m_{\mathrm{deflection}},\,m_{\mathrm{stress}},\,m_{\mathrm{XY\ torque}}\right)`),
       ...table(['Screening limit','Estimated threshold'],[
-        item('Deflection',safe(m.sagLimit,'g',1)),
-        item('Bending stress',safe(m.strengthLimit,'g',1)),
-        item('Both structural checks',safe(m.structuralLimit,'g',1)),
-        item('XY motor torque',grad?.valid?safe(m.torqueLimit,'g',1):'Unavailable'),
-        item('Combined screening result',grad?.valid?safe(m.finalLimit,'g',1):'Unavailable')
+        item('Deflection',ceiling(m.sagLimit)),
+        item('Bending stress',ceiling(m.strengthLimit)),
+        item('Both structural checks',ceiling(m.structuralLimit)),
+        item('XY motor torque',grad?.valid?ceiling(m.torqueLimit):'Unavailable'),
+        item('Combined screening result',grad?.valid?ceiling(m.finalLimit):'Unavailable')
       ]),
       ...explain(`The active limiting assumption is **${m.limiting}**. Separately validate vertical lifting, actual motors and assembled linkages.`)
     ],
