@@ -291,8 +291,9 @@ function initControls() {
       state = newState;
       // Older JSON configurations did not have a manufacturing process field.
       if (!Object.prototype.hasOwnProperty.call(parsed, 'manufacturing') ||
-          !materialMethodKeys[state.manufacturing]?.includes(state.material) &&
-          state.material !== 'custom')
+          !manufacturingMethods.some(method => method.key === state.manufacturing) ||
+          (state.material !== 'custom' &&
+           !materialMethodKeys[state.manufacturing]?.includes(state.material)))
         state.manufacturing = manufacturingForMaterial(state.material);
       state.outerW = Math.max(state.boardW, state.outerW);
       state.outerH = Math.max(state.boardH, state.outerH);
