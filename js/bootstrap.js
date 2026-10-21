@@ -129,10 +129,11 @@ try {
 } catch (e) {}
 state.outerW = Math.max(state.boardW, state.outerW);
 state.outerH = Math.max(state.boardH, state.outerH);
-// Generate all material options BEFORE writeControls() restores saved choices.
+// Infer a manufacturing method for legacy settings saved before the picker existed.
 setupMaterialOptions();
 writeControls();
 initControls();
+initMaterialPicker();
 updateTransmissionReadout();
 rebuildRoute();
 render(true);
