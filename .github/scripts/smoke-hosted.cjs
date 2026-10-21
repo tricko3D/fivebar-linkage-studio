@@ -193,8 +193,35 @@ const fs = require('node:fs');
   if(await stops.locator('[data-joint-stop]').count()!==4 ||
      await stops.locator('[data-reset-stop]').count()!==4)
     throw Error('Expected four Set and four Reset buttons');
+  for(const field of await stops.locator('.jointStopField').all()){
+    const input=await field.locator('input').boundingBox();
+    const actions=await field.locator('.jointStopActions').boundingBox();
+    if(!input||!actions||actions.y<input.y+input.height-1)
+      throw Error('Hard-stop buttons must sit below their angle inputs');
+    if(actions.width<input.width*.8)
+      throw Error('Hard-stop action buttons are too cramped');
+  }
+  for(const body of await page.locator('.mechanicsGroup[open] > .mechanicsGroupBody').all()){
+    const m=await body.evaluate(el=>({
+      overflow:getComputedStyle(el).overflowY,
+      scroll:el.scrollHeight,
+      height:el.clientHeight
+    }));
+    if(m.overflow==='auto'||m.overflow==='scroll'||m.scroll>m.height+2)
+      throw Error('Expanded card has its own scrollbar: '+JSON.stringify(m));
+  }
   await stops.locator('[data-joint-stop="leftMinAngle"]').click();
   if(!(await page.locator('#useJointLimits').isChecked()))throw Error('Set did not enable mechanical limits');
+  if(await page.locator('#scene [data-joint-stop-boundary="left-min"]').count()!==1)
+    throw Error('Canvas MIN stop marker missing');
+  if(await page.locator('#scene [data-joint-stop-boundary="left-max"]').count()!==1)
+    throw Error('Canvas MAX stop marker missing');
+  // Stop markers are hardware geometry, independent of display's servo arcs.
+  await page.locator('.topSettingsTabs [data-setting="display"]').click();
+  await page.locator('#showServoArcs').uncheck();
+  if(await page.locator('#scene [data-joint-stop-boundary="left-min"]').count()!==1)
+    throw Error('Physical stop markers incorrectly depend on servo arcs');
+  await page.locator('.topSettingsTabs [data-setting="motors"]').click();
   const minValue=Number(await page.locator('#leftMinAngle').inputValue());
   if(!(minValue>0 && minValue<=360))throw Error('Set did not capture left joint angle');
   if(!(await page.locator('#currentLeftJointAngle').innerText()).includes('°'))throw Error('Live joint angle missing');
