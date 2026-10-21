@@ -268,6 +268,29 @@
               />
             </div>
           </div>
+          <details class="mechanicsGroup" id="jointLimitsGroup" open>
+            <summary><span>Mechanical joint stops</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+            <div class="mechanicsGroupBody">
+              <label class="toggle"><input id="useJointLimits" data-key="useJointLimits" type="checkbox" />
+                Enforce physical joint limits</label>
+              <div class="fieldrow">
+                <div class="field"><label for="leftMinAngle">Left M₁ minimum · °</label>
+                  <input id="leftMinAngle" data-key="leftMinAngle" type="number" min="0" max="360" step="1" /></div>
+                <div class="field"><label for="leftMaxAngle">Left M₁ maximum · °</label>
+                  <input id="leftMaxAngle" data-key="leftMaxAngle" type="number" min="0" max="360" step="1" /></div>
+              </div>
+              <div class="fieldrow">
+                <div class="field"><label for="rightMinAngle">Right M₂ minimum · °</label>
+                  <input id="rightMinAngle" data-key="rightMinAngle" type="number" min="0" max="360" step="1" /></div>
+                <div class="field"><label for="rightMaxAngle">Right M₂ maximum · °</label>
+                  <input id="rightMaxAngle" data-key="rightMaxAngle" type="number" min="0" max="360" step="1" /></div>
+              </div>
+              <p class="hint">Joint angles: 0° points right (+X), 90° points down (+Y).
+                Minimum above maximum wraps across 0° (e.g. 300° → 60°).
+                These are simulated limits at the output joints, not physical safety protection.</p>
+              <div class="derived" id="jointLimitReadout">Mechanical joint limits disabled</div>
+            </div>
+          </details>
           <div class="derived">
             <span class="mini">Usable travel</span><br /><strong id="servoUsable">--</strong
             ><br /><span class="mini"
