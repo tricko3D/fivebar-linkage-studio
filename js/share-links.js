@@ -1,7 +1,15 @@
 // Deterministic, self-contained, shareable Fivebar Studio configuration links.
 // No accounts, server storage or URL shortener: the fragment is the configuration.
 'use strict';
-const SHARE_VERSION=1;
+const SHARE_VERSION=2;
+// v1 links omitted values matching the original unrestricted baseline. Keep
+// that baseline stable when the application's startup preset changes.
+const SHARE_V1_DEFAULTS={
+  ...defaults,
+  targetX:127.5,targetY:127.5,
+  useJointLimits:false,
+  leftMinAngle:0,leftMaxAngle:360,rightMinAngle:0,rightMaxAngle:360
+};
 const SHARE_MAX=8192;
 function shareCanonicalConfig(source=state){
   const values={};
@@ -25,10 +33,10 @@ function shareDecode(token){
   const raw=atob(token.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-token.length%4)%4));
   const bytes=Uint8Array.from(raw,ch=>ch.charCodeAt(0));
   const parsed=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
-  if(!parsed || parsed.v!==SHARE_VERSION || !parsed.s ||
+  if(!parsed || ![1,SHARE_VERSION].includes(parsed.v) || !parsed.s ||
      typeof parsed.s!=='object'||Array.isArray(parsed.s))
     throw new Error('Unsupported configuration link format');
-  const result={...defaults};
+  const result={...(parsed.v===1?SHARE_V1_DEFAULTS:defaults)};
   for(const [key,value] of Object.entries(parsed.s)){
     if(!Object.prototype.hasOwnProperty.call(defaults,key) ||
        typeof value!==typeof defaults[key] ||
