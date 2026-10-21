@@ -24,8 +24,10 @@ Use **Files & Export** in the header. The dialog stays a consistent size while y
 
 - **Configuration (JSON):** Inspect, copy, or save current settings. Select **Import / paste** to paste JSON and apply it, or choose **Load JSON file**. Loading and pasting use the same validation and migration path.
 - **SolidWorks variables (TXT):** Preview, copy, or save Tools → Equations compatible variable declarations.
-- **Calculation report (MD):** Switch between a formatted Markdown preview and source text; copy or save the original Markdown.
+- **Calculation report (MD):** Read an executive summary, estimated limit utilization with visual bars, GitHub-compatible LaTeX equations typeset using KaTeX, comparison tables, and 11 expandable raw-data audit sections. Switch to Markdown source for the entire reproducible report; copy or save either way.
 - **Workspace drawing (SVG):** View the exportable vector drawing; copy its SVG markup or save the file.
+
+Math is typeset by [KaTeX](https://katex.org/) in the browser; if its CDN is unavailable, the original LaTeX remains visible instead. GitHub renders the downloaded Markdown's `$ ... $` equation blocks directly. All detailed calculations (including the 64-square and route tables) remain available in collapsed appendices rather than being omitted.
 
 The former header **Results** toggle has been removed. To access live results on narrow screens, use **View results** inside Files & Export; on desktop, the existing results rail stays available.
 
