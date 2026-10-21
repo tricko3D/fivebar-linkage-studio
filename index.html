@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Fivebar Linkage Studio | Chessboard Kinematics &amp; Mechanics</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="theme-color" content="#18364e" />
     <link rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.css"
       integrity="sha384-3rdsX6e5mueWyoweR9NIVmtEsUkokpBT/0ALqKKIBMr9j4qhHkaIkAcGgsE6uVlp"
@@ -222,6 +224,9 @@
           ><label class="toggle"
             ><input id="showRings" data-key="showRings" type="checkbox" /> Show maximum reach
             circles</label
+          ><label class="toggle"
+            ><input id="showDimensions" data-key="showDimensions" type="checkbox" /> Show CAD dimensions
+            (mm)</label
           ><label class="toggle"
             ><input id="forbidCrossings" data-key="forbidCrossings" type="checkbox" /> Reject link
             crossings (2D)</label
@@ -938,7 +943,10 @@
               <i data-lucide="file-text" aria-hidden="true"></i><span><strong>Calculation report</strong><small>MD · formatted preview</small></span>
             </button>
             <button type="button" class="fileHubTab" data-file-kind="svg" aria-pressed="false">
-              <i data-lucide="image" aria-hidden="true"></i><span><strong>Workspace drawing</strong><small>SVG · scalable image</small></span>
+              <i data-lucide="ruler" aria-hidden="true"></i><span><strong>CAD drawing</strong><small>SVG · dimensioned plan</small></span>
+            </button>
+            <button type="button" class="fileHubTab" data-file-kind="share" aria-pressed="false">
+              <i data-lucide="link-2" aria-hidden="true"></i><span><strong>Share links</strong><small>Permalinks · full configuration</small></span>
             </button>
           </nav>
           <div class="fileHubMain">
@@ -964,19 +972,43 @@
             <div class="fileHubPreviewArea">
               <textarea id="fileHubText" readonly spellcheck="false" aria-label="File content"></textarea>
               <div id="fileHubMarkdownPreview" class="fileHubMarkdownPreview" hidden aria-label="Rendered calculation report"></div>
-              <div id="fileHubSvgPreview" class="fileHubSvgPreview" hidden aria-label="Workspace SVG preview">
-                <img id="fileHubSvgImage" alt="Export preview of the current linkage and chessboard" />
+              <div id="fileHubSvgPreview" class="fileHubSvgPreview" hidden aria-label="Dimensioned CAD SVG preview">
+                <img id="fileHubSvgImage" alt="Dimensioned engineering plan of the board and linkage" />
+              </div>
+              <div id="fileHubSharePreview" class="fileHubSharePreview" hidden>
+                <p>These URLs contain the complete configuration. No account or server storage is required. Identical settings generate the same URL.</p>
+                <label for="shareStudioUrl">Interactive studio</label>
+                <input id="shareStudioUrl" type="text" readonly aria-label="Studio permalink" />
+                <div class="fileHubShareButtons">
+                  <button type="button" id="shareStudioCopy">Copy studio link</button>
+                  <button type="button" id="shareStudioOpen">Open studio</button>
+                </div>
+                <label for="shareReportUrl">Standalone calculation report</label>
+                <input id="shareReportUrl" type="text" readonly aria-label="Report permalink" />
+                <div class="fileHubShareButtons">
+                  <button type="button" id="shareReportCopy">Copy report link</button>
+                  <button type="button" id="shareReportOpen">Open report</button>
+                </div>
+                <p class="fileHubShareNote">Import a configuration URL by opening it in the browser. Sharing a URL exposes the settings encoded in it; do not share sensitive information in custom fields.</p>
               </div>
             </div>
             <div class="fileHubFooter">
               <span id="fileHubStatus" role="status" aria-live="polite">Current configuration</span>
               <div class="fileHubFooterButtons">
+                <button type="button" id="fileHubOpenReport" hidden><i data-lucide="external-link" aria-hidden="true"></i> Open report</button>
                 <button type="button" id="fileHubCopy"><i data-lucide="copy" aria-hidden="true"></i> Copy</button>
                 <button type="button" id="fileHubSave" class="fileHubPrimary"><i data-lucide="download" aria-hidden="true"></i> Save file</button>
                 <button type="button" id="fileHubViewResults" title="Open the live results panel">View results</button>
               </div>
             </div>
           </div>
+        </div>
+        <div class="fileHubRepositoryLinks">
+          <a href="https://github.com/tricko3D/fivebar-linkage-studio" target="_blank" rel="noopener noreferrer" aria-label="Source Code on GitHub">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M12 .7a11.3 11.3 0 0 0-3.57 22.03c.56.1.77-.24.77-.54v-2.1c-3.13.68-3.79-1.32-3.79-1.32-.51-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.69.08-.69 1.13.08 1.73 1.16 1.73 1.16 1 .1 1.63.78 2.14 1.06.9.38 1.73.3 2.14.22.1-.72.39-1.21.7-1.49-2.5-.29-5.13-1.25-5.13-5.59 0-1.24.44-2.26 1.16-3.06-.12-.29-.5-1.44.11-3.01 0 0 .94-.3 3.11 1.17a10.7 10.7 0 0 1 5.65 0c2.17-1.47 3.1-1.17 3.1-1.17.61 1.57.23 2.72.11 3.01.72.8 1.15 1.82 1.15 3.06 0 4.35-2.62 5.3-5.13 5.59.4.35.75 1.04.75 2.1v3.06c0 .31.2.65.78.54A11.3 11.3 0 0 0 12 .7Z"/></svg>
+            Source Code
+          </a>
+          <a href="https://github.com/tricko3D/fivebar-linkage-studio/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT Licensed</a>
         </div>
       </section>
     </div>
@@ -1014,7 +1046,7 @@
       <a href="https://github.com/unswei/fivebar" target="_blank" rel="noopener noreferrer"
         >unswei/fivebar</a
       >
-      by Oliver Obst (UNSW). Settings stay in your browser.
+      by Oliver Obst (UNSW). Settings stay in your browser. · <a href="https://github.com/tricko3D/fivebar-linkage-studio/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT Licensed</a>.
     </footer>
     <script async src="https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.js"
       integrity="sha384-QFFtAGzvvj+bfgCGxXJlNZZR1nXEZgvG8tDLCCY1F19xl20WlfTYgguB4VcNdxYk"
@@ -1026,6 +1058,8 @@
     <script defer src="js/coverage.js"></script>
     <script defer src="js/render.js"></script>
     <script defer src="js/movement.js"></script>
+    <script defer src="js/share-links.js"></script>
+    <script defer src="js/cad-drawing.js"></script>
     <script defer src="js/controls.js"></script>
     <script defer src="js/report-sections.js"></script>
     <script defer src="js/reports.js"></script>
