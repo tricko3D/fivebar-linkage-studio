@@ -210,10 +210,10 @@ const fs = require('node:fs');
   await overlay.locator('[data-manufacturing="fdm"]').click();
   if((await overlay.locator('#materialPickerProcessName').innerText()).trim()!=='FDM')
     throw Error('FDM label should not include FFF');
-  await page.locator('#materialPickerSearch').fill('PLA-CF');
-  if(await overlay.locator('[data-material-choice="pla-cf"]').count()!==1||
-     await overlay.locator('[data-material-choice="petg"]').count()!==0)
-    throw Error('Manufacturing material search does not filter');
+  if(await page.locator('#materialPickerSearch').count())
+    throw Error('Short material picker should not waste space on search');
+  if(await overlay.locator('[data-material-choice="pla-cf"]').count()!==1)
+    throw Error('PLA-CF was removed from the curated FDM selection');
   await overlay.locator('[data-material-choice="pla-cf"]').click();
   const plaCf=await getValues();
   if(plaCf.material!=='pla-cf'||plaCf.manufacturing!=='fdm'||plaCf.youngMPa!==3950||
