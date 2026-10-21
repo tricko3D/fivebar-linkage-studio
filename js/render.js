@@ -243,22 +243,28 @@ function renderSvg() {
   // Active servo travel arcs, drawn around fixed motor pivots.
   if (state.showServoArcs && lastServoMap) {
     if (state.useJointLimits) {
-      // Outer amber arcs and radial ticks mark the physical stop boundaries.
-      out += svgArc(p.A, 42, state.leftMinAngle,
-        hardStopSweep(state.leftMinAngle, state.leftMaxAngle), '#eaa453');
-      out += svgArc(p.B, 42, state.rightMinAngle,
-        hardStopSweep(state.rightMinAngle, state.rightMaxAngle), '#eaa453');
+      // Boundary markers are labels only; no interactive controls are put on SVG.
       for (const [pivot, min, max] of [
         [p.A, state.leftMinAngle, state.leftMaxAngle],
         [p.B, state.rightMinAngle, state.rightMaxAngle]
       ]) {
-        for (const angle of [min, max]) {
+        const sweep = hardStopSweep(min, max);
+        if (sweep >= 359.999) continue; // No endpoints for an unrestricted revolution.
+        out += svgArc(pivot, 42, min, sweep, '#e3af71');
+        for (const [angle, name, color, side] of [
+          [min, 'MIN', '#49d5e6', -1],
+          [max, 'MAX', '#ffb963', 1]
+        ]) {
           const t = angle * RAD;
           out += svgLine(
-            vec(pivot.x + 34 * Math.cos(t), pivot.y + 34 * Math.sin(t)),
-            vec(pivot.x + 49 * Math.cos(t), pivot.y + 49 * Math.sin(t)),
-            '#ffc47a', 2.5, 'pointer-events="none"'
-          );
+            vec(pivot.x + 36 * Math.cos(t), pivot.y + 36 * Math.sin(t)),
+            vec(pivot.x + 52 * Math.cos(t), pivot.y + 52 * Math.sin(t)),
+            color, 3.5, 'pointer-events="none"');
+          out += txt(vec(
+            pivot.x + 66 * Math.cos(t) - side * 8 * Math.sin(t),
+            pivot.y + 66 * Math.sin(t) + side * 8 * Math.cos(t)
+          ), name, 10, color,
+          'font-weight="800" text-anchor="middle" dominant-baseline="central" pointer-events="none"');
         }
       }
     }
@@ -406,6 +412,12 @@ function render(recalc = true) {
   const sol = renderSvg();
   updateInspector(sol);
   servoReadout(sol);
+  // Show live absolute angles even when a configured hard stop rejects the pose.
+  const readable = Number.isFinite(sol.angleL) && Number.isFinite(sol.angleR)
+    ? sol : calc(vec(state.targetX, state.targetY), { ...state, useJointLimits: false });
+  const la = $('currentLeftJointAngle'), ra = $('currentRightJointAngle');
+  if (la) la.textContent = Number.isFinite(readable.angleL) ? readable.angleL.toFixed(1) + '°' : '—';
+  if (ra) ra.textContent = Number.isFinite(readable.angleR) ? readable.angleR.toFixed(1) + '°' : '—';
   updateMechanicalInspector(sol);
   if (typeof updateCanvasScale === 'function') updateCanvasScale();
 }
