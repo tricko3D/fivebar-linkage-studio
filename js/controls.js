@@ -115,7 +115,7 @@ function persist() {
 function change(recalc = true) {
   if (typeof refreshMaterialPickerTrigger === 'function') refreshMaterialPickerTrigger();
   stopRoute();
-  if (typeof shareClearActiveLink === 'function') shareClearActiveLink();
+  if (typeof shareSyncUrl === 'function') shareSyncUrl();
   updateBoardReadout();
   updateTransmissionReadout();
   rebuildRoute();
