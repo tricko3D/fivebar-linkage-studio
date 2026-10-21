@@ -160,21 +160,26 @@ function captureJointStop(key) {
 }
 function resetJointStop(key) {
   if (!['leftMinAngle','leftMaxAngle','rightMinAngle','rightMaxAngle'].includes(key)) return false;
-  state[key] = defaults[key];
-  $(key).value = String(defaults[key]);
+  // A per-stop reset clears that boundary, regardless of the project's
+  // preset: MIN=0°, MAX=360°. Header Reset restores the saved baseline.
+  const cleared = key.includes('Min') ? 0 : 360;
+  state[key] = cleared;
+  $(key).value = String(cleared);
   const msg = $('jointStopSetStatus');
   if (msg) {
     msg.textContent = (key.includes('left') ? 'M₁' : 'M₂') + ' ' +
-      (key.includes('Min') ? 'MIN' : 'MAX') + ' reset to ' + defaults[key] + '°.';
+      (key.includes('Min') ? 'MIN' : 'MAX') + ' cleared to ' + cleared + '°.';
     msg.dataset.state = 'success';
   }
   change();
   return true;
 }
 function resetAllJointStops() {
+  // Clear physical boundaries even when the baseline preset includes limits.
   for (const key of ['leftMinAngle','leftMaxAngle','rightMinAngle','rightMaxAngle']) {
-    state[key] = defaults[key];
-    $(key).value = String(defaults[key]);
+    const cleared = key.includes('Min') ? 0 : 360;
+    state[key] = cleared;
+    $(key).value = String(cleared);
   }
   state.useJointLimits = false;
   $('useJointLimits').checked = false;
