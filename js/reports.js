@@ -481,17 +481,20 @@ $$`,
     '',
     '## Detailed numerical audit',
     '',
-    'Open only the sections you need. The complete raw inputs, every calculation, all 64 squares and the trajectory trace are retained below.',
+    'Each section now explains what the values mean with equations and tables. Open **Raw calculation log — full precision** only when you need the original complete computations.',
     ''
   ];
   const sections=rep.join('\n').split(/\n(?=## )/);
   sections.shift();
-  const appendix=sections.map(section=>{
+  const rawSections=sections.map(section=>{
     const lines=section.split('\n');
-    const heading=(lines.shift()||'').replace(/^##\s*/,'').trim();
-    return ['<details>','<summary>'+heading+'</summary>','',...lines,'','</details>',''].join('\n');
+    return {title:(lines.shift()||'').replace(/^##\s*/,'').trim(),lines};
   });
-  return [...overview,...appendix].join('\n');
+  const appendices=buildEngineeringAuditAppendices({
+    s,sol,pv,cov,sa,mechCov,base,m,grad,bar,rawSections,
+    route:typeof routeData==='undefined'?null:routeData
+  });
+  return [...overview,...appendices].join('\n');
 }
 function downloadAuditMarkdown() {
   download('fivebar-calculation-report.md', buildAuditReport(), 'text/markdown;charset=utf-8');
