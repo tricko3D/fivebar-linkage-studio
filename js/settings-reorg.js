@@ -82,9 +82,15 @@
   if (jointStopsCard) motors.append(jointStopsCard);
 
   const transmissionReadout = document.getElementById('gearReadout');
+  const transmissionGroup = makeGroup(
+    'Transmission & friction', ['ratio', 'efficiency', 'bearingFrictionNm'],
+    [transmissionReadout]
+  );
+  transmissionGroup.id = 'transmissionGroup';
+  transmissionGroup.classList.add('fullWidthInputs');
   motors.append(
     makeGroup('Motor output', ['motorNm', 'motorRPM', 'motorSF']),
-    makeGroup('Transmission & friction', ['ratio', 'efficiency', 'bearingFrictionNm'], [transmissionReadout]),
+    transmissionGroup,
     makeGroup('Motion commands', ['xySpeed', 'accel', 'speedCap'])
   );
 
@@ -142,4 +148,39 @@
 
   // Five actual sections: Board, Linkage, Motors, Mechanics and Display.
   config.append(board, mounting, motors, mechanics, display);
+
+  // Audit each two-column input row at its rendered size. If either label
+  // wraps because the fields share a row, give both fields full width.
+  // The card itself never needs a separate scrollbar.
+  function labelHasMultipleLines(label) {
+    if (!label) return false;
+    const range = document.createRange();
+    range.selectNodeContents(label);
+    const rects = Array.from(range.getClientRects()).filter(r => r.width > 1 && r.height > 1);
+    range.detach?.();
+    return rects.length > 1 && rects.some(rect => Math.abs(rect.top - rects[0].top) > 3);
+  }
+  function fitInputRows() {
+    const rows = Array.from(config.querySelectorAll('.fieldrow')).filter(
+      row => row.getClientRects().length && !row.closest('.fullWidthInputs') &&
+      Array.from(row.children).filter(child => child.classList.contains('field')).length > 1
+    );
+    // Measure at the two-column width on every pass. Never infer wrapping from
+    // the previous full-width layout or rows would oscillate on window resize.
+    for (const row of rows) row.classList.remove('wrappedLabelRow');
+    for (const row of rows) {
+      const fields = Array.from(row.children).filter(child => child.classList.contains('field'));
+      if (fields.some(field => labelHasMultipleLines(field.querySelector(':scope > label'))))
+        row.classList.add('wrappedLabelRow');
+    }
+  }
+  let fitFrame = 0;
+  function scheduleInputRowFit() {
+    if (fitFrame) cancelAnimationFrame(fitFrame);
+    fitFrame = requestAnimationFrame(() => { fitFrame = 0; fitInputRows(); });
+  }
+  scheduleInputRowFit();
+  window.addEventListener('resize', scheduleInputRowFit);
+  document.querySelector('.settingsTabs')?.addEventListener('click', scheduleInputRowFit);
+  document.fonts?.ready?.then(scheduleInputRowFit);
 })();
