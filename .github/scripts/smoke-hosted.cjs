@@ -100,12 +100,18 @@ const fs = require('node:fs');
   const hub=page.locator('#fileHubOverlay');
   const order=await page.locator('.fileHubTabs [data-file-kind]').evaluateAll(
     buttons=>buttons.map(button=>button.dataset.fileKind));
-  if(order.join(',')!=='share,json,sw,md,svg')
+  if(order.join(',')!=='share,md,json,sw,svg')
     throw Error('Share links must appear first in Files & Export');
   if(await page.locator('[data-file-kind="share"]').getAttribute('aria-pressed')!=='true')
     throw Error('Files & Export should open to Share links');
   if(!(await page.locator('#shareStudioUrl').inputValue()).includes('#c='))
     throw Error('Default Share links panel did not generate a permalink');
+  if(await page.locator('#resetButton .resetText').innerText()!=='Reset')
+    throw Error('Reset action lost its visible label');
+  if(!(await page.locator('.brand .mark img').getAttribute('src')).includes('favicon.svg'))
+    throw Error('Brand logo must be the favicon');
+  if(await page.locator('#headerReportButton').count()!==1)
+    throw Error('Report shortcut missing in header');
   await page.locator('[data-file-kind="json"]').click();
   if(!(await page.locator('#fileHubText').inputValue()).includes('"boardW": 255'))
     throw Error('JSON preview lacks current board settings');
@@ -153,7 +159,10 @@ const fs = require('node:fs');
 
   // Calculation report: readable overview, actual math, tables and collapsed
   // exact-data audit. GitHub Markdown source must preserve all original sections.
-  await page.locator('[data-file-kind="md"]').click();
+  await page.locator('#fileHubClose').click();
+  await page.locator('#headerReportButton').click();
+  if(await page.locator('[data-file-kind="md"]').getAttribute('aria-pressed')!=='true')
+    throw Error('Header report shortcut did not open Report tab');
   const reportPane=page.locator('#fileHubMarkdownPreview');
   if(!(await reportPane.isVisible()) ||
      await reportPane.locator('h2').count()<5)
@@ -250,11 +259,18 @@ const fs = require('node:fs');
     throw Error('Standalone report cannot return to the exact studio snapshot');
   const cadImg=standalone.locator('#reportCadImage');
   if(!(await cadImg.getAttribute('src')).startsWith('blob:') ||
-     !(await standalone.locator('#reportCadTitle').innerText()).includes('Dimensioned CAD'))
+     !(await cadImg.isVisible()))
     throw Error('Standalone report is missing its CAD plan image');
   const cadSource=await standalone.evaluate(()=>standaloneCadSvg);
-  if(!cadSource.includes('EDGE → M') || !cadSource.includes('LINK CROSS SECTIONS'))
-    throw Error('Standalone CAD plan lost board-edge datum or section sketches');
+  if(!cadSource.includes('EDGE → M') ||
+     !cadSource.includes('MOTOR JOINT ANGLES') ||
+     !cadSource.includes('MIN 0°') ||
+     !cadSource.includes('LINK CROSS SECTIONS'))
+    throw Error('Standalone CAD plan lost datum, min/max angles or section sketches');
+  if((cadSource.match(/class="cadDimension"/g)||[]).length<8)
+    throw Error('CAD dimensions missing from drawing');
+  if(cadSource.includes('stroke-dasharray="4 5"'))
+    throw Error('Duplicated dashed midpoint line was not removed');
   await standalone.locator('#reportCadToggle').click();
   if(await standalone.locator('#reportCadBody').isVisible())
     throw Error('CAD plan did not collapse');
@@ -266,6 +282,14 @@ const fs = require('node:fs');
   ]);
   if(!drawingDownload.suggestedFilename().endsWith('cad.svg'))
     throw Error('Standalone CAD SVG download not offered');
+  const [standaloneZip]=await Promise.all([
+    standalone.waitForEvent('download'),standalone.locator('#reportZip').click()
+  ]);
+  if(!standaloneZip.suggestedFilename().endsWith('.zip'))
+    throw Error('Standalone report ZIP download missing');
+  if(await standalone.locator('.reportMeta').count() ||
+     await standalone.locator('.reportCadHeader').count())
+    throw Error('Redundant report or CAD header returned');
   await standalone.close();
 
   await page.locator('[data-file-kind="json"]').click();
@@ -274,6 +298,11 @@ const fs = require('node:fs');
   await page.locator('#fileHubApply').click();
   if(!(await page.locator('#fileHubStatus').innerText()).includes('Imported'))
     throw Error('Pasting a report URL did not import the configuration');
+  const [zip]=await Promise.all([
+    page.waitForEvent('download'),page.locator('#fileHubZip').click()
+  ]);
+  if(zip.suggestedFilename()!=='fivebar-studio-export.zip')
+    throw Error('Offline HTML ZIP bundle missing from Files & Export');
   await page.locator('#fileHubClose').click();
   if(await hub.isVisible())throw Error('File workspace failed to close');
   if(await page.locator('link[rel="icon"][href="favicon.svg"]').count()!==1)
