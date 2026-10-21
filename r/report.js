@@ -26,7 +26,7 @@ function initStandaloneReport(){
     source.value=standaloneReportMarkdown;
     renderReportPreview(standaloneReportMarkdown);
     document.getElementById('reportBack').href=shareLink('studio',state);
-    standaloneStatus('Configuration loaded · '+standaloneReportMarkdown.length.toLocaleString('en-US')+' characters');
+    standaloneStatus('Report ready');
   }catch(err){
     error.textContent='Unable to open report: '+err.message;
     error.hidden=false;preview.hidden=true;
@@ -62,6 +62,14 @@ function initStandaloneReport(){
   });
   window.addEventListener('pagehide',()=>{
     if(standaloneCadUrl)URL.revokeObjectURL(standaloneCadUrl);
+  });
+  document.getElementById('reportZip').addEventListener('click',async()=>{
+    const btn=document.getElementById('reportZip');
+    if(!standaloneReportMarkdown)return;
+    btn.disabled=true;
+    try { await downloadFivebarBundle(state);standaloneStatus('ZIP downloaded'); }
+    catch(err){standaloneStatus('ZIP error: '+err.message);}
+    finally{btn.disabled=false;}
   });
   document.getElementById('reportSave').addEventListener('click',()=>{
     if(standaloneReportMarkdown)standaloneDownload('fivebar-calculation-report.md',standaloneReportMarkdown);
