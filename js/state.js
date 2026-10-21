@@ -154,6 +154,7 @@ const defaults = {
   showCoverage: true,
   showCenters: true,
   showRings: true,
+  showDimensions: false,
   forbidCrossings: false,
   targetX: 127.5,
   targetY: 127.5,
