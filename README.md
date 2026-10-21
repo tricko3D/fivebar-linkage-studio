@@ -11,7 +11,8 @@ I started building a chess robot using a five-bar linkage and wanted a way to ex
 - Adjustable chessboard dimensions and motor mounting positions.
 - Independent linkage lengths, assembly branches, and gripper attachments.
 - Reachability visualization and servo travel estimates.
-- 30 material presets: PLA/PLA Tough, short-fiber composites (PLA-CF, PETG-CF, PA6-CF, PPS-CF), industrial polymers, aluminum, steel, titanium and G10/FR-4.
+- Custom manufacturing/material overlay with FDM, SLS, SLA/DLP, MJF, CNC machining, sheet cutting, and metal LPBF process filters.
+- 52 material presets spanning engineering filaments, powder-bed nylons, photopolymer resins, metals, and sheet materials.
 - Automatic modulus, density, effective stiffness and bending-threshold inputs; manual editing switches to Custom.
 - Link materials, cross-sections, loads, motor and transmission settings.
 - Motion Study with playback, torque/RPM bars, and selectable graphs.
@@ -32,6 +33,14 @@ Then open http://localhost:8000.
 The geometry calculations are useful for comparing different layouts, but a reachable position doesn't automatically mean the mechanism will work well there.
 
 I added the detailed Markdown report so I can check the intermediate numbers and eventually compare them with actual measurements from printed prototypes.
+
+### Manufacturing/material picker
+
+Open **Mechanics & Loads → Material & bending limits**, then click the manufacturing/material selector. Choose a process (FDM/FFF, SLS, SLA/DLP, MJF, CNC machining, sheet cutting, or metal LPBF/SLM), search for a material and select it. The picker overlays the simulator, so the narrow settings panel does not clip the catalog. Escape or clicking outside closes it without changes.
+
+Manufacturing process and material are both saved in the JSON configuration. The selected process is also included in the calculation report and SolidWorks TXT export. Existing PLA/PETG material IDs are preserved. **Custom values** keeps the current modulus, density, stiffness factor and bending limit while assigning a manufacturing process.
+
+Material properties depend on manufacturing route; PA12 for FDM, SLS and MJF is represented by separate presets. Material-based calculations are still simplified screening estimates. The dialog's process choices do not verify printer, cutter, or CNC compatibility.
 
 ### Material preset limitations
 
