@@ -128,6 +128,9 @@ function manufacturingForMaterial(material, fallback = 'fdm') {
   return manufacturingMethods.find(method => materialMethodKeys[method.key].includes(material))?.key || fallback;
 }
 
+// Baseline configuration from fivebar-chess-config(1).json; preserve
+// new fields absent from the uploaded v3 snapshot (e.g. manufacturing and CAD display).
+// M1 starts at 247.8° and wraps through 0° to 31.8°.
 const defaults = {
   routeFrom: 'D1',
   routeTo: 'D8',
@@ -156,8 +159,8 @@ const defaults = {
   showRings: true,
   showDimensions: false,
   forbidCrossings: false,
-  targetX: 127.5,
-  targetY: 127.5,
+  targetX: 82.67367553710938,
+  targetY: 136.89881896972656,
   showMechanics: true,
   heatMode: 'payload',
   material: 'petg',
@@ -188,11 +191,11 @@ const defaults = {
   bearingFrictionNm: 0.015,
   servoTravel: 180,
   servoMargin: 10,
-  useJointLimits: false,
-  leftMinAngle: 0,
-  leftMaxAngle: 360,
-  rightMinAngle: 0,
-  rightMaxAngle: 360,
+  useJointLimits: true,
+  leftMinAngle: 247.8,
+  leftMaxAngle: 31.8,
+  rightMinAngle: 151,
+  rightMaxAngle: 289.8,
   showServoArcs: true,
 };
 let state = { ...defaults };
