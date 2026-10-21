@@ -176,6 +176,45 @@ const fs = require('node:fs');
 
   await page.locator('.topSettingsTabs [data-setting="mechanics"]').click();
   if(!(await page.locator('#sectionsGroup').isVisible()))throw Error('Mechanical sections missing');
+
+  // Material catalog uses the same source for dropdown, numerical properties,
+  // mechanical model and SolidWorks. Existing PLA/PETG codes stay stable.
+  const materialSelect=page.locator('#material');
+  if(await materialSelect.locator('optgroup').count()!==4 ||
+     await materialSelect.locator('option').count()!==31)
+    throw Error('Expected 30 engineering presets plus Custom in four groups');
+  if(!(await page.locator('#materialPresetNote').isVisible()))
+    throw Error('Material warning should remain visible outside tooltips');
+  const getValues=()=>page.evaluate(()=>({
+    material:state.material, youngMPa:state.youngMPa, density:state.density,
+    stressLimit:state.stressLimit, stiffFactor:state.stiffFactor
+  }));
+  await materialSelect.selectOption('pla-cf');
+  const plaCf=await getValues();
+  if(plaCf.material!=='pla-cf'||plaCf.youngMPa!==3950||plaCf.density!==1.22||
+     plaCf.stressLimit!==20||plaCf.stiffFactor!==0.65)
+    throw Error('PLA-CF preset did not update all material parameters');
+  await materialSelect.selectOption('al6061');
+  const aluminum=await getValues();
+  if(aluminum.material!=='al6061'||aluminum.youngMPa!==69000||
+     aluminum.density!==2.7||aluminum.stiffFactor!==1||aluminum.stressLimit!==95)
+    throw Error('Aluminum engineering preset did not apply');
+  const aluminumSW=await page.evaluate(()=>buildSolidWorksVariables());
+  if(!aluminumSW.includes('"MaterialPresetCode" = 25')||
+     !aluminumSW.includes('"MaterialYoungModulus_MPa" = 69000')||
+     !aluminumSW.includes('"EffectiveYoungModulus_MPa" = 69000'))
+    throw Error('Engineering material SolidWorks variables missing');
+  await page.locator('#youngMPa').fill('73000');
+  await page.locator('#youngMPa').dispatchEvent('change');
+  const custom=await getValues();
+  if(custom.material!=='custom'||custom.youngMPa!==73000||
+     await materialSelect.inputValue()!=='custom')
+    throw Error('Manually overriding preset did not switch to Custom');
+  await materialSelect.selectOption('petg');
+  const petg=await getValues();
+  if(petg.material!=='petg'||petg.youngMPa!==1900||
+     petg.density!==1.27||petg.stressLimit!==10||petg.stiffFactor!==0.65)
+    throw Error('Restoring PETG did not restore its baseline values');
   await page.locator('#sectionsGroup').evaluate(el=>el.open=true);
   if(!(await page.locator('#l1W').isVisible()))throw Error('Cross section fields missing');
   await auditActiveFieldRows();
