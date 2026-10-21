@@ -1371,3 +1371,12 @@ body.fileHubOpen{overflow:hidden;}
 
 /* Keep the explicitly labeled Reset action accessible on narrow viewports. */
 @media(max-width:600px){.headright #resetButton{display:inline-flex;}}
+
+/* Shared CAD figure embedded directly within each report preview. */
+.fileHubMarkdownPreview .fileHubReportDrawing{
+  margin:14px 0 22px;padding:0;background:#fff;
+}
+.fileHubMarkdownPreview .fileHubReportDrawing img{
+  display:block;width:100%;height:auto;max-height:950px;object-fit:contain;
+  border:1px solid #d4e2ec;border-radius:5px;
+}
