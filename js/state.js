@@ -48,6 +48,40 @@ const materialGroups = [
     { key: "ti64", label: "Titanium Ti-6Al-4V", youngMPa: 114000, density: 4.43, stressLimit: 220, stiffFactor: 1, note: "Strong aerospace alloy, typically machined or metal-printed with industrial equipment." },
     { key: "g10-fr4", label: "G10 / FR-4 laminate", youngMPa: 20000, density: 1.85, stressLimit: 60, stiffFactor: 1, note: "Glass-epoxy plate: strongly directional and unsuitable for isotropic beam assumptions." },
   ] },
+  { label: "SLS: powder-bed nylons", items: [
+    { key: "pa12-sls", label: "PA12 · SLS", youngMPa: 1650, density: 1.01, stressLimit: 20, stiffFactor: 0.9, note: "Sintered PA12 nylon powder; representative isotropic-like stiffness after post-processing." },
+    { key: "pa11-sls", label: "PA11 · SLS", youngMPa: 1500, density: 1.04, stressLimit: 19, stiffFactor: 0.9, note: "Tough sintered nylon 11; final properties depend on machine and powder refresh." },
+    { key: "pa12-gf-sls", label: "PA12-GF · SLS", youngMPa: 3600, density: 1.2, stressLimit: 28, stiffFactor: 0.85, note: "Glass-filled sintered nylon; higher bending stiffness but anisotropy remains." },
+    { key: "tpu-sls", label: "TPU · SLS", youngMPa: 45, density: 1.13, stressLimit: 2, stiffFactor: 0.85, note: "Elastomeric powder, poorly represented by the linear-elastic beam model." },
+  ] },
+  { label: "MJF: powder-bed polymers", items: [
+    { key: "pa12-mjf", label: "PA12 · MJF", youngMPa: 1800, density: 1.01, stressLimit: 22, stiffFactor: 0.95, note: "Multi Jet Fusion PA12 with more consistent properties than many FDM builds." },
+    { key: "pa11-mjf", label: "PA11 · MJF", youngMPa: 1500, density: 1.04, stressLimit: 20, stiffFactor: 0.9, note: "Multi Jet Fusion nylon 11; more ductile than PA12 in some grades." },
+    { key: "pp-mjf", label: "PP · MJF", youngMPa: 1150, density: 0.9, stressLimit: 12, stiffFactor: 0.9, note: "Multi Jet Fusion polypropylene; flexible and fatigue-tolerant relative to PA12." },
+    { key: "tpu-mjf", label: "TPU · MJF", youngMPa: 50, density: 1.16, stressLimit: 2, stiffFactor: 0.9, note: "Flexible polymer; nonlinear deformation dominates under larger loads." },
+  ] },
+  { label: "SLA/DLP: photopolymer resins", items: [
+    { key: "resin-standard", label: "Standard resin", youngMPa: 2500, density: 1.13, stressLimit: 12, stiffFactor: 0.9, note: "Rigid UV resin; often brittle, and cure time and aging strongly affect properties." },
+    { key: "resin-tough", label: "Tough resin", youngMPa: 2100, density: 1.12, stressLimit: 15, stiffFactor: 0.9, note: "Toughened photopolymer: grade-specific modulus and creep vary significantly." },
+    { key: "resin-durable", label: "Durable resin", youngMPa: 1100, density: 1.12, stressLimit: 11, stiffFactor: 0.9, note: "More compliant resin designed to resist impacts; not equivalent to engineering nylon." },
+    { key: "resin-rigid", label: "Rigid filled resin", youngMPa: 4000, density: 1.2, stressLimit: 24, stiffFactor: 0.9, note: "Filled stiff resin; manufacturer-specific; long-term toughness may be limited." },
+    { key: "resin-hightemp", label: "High-temperature resin", youngMPa: 2800, density: 1.15, stressLimit: 15, stiffFactor: 0.9, note: "Thermally resistant photopolymer; heat deflection does not imply high mechanical strength." },
+    { key: "resin-flex", label: "Flexible resin", youngMPa: 50, density: 1.14, stressLimit: 2, stiffFactor: 0.85, note: "Compliant UV resin; nonlinear strain invalidates basic beam assumptions." },
+  ] },
+  { label: "CNC: machinable polymers", items: [
+    { key: "pom", label: "POM / Acetal (Delrin)", youngMPa: 2900, density: 1.41, stressLimit: 35, stiffFactor: 1, note: "Low-friction, dimensionally stable engineering thermoplastic for machined mechanisms." },
+    { key: "uhmw-pe", label: "UHMW-PE", youngMPa: 800, density: 0.94, stressLimit: 8, stiffFactor: 1, note: "Low-friction wear plastic; relatively flexible and prone to creep." },
+    { key: "pc-plate", label: "Polycarbonate stock", youngMPa: 2350, density: 1.2, stressLimit: 30, stiffFactor: 1, note: "Machined or cut solid PC plate; unlike printed PC, assumes uniform stock." },
+  ] },
+  { label: "Sheet cutting: plate stock", items: [
+    { key: "acrylic-sheet", label: "Acrylic / PMMA plate", youngMPa: 3200, density: 1.18, stressLimit: 20, stiffFactor: 1, note: "Laser-cut acrylic plate; brittle near holes and sharp corners." },
+    { key: "birch-ply", label: "Birch plywood", youngMPa: 9000, density: 0.68, stressLimit: 18, stiffFactor: 0.75, note: "Direction-dependent laminated wood; moisture and grain affect results." },
+  ] },
+  { label: "LPBF: metal additive manufacturing", items: [
+    { key: "alsi10mg-lpbf", label: "AlSi10Mg · LPBF", youngMPa: 70000, density: 2.67, stressLimit: 95, stiffFactor: 0.9, note: "Laser powder-bed-fused aluminum; fatigue and defects depend on build and heat treatment." },
+    { key: "ss316l-lpbf", label: "316L stainless · LPBF", youngMPa: 190000, density: 7.95, stressLimit: 110, stiffFactor: 0.9, note: "Additively produced austenitic stainless; density and post-treatment affect strength." },
+    { key: "ti64-lpbf", label: "Ti-6Al-4V · LPBF", youngMPa: 110000, density: 4.43, stressLimit: 180, stiffFactor: 0.9, note: "Additive titanium; fatigue, pores and build orientation must be checked." },
+  ] },
 ];
 // Preserve original SolidWorks codes: PLA=1 and PETG=2 (Custom=0).
 let nextMaterialCode = 3;
@@ -59,6 +93,34 @@ const materialPresets = Object.fromEntries(
     }
   ])
 );
+
+
+// Material fabrication routes; filter for process-appropriate stock or feedstock.
+// Sheet cutting is waterjet / laser (route depends on material and equipment).
+const manufacturingMethods = [
+  { key: 'fdm', label: 'FDM / FFF', description: 'Extruded thermoplastic filaments', icon: 'layers' },
+  { key: 'sls', label: 'SLS', description: 'Selective laser sintering · polymer powder', icon: 'scan' },
+  { key: 'sla', label: 'SLA / DLP', description: 'Vat-photopolymer resin curing', icon: 'sun' },
+  { key: 'mjf', label: 'MJF', description: 'Multi Jet Fusion · polymer powder', icon: 'hexagon' },
+  { key: 'cnc', label: 'CNC machining', description: 'Milled or turned solid stock', icon: 'settings' },
+  { key: 'sheet', label: 'Sheet cutting', description: 'Laser / waterjet-cut plate', icon: 'scissors' },
+  { key: 'lpbf', label: 'Metal LPBF', description: 'Metal powder-bed fusion / SLM', icon: 'layers-3' },
+];
+const materialMethodKeys = {
+  fdm: materialGroups.slice(0, 3).flatMap(group => group.items.map(item => item.key)),
+  sls: materialGroups[4].items.map(item => item.key),
+  mjf: materialGroups[5].items.map(item => item.key),
+  sla: materialGroups[6].items.map(item => item.key),
+  cnc: [...materialGroups[3].items.map(item => item.key), ...materialGroups[7].items.map(item => item.key)],
+  sheet: ['al6061', 'al7075', 'ss304', 'g10-fr4', ...materialGroups[8].items.map(item => item.key)],
+  lpbf: materialGroups[9].items.map(item => item.key),
+};
+function materialOptionsForMethod(method) {
+  return (materialMethodKeys[method] || []).map(key => materialPresets[key]).filter(Boolean);
+}
+function manufacturingForMaterial(material, fallback = 'fdm') {
+  return manufacturingMethods.find(method => materialMethodKeys[method.key].includes(material))?.key || fallback;
+}
 
 const defaults = {
   routeFrom: 'D1',
@@ -92,6 +154,7 @@ const defaults = {
   showMechanics: true,
   heatMode: 'payload',
   material: 'petg',
+  manufacturing: 'fdm',
   sectionType: 'box',
   youngMPa: 1900,
   density: 1.27,
