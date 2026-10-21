@@ -49,8 +49,15 @@ const materialGroups = [
     { key: "g10-fr4", label: "G10 / FR-4 laminate", youngMPa: 20000, density: 1.85, stressLimit: 60, stiffFactor: 1, note: "Glass-epoxy plate: strongly directional and unsuitable for isotropic beam assumptions." },
   ] },
 ];
+// Preserve original SolidWorks codes: PLA=1 and PETG=2 (Custom=0).
+let nextMaterialCode = 3;
 const materialPresets = Object.fromEntries(
-  materialGroups.flatMap(group => group.items).map((entry, i) => [entry.key, { ...entry, code: i + 1 }])
+  materialGroups.flatMap(group => group.items).map(entry => [
+    entry.key, {
+      ...entry,
+      code: entry.key === 'pla' ? 1 : entry.key === 'petg' ? 2 : nextMaterialCode++
+    }
+  ])
 );
 
 const defaults = {
