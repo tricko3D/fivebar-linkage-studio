@@ -11,6 +11,8 @@ I started building a chess robot using a five-bar linkage and wanted a way to ex
 - Adjustable chessboard dimensions and motor mounting positions.
 - Independent linkage lengths, assembly branches, and gripper attachments.
 - Reachability visualization and servo travel estimates.
+- 30 material presets: PLA/PLA Tough, short-fiber composites (PLA-CF, PETG-CF, PA6-CF, PPS-CF), industrial polymers, aluminum, steel, titanium and G10/FR-4.
+- Automatic modulus, density, effective stiffness and bending-threshold inputs; manual editing switches to Custom.
 - Link materials, cross-sections, loads, motor and transmission settings.
 - Motion Study with playback, torque/RPM bars, and selectable graphs.
 - Import/export configuration and generate reports or SolidWorks variables.
@@ -30,6 +32,18 @@ Then open http://localhost:8000.
 The geometry calculations are useful for comparing different layouts, but a reachable position doesn't automatically mean the mechanism will work well there.
 
 I added the detailed Markdown report so I can check the intermediate numbers and eventually compare them with actual measurements from printed prototypes.
+
+### Material preset limitations
+
+The material dropdown contains **indicative, room-temperature screening values** for simplified beam calculations. The elastic/bending modulus is a nominal representative value, while *effective stiffness factor* discounts it (especially for printed links). *Allowable bending* is a conservative adjustable screening threshold; **it is not a guaranteed failure stress or design allowable**. Choosing metal assumes a homogeneous solid material; G10/FR-4 and carbon-filled polymers are direction-dependent. Real part strength depends on orientation, annealing, layer adhesion, moisture, temperature, density of infill, and many other variables. TPU in particular is not well modeled by a linear small-deflection beam approximation.
+
+These presets are **not printer compatibility profiles**. High-temperature grades such as PEEK, PEI and PPS-CF may require industrial hardware. Confirm nozzle/chamber requirements against your printer and filament datasheets.
+
+Useful material data and context:
+
+- [Bambu Lab filament guide](https://cdn1.bambulab.com/filament/filament-guide/250123/filament-guide-en.pdf) and individual filament property tables
+- [Bambu Lab PLA-CF](https://us.store.bambulab.com/products/pla-cf?id=41158283591816), [PA6-CF](https://eu.store.bambulab.com/nl-nl/products/pa6-cf), [PET-CF](https://us.store.bambulab.com/en/products/pet-cf), [PPS-CF](https://us.store.bambulab.com/collections/bambu-lab-3d-printer-filament/products/pps-cf)
+- [Prusa advanced filament guide](https://blog.prusa3d.com/advanced-filament-guide_39718/) and [engineering alloy properties](https://manufacturingprocesses.org/charts/material-properties)
 
 **This was built using ChatGPT (GPT-6, OpenAI) and is not in any way an accurate model.**
 
