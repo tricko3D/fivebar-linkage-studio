@@ -282,6 +282,8 @@ function setRouteCursor(v) {
   const pos = add(routeData.start, mul(routeData.dir, p.distance));
   state.targetX = pos.x;
   state.targetY = pos.y;
+  // Playback and scrubber positions are also shareable; use replaceState.
+  shareSyncUrl();
   // Keep view fixed during playback/scrubbing, without rebuilding the expensive heatmaps.
   render(false);
   updateRouteGraphCursor();
