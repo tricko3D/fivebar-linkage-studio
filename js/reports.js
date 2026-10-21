@@ -345,7 +345,150 @@ function buildAuditReport() {
     'END OF REPORT',
     '',
   ];
-  return rep.join('\n');
+  // Readers see conclusions, key parameters, then formulas. Preserve the
+  // complete original audit as collapsed sections, including the 64 squares.
+  const fmt=(n, digits=2, unit='')=>Number.isFinite(n)
+    ? Number(n).toLocaleString('en-US',{maximumFractionDigits:digits})+(unit?' '+unit:'')
+    : 'N/A';
+  const perc=(n,d)=>d>0?fmt(n/d*100,1,'%'):'N/A';
+  const cap=n=>n>=capPayloadG-.5?'≥2,000 g (search cap)':fmt(n,1,'g');
+  const validTorque=sol.valid&&!!m.gradient;
+  const maxTorque=Math.max(m.torque.L,m.torque.R);
+  const summary=!sol.valid?'Unreachable target: '+(sol.reason||'invalid linkage geometry')
+    :!m.gradient?'Motor torque cannot be evaluated reliably at this position'
+    :m.loadOK?'Selected payload passes the simplified screening checks'
+    :'Selected payload exceeds or approaches at least one screening limit';
+  const mat=materialPresets[s.material]?.label||'Custom values';
+  const process=manufacturingMethods.find(item=>item.key===s.manufacturing)?.label||'Unspecified';
+  const overview=[
+    '# Fivebar Linkage Studio — Engineering report',
+    '',
+    '> **Screening only:** Simplified mechanical and kinematic estimates; NOT FEA, a validated motor model, or a safe working-load certification.',
+    '',
+    '## Executive summary',
+    '',
+    '### Main finding',
+    '',
+    summary+'.',
+    '',
+    '| Question | Result |',
+    '|:--|:--|',
+    `| Selected gripper position reachable? | ${sol.valid?'Yes':'No'} |`,
+    `| Selected payload passes model checks? | ${m.loadOK?'Yes':'No / cannot assess reliably'} |`,
+    `| Reachable chess-square centres | ${cov.okCenters} / 64 (${perc(cov.okCenters,64)}) |`,
+    `| Reachable test points | ${cov.angles.length} / 576 (${perc(cov.angles.length,576)}) |`,
+    `| Limiting model assumption | ${m.limiting} |`,
+    '',
+    '### Key engineering estimates',
+    '',
+    '| Quantity | Model estimate | Model threshold |',
+    '|:--|--:|--:|',
+    `| Vertical deflection | ${fmt(st.sag,3,'mm')} | ${fmt(s.sagLimit,2,'mm')} |`,
+    `| Maximum bending stress | ${fmt(st.stress,2,'MPa')} | ${fmt(s.stressLimit,2,'MPa')} |`,
+    `| Maximum output motor torque | ${validTorque?fmt(maxTorque,3,'N·m'):'Unavailable'} | ${fmt(base.allowTorque,3,'N·m')} |`,
+    `| Combined screening payload | ${validTorque?cap(m.finalLimit):'Unavailable'} | ${fmt(s.payloadG,0,'g')+' selected'} |`,
+    '',
+    'These values are **proxies**, not predictions of real-world load capacity. Vertical bending is position-independent in the current model; XY torque does not represent static vertical lifting.',
+    '',
+    '## Model configuration',
+    '',
+    '| Parameter | Value |',
+    '|:--|:--|',
+    `| Manufacturing & material | ${process} / ${mat} |`,
+    `| Board | ${fmt(s.boardW,1,'mm')} × ${fmt(s.boardH,1,'mm')} |`,
+    `| Motor spacing / baseline angle | ${fmt(s.sep,1,'mm')} / ${fmt(s.angle,1,'°')} |`,
+    `| Link lengths (L1, L2, R1, R2) | ${['l1','l2','r1','r2'].map(k=>fmt(s[k],1,'mm')).join(' / ')} |`,
+    `| Target (X, Y) | (${fmt(s.targetX,1)}, ${fmt(s.targetY,1)}) mm |`,
+    `| Motor output angles | ${sol.valid?fmt(sol.angleL,2,'°')+' / '+fmt(sol.angleR,2,'°'):'Unavailable'} |`,
+    `| Tool + payload | ${fmt(s.headG,0,'g')} + ${fmt(s.payloadG,0,'g')} |`,
+    `| Idealized total link mass | ${fmt(base.linkMass*1000,1,'g')} |`,
+    '',
+    '### Link dimensions and masses',
+    '',
+    '| Link | Length | Width × height | Mass |',
+    '|:--|--:|--:|--:|',
+    ...mechKeys.map(k=>`| ${k.toUpperCase()} | ${fmt(s[k],1,'mm')} | ${fmt(s[k+'W'],1,'mm')} × ${fmt(s[k+'H'],1,'mm')} | ${fmt(bar[k].mass*1000,2,'g')} |`),
+    '',
+    '## Equations explained',
+    '',
+    '### 1. Material stiffness and cross section',
+    '',
+    'The bending model uses an effective Young modulus and a second moment of area. For a hollow section, the inner rectangle is subtracted:',
+    '',
+    String.raw`$
+E_{\mathrm{eff}} = E_{\mathrm{input}} f_{\mathrm{stiff}},
+\qquad I = \frac{bh^3-b_i h_i^3}{12}
+$`,
+    '',
+    `For ${mat}, this model uses **${fmt(s.youngMPa*s.stiffFactor,0,'MPa')}** effective modulus, from **${fmt(s.youngMPa,0,'MPa')}** input × **${fmt(s.stiffFactor,2)}** factor.`,
+    '',
+    '### 2. Vertical bending',
+    '',
+    'Each link is approximated as a cantilever. The two branches share a load using their compliances:',
+    '',
+    String.raw`$
+\begin{aligned}
+C_i &= \frac{L_i^3}{3 E_{\mathrm{eff}} I_i} \\
+C_{\mathrm{tip}} &= \frac{C_L C_R}{C_L+C_R} \\
+\delta_{\mathrm{tip}} &= 10^3(\delta_{\mathrm{self}} + F C_{\mathrm{tip}})
+\end{aligned}
+$`,
+    '',
+    `Result: **${fmt(st.sag,3,'mm')}**, against your **${fmt(s.sagLimit,2,'mm')}** threshold. Real pivot and frame flexibility are not modeled.`,
+    '',
+    '### 3. Motor output and transmission',
+    '',
+    'The available output-joint torque is derated for gearing efficiency and safety:',
+    '',
+    String.raw`$
+\tau_{\mathrm{allow}} =
+\frac{\tau_{\mathrm{motor}}\,r\,\eta}{SF}
+$`,
+    '',
+    `For **${fmt(s.ratio,2)}:1** reduction and **${fmt(s.efficiency,1,'%')}** efficiency, the allowance is **${fmt(base.allowTorque,3,'N·m')} per motor**.`,
+    '',
+    'A finite-difference inverse-kinematics Jacobian estimates the planar torque demand:',
+    '',
+    String.raw`$
+\tau_i \approx F_{xy} J_i + \tau_{\mathrm{friction}}
+$`,
+    '',
+    'This is a planar motion screening proxy. It omits full arm inertia and the real motor torque-speed curve.',
+    '',
+    '### 4. Workspace reachability',
+    '',
+    'A position must satisfy the linkage geometry and enabled physical limits. Servo travel is assessed separately:',
+    '',
+    String.raw`$
+\mathrm{Coverage}=\frac{N_{\mathrm{reachable}}}{64}\times100\%
+$`,
+    '',
+    `**${cov.okCenters} of 64 centres** and **${cov.angles.length} of 576 samples** are reachable under the sampled criteria.`,
+    '',
+    '## Payload search limits',
+    '',
+    '| Simplified check | Estimated threshold |',
+    '|:--|--:|',
+    `| Vertical deflection | ${cap(m.sagLimit)} |`,
+    `| Bending stress | ${cap(m.strengthLimit)} |`,
+    `| Both structural checks | ${cap(m.structuralLimit)} |`,
+    `| XY torque | ${validTorque?cap(m.torqueLimit):'Unavailable'} |`,
+    '',
+    '> **Important:** A result of ≥2,000 g indicates the binary search hit its ceiling. It does **not** demonstrate that the mechanism can safely lift 2 kg.',
+    '',
+    '## Detailed numerical audit',
+    '',
+    'Open only the sections you need. The complete raw inputs, every calculation, all 64 squares and the trajectory trace are retained below.',
+    ''
+  ];
+  const sections=rep.join('\n').split(/\n(?=## )/);
+  sections.shift();
+  const appendix=sections.map(section=>{
+    const lines=section.split('\n');
+    const heading=(lines.shift()||'').replace(/^##\s*/,'').trim();
+    return ['<details>','<summary>'+heading+'</summary>','',...lines,'','</details>',''].join('\n');
+  });
+  return [...overview,...appendix].join('\n');
 }
 function downloadAuditMarkdown() {
   download('fivebar-calculation-report.md', buildAuditReport(), 'text/markdown;charset=utf-8');
