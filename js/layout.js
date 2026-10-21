@@ -45,18 +45,19 @@
     document.body.classList.toggle('show-' + which, open);
     document
       .getElementById(which === 'settings' ? 'toggleSettings' : 'toggleInsights')
-      .setAttribute('aria-expanded', String(open));
+      ?.setAttribute('aria-expanded', String(open));
   }
   document.getElementById('toggleSettings').addEventListener('click', () => {
     const open = !document.body.classList.contains('show-settings');
     setDrawer('insights', false);
     setDrawer('settings', open);
   });
-  document.getElementById('toggleInsights').addEventListener('click', () => {
-    const open = !document.body.classList.contains('show-insights');
+  // The results panel remains available through Files & Export, but its
+  // redundant top-bar toggle has been removed.
+  window.openStudioResults = () => {
     setDrawer('settings', false);
-    setDrawer('insights', open);
-  });
+    setDrawer('insights', true);
+  };
   document
     .getElementById('closeSettings')
     .addEventListener('click', () => setDrawer('settings', false));
@@ -68,43 +69,6 @@
       setDrawer('settings', false);
       setDrawer('insights', false);
     }
-  });
-  // Compact file dropdown. Actual file operations remain handled by controls.js.
-  const fileMenuButton = document.getElementById('fileMenuButton');
-  const fileMenu = document.getElementById('fileMenu');
-  const fileMenuWrap = document.getElementById('fileMenuWrap');
-  function setFileMenu(open) {
-    fileMenu.hidden = !open;
-    fileMenuButton.setAttribute('aria-expanded', String(open));
-    if (open) {
-      setDrawer('settings', false);
-      setDrawer('insights', false);
-    }
-  }
-  fileMenuButton.addEventListener('click', () => {
-    setFileMenu(fileMenu.hidden);
-  });
-  fileMenu.addEventListener('click', (event) => {
-    if (event.target.closest('button[role="menuitem"]')) setFileMenu(false);
-  });
-  document.addEventListener('pointerdown', (event) => {
-    if (!fileMenu.hidden && !fileMenuWrap.contains(event.target)) setFileMenu(false);
-  });
-  fileMenuWrap.addEventListener('keydown', (event) => {
-    const items = Array.from(fileMenu.querySelectorAll('button[role="menuitem"]'));
-    if (event.key === 'Escape') {
-      setFileMenu(false);
-      fileMenuButton.focus();
-      event.preventDefault();
-    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      if (fileMenu.hidden) setFileMenu(true);
-      const i = items.indexOf(document.activeElement);
-      items[(i + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
-      event.preventDefault();
-    }
-  });
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !fileMenu.hidden) setFileMenu(false);
   });
   function updateHeaderHeight() {
     document.documentElement.style.setProperty(
