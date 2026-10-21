@@ -196,7 +196,7 @@ const fs = require('node:fs');
   if(groups.join(',')!=='fdm,sls,sla,cnc')
     throw Error('Unexpected manufacturing methods: '+groups.join(','));
   for(const [method,expected,values] of [
-    ['fdm',5,['petg','pla-cf','petg-cf','pa6-cf','custom']],
+    ['fdm',6,['pla','petg','pla-cf','petg-cf','pa6-cf','custom']],
     ['sls',4,['pa12-sls','pa11-sls','pa12-gf-sls','custom']],
     ['sla',4,['formlabs-tough2000-v2','formlabs-rigid4000','formlabs-high-temp','custom']],
     ['cnc',5,['al6061','al7075','steel1018','ss304','custom']]
@@ -212,8 +212,20 @@ const fs = require('node:fs');
     throw Error('FDM label should not include FFF');
   if(await page.locator('#materialPickerSearch').count())
     throw Error('Short material picker should not waste space on search');
-  if(await overlay.locator('[data-material-choice="pla-cf"]').count()!==1)
-    throw Error('PLA-CF was removed from the curated FDM selection');
+  if(await overlay.locator('[data-material-choice="pla-cf"]').count()!==1 ||
+     await overlay.locator('[data-material-choice="pla"]').count()!==1)
+    throw Error('PLA and PLA-CF must both appear in FDM materials');
+  await overlay.locator('[data-material-choice="pla"]').click();
+  const plainPla=await getValues();
+  if(plainPla.material!=='pla'||plainPla.manufacturing!=='fdm'||
+     plainPla.youngMPa!==2500||plainPla.density!==1.24||
+     plainPla.stressLimit!==12||plainPla.stiffFactor!==0.65)
+    throw Error('Normal PLA selection did not apply existing material properties');
+  const plaSW=await page.evaluate(()=>buildSolidWorksVariables());
+  if(!plaSW.includes('"MaterialPresetCode" = 1') ||
+     !plaSW.includes('"MaterialYoungModulus_MPa" = 2500'))
+    throw Error('Normal PLA did not retain its SolidWorks material code');
+  await pickerTrigger.click();
   await overlay.locator('[data-material-choice="pla-cf"]').click();
   const plaCf=await getValues();
   if(plaCf.material!=='pla-cf'||plaCf.manufacturing!=='fdm'||plaCf.youngMPa!==3950||
