@@ -171,7 +171,7 @@ J_R=\frac{\sqrt{b^2+a^2}}{|ad-bc|\,1000}\\
     () => [
       ...explain('The tool varies the payload until a simplified threshold is reached. All searches stop at 2,000 g; a result at that boundary is *not* a verified lifting capacity.'),
       ...eq(String.raw`m_{\mathrm{screen}}=
-\min\left(m_{\mathrm{deflection}},\,m_{\mathrm{stress}},\,m_{\mathrm{XY\ torque}}\right)`),
+\min\left(m_{\mathrm{deflection}},\,m_{\mathrm{stress}},\,m_{\mathrm{torque}}\right)`),
       ...table(['Screening limit','Estimated threshold'],[
         item('Deflection',ceiling(m.sagLimit)),
         item('Bending stress',ceiling(m.strengthLimit)),
