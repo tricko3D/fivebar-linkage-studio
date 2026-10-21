@@ -16,7 +16,18 @@ I started building a chess robot using a five-bar linkage and wanted a way to ex
 - Automatic modulus, density, effective stiffness and bending-threshold inputs; manual editing switches to Custom.
 - Link materials, cross-sections, loads, motor and transmission settings.
 - Motion Study with playback, torque/RPM bars, and selectable graphs.
-- Import/export configuration and generate reports or SolidWorks variables.
+- Unified Files & Export workspace: JSON import via paste or file, preview and copy/save JSON, SolidWorks TXT, Markdown calculation audits and workspace SVG.
+
+### Files & Export
+
+Use **Files & Export** in the header. The dialog stays a consistent size while you switch among these file views:
+
+- **Configuration (JSON):** Inspect, copy, or save current settings. Select **Import / paste** to paste JSON and apply it, or choose **Load JSON file**. Loading and pasting use the same validation and migration path.
+- **SolidWorks variables (TXT):** Preview, copy, or save Tools → Equations compatible variable declarations.
+- **Calculation report (MD):** Switch between a formatted Markdown preview and source text; copy or save the original Markdown.
+- **Workspace drawing (SVG):** View the exportable vector drawing; copy its SVG markup or save the file.
+
+The former header **Results** toggle has been removed. To access live results on narrow screens, use **View results** inside Files & Export; on desktop, the existing results rail stays available.
 
 ## Running locally
 
