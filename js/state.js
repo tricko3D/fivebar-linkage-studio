@@ -114,7 +114,7 @@ const manufacturingMethods = [
 ];
 // Material IDs and manufacturing codes are intentionally stable in SW exports.
 const materialMethodKeys = {
-  fdm: ['petg', 'pla-cf', 'petg-cf', 'pa6-cf'],
+  fdm: ['pla', 'petg', 'pla-cf', 'petg-cf', 'pa6-cf'],
   sls: ['pa12-sls', 'pa11-sls', 'pa12-gf-sls'],
   sla: ['formlabs-tough2000-v2', 'formlabs-rigid4000', 'formlabs-high-temp'],
   cnc: ['al6061', 'al7075', 'steel1018', 'ss304'],
