@@ -7,6 +7,10 @@ I'm building a chess robot using a five-bar linkage. I made this interactive sim
 **[Try Fivebar Studio](https://tricko3d.github.io/fivebar-linkage-studio/)**
 
 <p align="center">
+  <img src="screenshots/default-cad.svg" alt="Dimensioned five-bar linkage CAD drawing with motor hard-stop angles, board datum, link lengths and cross sections" width="900">
+</p>
+
+<p align="center">
   <img src="screenshots/dashboard.png" alt="Fivebar Linkage Studio simulator" width="900">
 </p>
 
