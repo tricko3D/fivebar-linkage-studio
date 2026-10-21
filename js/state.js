@@ -82,6 +82,12 @@ const materialGroups = [
     { key: "ss316l-lpbf", label: "316L stainless · LPBF", youngMPa: 190000, density: 7.95, stressLimit: 110, stiffFactor: 0.9, note: "Additively produced austenitic stainless; density and post-treatment affect strength." },
     { key: "ti64-lpbf", label: "Ti-6Al-4V · LPBF", youngMPa: 110000, density: 4.43, stressLimit: 180, stiffFactor: 0.9, note: "Additive titanium; fatigue, pores and build orientation must be checked." },
   ] },
+
+  { label: "Named commercial SLA materials (post-cured)", items: [
+    { key: "formlabs-tough2000-v2", label: "Formlabs Tough 2000 V2", youngMPa: 1800, density: 1.09, stressLimit: 15, stiffFactor: 0.9, note: "Real Formlabs Tough 2000 Resin V2; 1.8 GPa post-cured tensile modulus per Formlabs. Density estimate 1.09 g/cm³. The 15 MPa screening stress is NOT its measured strength; post-curing and printer settings matter." },
+    { key: "formlabs-rigid4000", label: "Formlabs Rigid 4000", youngMPa: 4100, density: 1.26, stressLimit: 25, stiffFactor: 0.9, note: "Real glass-filled Formlabs Rigid 4000 Resin; 4.1 GPa post-cured tensile modulus per Formlabs. Density is approximate; 25 MPa is a model screening limit, NOT the published strength." },
+    { key: "formlabs-high-temp", label: "Formlabs High Temp", youngMPa: 2800, density: 1.15, stressLimit: 15, stiffFactor: 0.9, note: "Real Formlabs High Temp Resin; 2.8 GPa post-cured tensile modulus. Very heat-resistant, but brittle and not recommended for significant mechanical loads. Density and 15 MPa screening threshold are estimates." },
+  ] },
 ];
 // Preserve original SolidWorks codes: PLA=1 and PETG=2 (Custom=0).
 let nextMaterialCode = 3;
@@ -110,8 +116,8 @@ const manufacturingMethods = [
 const materialMethodKeys = {
   fdm: ['petg', 'pla-cf', 'petg-cf', 'pa6-cf'],
   sls: ['pa12-sls', 'pa11-sls', 'pa12-gf-sls'],
-  sla: ['resin-tough', 'resin-rigid', 'resin-hightemp'],
-  cnc: ['al6061', 'steel1018', 'ti64', 'pom'],
+  sla: ['formlabs-tough2000-v2', 'formlabs-rigid4000', 'formlabs-high-temp'],
+  cnc: ['al6061', 'al7075', 'steel1018', 'ss304'],
 };
 const availablePickerMaterial = key =>
   Object.values(materialMethodKeys).some(keys => keys.includes(key));
