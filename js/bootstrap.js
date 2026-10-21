@@ -150,3 +150,4 @@ initFileHub();
 updateTransmissionReadout();
 rebuildRoute();
 render(true);
+shareSyncUrl();
