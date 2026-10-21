@@ -140,15 +140,42 @@ const fs = require('node:fs');
   const [sw]=await Promise.all([page.waitForEvent('download'),page.locator('#fileHubSave').click()]);
   if(!sw.suggestedFilename().endsWith('.txt'))throw Error('SW export not TXT');
 
-  // Calculation audit defaults to rendered Markdown. Source and download match.
+  // Calculation report: readable overview, actual math, tables and collapsed
+  // exact-data audit. GitHub Markdown source must preserve all original sections.
   await page.locator('[data-file-kind="md"]').click();
-  if(!(await page.locator('#fileHubMarkdownPreview').isVisible()) ||
-     await page.locator('#fileHubMarkdownPreview h2').count()<6)
-    throw Error('Formatted Markdown preview missing');
+  const reportPane=page.locator('#fileHubMarkdownPreview');
+  if(!(await reportPane.isVisible()) ||
+     await reportPane.locator('h2').count()<5)
+    throw Error('Engineering report headings missing');
+  if(await reportPane.locator('.fileHubReportTable').count()<4)
+    throw Error('Report does not render model comparison tables');
+  if(await reportPane.locator('.fileHubEquation').count()!==5)
+    throw Error('Expected five displayed LaTeX equations');
+  if(await reportPane.locator('.fileHubAuditDetails').count()!==11)
+    throw Error('Reproducible detail appendices were lost');
+  if(await reportPane.locator('.fileHubAuditDetails[open]').count())
+    throw Error('Detailed audits should start collapsed');
+  const summary=await reportPane.locator('h2').first().innerText();
+  if(!summary.includes('Executive summary'))
+    throw Error('Engineering summary is not first');
+  const eq=reportPane.locator('.fileHubEquation').first();
+  if(await page.evaluate(()=>!!window.katex?.render)){
+    if(await eq.locator('.katex').count()!==1)
+      throw Error('KaTeX library loaded but equations were not typeset');
+  }else if(await eq.locator('code').count()!==0) {
+    // The raw LaTeX fallback is still available when third-party CDN is blocked.
+  }else throw Error('Missing equation fallback');
+  await reportPane.locator('.fileHubAuditDetails summary').first().click();
+  if(await reportPane.locator('.fileHubAuditDetails[open]').count()!==1)
+    throw Error('Expanded detail section failed to open');
   await page.locator('[data-md-mode="source"]').click();
   const markdown=await page.locator('#fileHubText').inputValue();
-  if(!markdown.includes('## ')||!markdown.includes('Calculation audit'))
-    throw Error('Markdown source preview is not formatted');
+  if(!markdown.includes('## Executive summary') ||
+     !markdown.includes('\\frac') ||
+     !markdown.includes('$') ||
+     !markdown.includes('<details>') ||
+     !markdown.includes('ALL 64 SQUARE CENTRES'))
+    throw Error('Source Markdown lost LaTeX or raw calculations');
   const [md]=await Promise.all([page.waitForEvent('download'),page.locator('#fileHubSave').click()]);
   if(!md.suggestedFilename().endsWith('.md'))throw Error('Markdown download wrong name');
 
