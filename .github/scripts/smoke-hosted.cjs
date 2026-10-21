@@ -99,7 +99,7 @@ const fs = require('node:fs');
   if(!equations.includes('"BoardWidth" = 255mm')||!equations.includes('"LeftProximalLength" ='))throw Error('SolidWorks variables missing');
   for(const key of ['LeftJointMinAngle','LeftJointMaxAngle','RightJointMinAngle','RightJointMaxAngle','HardStopsEnabled','ServoUsableTravel'])
     if(!equations.includes('"'+key+'" ='))throw Error('SolidWorks export omits '+key);
-  const vars=[...equations.matchAll(/^"([^"]+)" = ([-\\d.]+)(mm|deg)?$/gm)];
+  const vars=[...equations.matchAll(/^"([^"]+)" = ([-\d.]+)(mm|deg)?$/gm)];
   if(vars.length<70)throw Error('Insufficient CAD variable coverage: '+vars.length);
   await page.locator('#fileMenuButton').click();
   const [json]=await Promise.all([page.waitForEvent('download'),page.locator('#exportButton').click()]);
