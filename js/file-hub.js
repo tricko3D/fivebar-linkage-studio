@@ -30,8 +30,8 @@ function disposeFileHubSvg() {
 }
 // Rich, safe report renderer: tables, LaTeX, collapsible audit appendices.
 // All text is inserted as text nodes; never execute Markdown as HTML.
-function renderReportPreview(markdown) {
-  const root=document.getElementById('fileHubMarkdownPreview');
+function renderReportPreview(markdown, container=null) {
+  const root=container||document.getElementById('fileHubMarkdownPreview');
   root.replaceChildren();
   const lines=markdown.split(/\r?\n/);
   const parentStack=[root];
@@ -305,6 +305,15 @@ function initFileHub() {
   fileHubInitialized=true;
   const overlay=document.getElementById('fileHubOverlay');
   document.getElementById('fileMenuButton').addEventListener('click',()=>openFileHub());
+  document.getElementById('headerReportButton').addEventListener('click',()=>openFileHub('md'));
+  document.getElementById('fileHubZip').addEventListener('click',async()=>{
+    const button=document.getElementById('fileHubZip');
+    button.disabled=true;
+    fileHubStatus('Preparing ZIP…');
+    try { await downloadFivebarBundle(state); fileHubStatus('ZIP downloaded.'); }
+    catch(error){ fileHubStatus('ZIP export failed: '+error.message,true); }
+    finally { button.disabled=false; }
+  });
   document.getElementById('fileHubClose').addEventListener('click',closeFileHub);
   overlay.addEventListener('click',event=>{
     if (event.target.closest('[data-file-hub-close]')) {closeFileHub();return;}
