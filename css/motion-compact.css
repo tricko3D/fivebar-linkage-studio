@@ -330,3 +330,15 @@
   .workarea > .motionCompact .routeTop .motionTransport {order:4;flex:1 1 100%;}
   .workarea > .motionCompact .motionStudyToggle {margin-left:auto;}
 }
+
+/* Primary transport button: readable white glyph and label on blue/teal. */
+.motionCompact .motionTransport #routePlay:not(:disabled),
+.workarea > .motionCompact .routeTop .motionTransport #routePlay:not(:disabled){
+  color:#fff!important;
+  font-weight:750;
+}
+.motionCompact .motionTransport #routePlay:not(:disabled) svg,
+.motionCompact .motionTransport #routePlay:not(:disabled) svg *{
+  color:#fff!important;
+  stroke:currentColor;
+}
