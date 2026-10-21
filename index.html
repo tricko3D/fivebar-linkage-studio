@@ -27,22 +27,13 @@
         </nav>
         <div class="headright">
           <button class="ghost layoutToggle headerIconButton" id="toggleSettings" type="button" aria-label="Toggle settings panel" title="Settings panel" aria-expanded="false"><i data-lucide="panel-left"></i><span class="compactLabel">Settings</span></button>
-          <button class="ghost layoutToggle headerIconButton" id="toggleInsights" type="button" aria-label="Toggle results panel" title="Results panel" aria-expanded="false"><i data-lucide="chart-no-axes-column"></i><span class="compactLabel">Results</span></button>
+
           <button class="ghost headerIconButton" id="resetButton" type="button" aria-label="Reset configuration" title="Reset configuration"><i data-lucide="rotate-ccw"></i></button>
-          <div class="fileMenuWrap" id="fileMenuWrap">
-            <button class="action headerIconButton fileMenuTrigger" id="fileMenuButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="fileMenu" title="Import and export">
-              <i data-lucide="folder-down"></i><span class="compactLabel">File</span><i class="chevron" data-lucide="chevron-down"></i>
-            </button>
-            <div class="fileMenuList" id="fileMenu" role="menu" aria-label="File operations" hidden>
-              <div class="fileMenuHeading">PROJECT</div>
-              <button type="button" role="menuitem" id="importButton"><i data-lucide="folder-open"></i> Import configuration <span>JSON</span></button>
-              <button type="button" role="menuitem" id="exportButton"><i data-lucide="save"></i> Save configuration <span>JSON</span></button>
-              <div class="fileMenuDivider" role="separator"></div>
-              <div class="fileMenuHeading">EXPORT</div>
-              <button type="button" role="menuitem" id="swVariablesButton"><i data-lucide="wrench"></i> SolidWorks variables <span>TXT</span></button>
-              <button type="button" role="menuitem" id="reportButton"><i data-lucide="file-text"></i> Calculation report <span>MD</span></button>
-            </div>
-          </div>
+          <button class="action headerIconButton fileHubTrigger" id="fileMenuButton" type="button"
+            aria-haspopup="dialog" aria-expanded="false" aria-controls="fileHubOverlay"
+            title="Files, previews and exports">
+            <i data-lucide="folder-open"></i><span class="compactLabel">Files &amp; Export</span>
+          </button>
           <input id="importFile" accept="application/json,.json" type="file" hidden />
         </div>
       </div>
@@ -916,6 +907,75 @@
         </div>
       </aside>
     </main>
+    <!-- File workspace uses the same overlay pattern as the material library. -->
+    <div id="fileHubOverlay" class="fileHubOverlay" hidden>
+      <div class="fileHubBackdrop" data-file-hub-close="true"></div>
+      <section class="fileHubDialog" role="dialog" aria-modal="true"
+        aria-labelledby="fileHubTitle" aria-describedby="fileHubDescription" tabindex="-1">
+        <header class="fileHubHeader">
+          <div>
+            <div class="fileHubEyebrow">PROJECT FILES</div>
+            <h2 id="fileHubTitle">Files &amp; Export</h2>
+            <p id="fileHubDescription">Load a configuration, inspect exports, copy content or save a file.</p>
+          </div>
+          <button type="button" class="fileHubClose" id="fileHubClose" aria-label="Close file workspace">
+            <i data-lucide="x" aria-hidden="true"></i>
+          </button>
+        </header>
+        <div class="fileHubLayout">
+          <nav class="fileHubTabs" aria-label="File formats">
+            <button type="button" class="fileHubTab is-active" data-file-kind="json" aria-pressed="true">
+              <i data-lucide="braces" aria-hidden="true"></i><span><strong>Configuration</strong><small>JSON · import / export</small></span>
+            </button>
+            <button type="button" class="fileHubTab" data-file-kind="sw" aria-pressed="false">
+              <i data-lucide="wrench" aria-hidden="true"></i><span><strong>SolidWorks variables</strong><small>TXT · equations</small></span>
+            </button>
+            <button type="button" class="fileHubTab" data-file-kind="md" aria-pressed="false">
+              <i data-lucide="file-text" aria-hidden="true"></i><span><strong>Calculation report</strong><small>MD · formatted preview</small></span>
+            </button>
+            <button type="button" class="fileHubTab" data-file-kind="svg" aria-pressed="false">
+              <i data-lucide="image" aria-hidden="true"></i><span><strong>Workspace drawing</strong><small>SVG · scalable image</small></span>
+            </button>
+          </nav>
+          <div class="fileHubMain">
+            <div class="fileHubTitleRow">
+              <div><h3 id="fileHubKindTitle">Configuration · JSON</h3>
+                <p id="fileHubKindHelp">Full current settings, including saved materials and motion parameters.</p></div>
+              <button id="fileHubRefresh" type="button" class="fileHubSmallButton" title="Refresh from current simulator settings">
+                <i data-lucide="refresh-cw" aria-hidden="true"></i> Refresh
+              </button>
+            </div>
+            <div id="fileHubJsonActions" class="fileHubModeRow">
+              <button type="button" data-json-mode="export" aria-pressed="true" class="is-active">Export / preview</button>
+              <button type="button" data-json-mode="import" aria-pressed="false">Import / paste</button>
+            </div>
+            <div id="fileHubMarkdownActions" class="fileHubModeRow" hidden>
+              <button type="button" data-md-mode="preview" aria-pressed="true" class="is-active">Preview</button>
+              <button type="button" data-md-mode="source" aria-pressed="false">Markdown source</button>
+            </div>
+            <div id="fileHubImportActions" class="fileHubImportActions" hidden>
+              <button id="fileHubLoad" type="button"><i data-lucide="folder-open" aria-hidden="true"></i> Load JSON file</button>
+              <button id="fileHubApply" type="button"><i data-lucide="check" aria-hidden="true"></i> Apply pasted JSON</button>
+            </div>
+            <div class="fileHubPreviewArea">
+              <textarea id="fileHubText" readonly spellcheck="false" aria-label="File content"></textarea>
+              <div id="fileHubMarkdownPreview" class="fileHubMarkdownPreview" hidden aria-label="Rendered calculation report"></div>
+              <div id="fileHubSvgPreview" class="fileHubSvgPreview" hidden aria-label="Workspace SVG preview">
+                <img id="fileHubSvgImage" alt="Export preview of the current linkage and chessboard" />
+              </div>
+            </div>
+            <div class="fileHubFooter">
+              <span id="fileHubStatus" role="status" aria-live="polite">Current configuration</span>
+              <div class="fileHubFooterButtons">
+                <button type="button" id="fileHubCopy"><i data-lucide="copy" aria-hidden="true"></i> Copy</button>
+                <button type="button" id="fileHubSave" class="fileHubPrimary"><i data-lucide="download" aria-hidden="true"></i> Save file</button>
+                <button type="button" id="fileHubViewResults" title="Open the live results panel">View results</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
     <!-- Portal-like full-screen material picker: independent of sidebar scroll/clip. -->
     <div id="materialPickerOverlay" class="materialPickerOverlay" hidden>
       <div class="materialPickerBackdrop" data-picker-close="true"></div>
@@ -962,6 +1022,7 @@
     <script defer src="js/controls.js"></script>
     <script defer src="js/reports.js"></script>
     <script defer src="js/material-picker.js"></script>
+    <script defer src="js/file-hub.js"></script>
     <script defer src="js/bootstrap.js"></script>
     <script defer src="js/settings-reorg.js"></script>
     <script defer src="js/layout.js"></script>
