@@ -695,39 +695,52 @@
   outline-offset:1px;
 }
 
-/* Capture each motor's current angle directly beside its hard-stop field. */
-#jointLimitsGroup .jointStopInput {
-  display:flex;align-items:stretch;gap:4px;width:100%;min-width:0;
+/* Labeled mechanical travel boundaries and compact, per-boundary reset. */
+#jointLimitsGroup .jointStopToolbar {display:flex;justify-content:space-between;align-items:center;gap:8px;}
+#jointLimitsGroup .jointStopToolbar .toggle {margin:4px 0;font-weight:650;}
+#jointLimitsGroup .jointStopResetAll,
+#jointLimitsGroup .jointStopReset {
+  display:inline-flex;justify-content:center;align-items:center;gap:4px;
+  background:#f4f7fa;color:#506d87;border:1px solid #c3d0da;
+  border-radius:4px;cursor:pointer;
 }
+#jointLimitsGroup .jointStopResetAll {padding:5px 7px;font-size:10px;white-space:nowrap;}
+#jointLimitsGroup .jointStopResetAll svg,
+#jointLimitsGroup .jointStopReset svg {width:12px;height:12px;}
+#jointLimitsGroup .jointStopMotor {
+  margin-top:11px;padding:9px 9px 2px;
+  background:#fff;border:1px solid #cbd7e1;border-radius:5px;
+}
+#jointLimitsGroup .jointStopMotorHeader {
+  display:flex;align-items:center;justify-content:space-between;gap:4px;
+  font-size:11px;margin-bottom:9px;
+}
+#jointLimitsGroup .jointStopMotorHeader strong {color:#355975;}
+#jointLimitsGroup .jointStopMotorHeader span {color:#73879a;font-size:10px;}
+#jointLimitsGroup .jointStopMotorHeader output {color:#246794;font-weight:750;}
+#jointLimitsGroup .jointStopMotor .fieldrow {gap:6px;}
+#jointLimitsGroup .jointStopField label {display:flex;flex-direction:column;gap:1px;}
+#jointLimitsGroup .jointStopField .stopType {font-size:10px;font-weight:800;}
+#jointLimitsGroup .jointStopField[data-stop-kind="min"] .stopType {color:#16869a;}
+#jointLimitsGroup .jointStopField[data-stop-kind="max"] .stopType {color:#b46b22;}
+#jointLimitsGroup .jointStopField .stopDirection {font-size:9px;color:#728599;}
+#jointLimitsGroup .jointStopInput {display:flex;align-items:stretch;gap:3px;min-width:0;width:100%;}
 #jointLimitsGroup .jointStopInput > input {
-  flex:1 1 auto;min-width:0;width:0;margin:0;
+  flex:1 1 auto;width:0;min-width:0;margin:0;padding:5px 3px;
+  font-size:11px;text-align:center;font-variant-numeric:tabular-nums;
 }
 #jointLimitsGroup .jointStopSet {
   display:inline-flex;align-items:center;justify-content:center;
-  flex:0 0 auto;gap:3px;min-width:46px;min-height:30px;
-  padding:3px 5px;border:1px solid #b8cada;border-radius:4px;
-  background:#eef5fa;color:#335f7d;
-  font-family:inherit;font-size:10px;font-weight:650;line-height:1.1;
-  cursor:pointer;
+  flex:0 0 28px;min-width:28px;min-height:30px;
+  padding:3px 3px;background:#e8f4fd;color:#236690;
+  border:1px solid #adcbe1;border-radius:4px;font-family:inherit;
+  font-size:10px;font-weight:700;cursor:pointer;
 }
-#jointLimitsGroup .jointStopSet svg {width:12px;height:12px;flex:none;}
-#jointLimitsGroup .jointStopSet:hover {background:#e0effa;border-color:#80a9c5;}
-#jointLimitsGroup .jointStopSet:focus-visible {outline:2px solid #1877b5;outline-offset:2px;}
-#jointLimitsGroup .jointStopSet:active {background:#c7e3f7;}
-#jointLimitsGroup .jointStopSetStatus {
-  min-height:0;font-size:10px;line-height:1.4;color:#3b6f89;
-}
+#jointLimitsGroup .jointStopReset {flex:0 0 23px;width:23px;min-height:30px;padding:2px;}
+#jointLimitsGroup .jointStopSet:hover,
+#jointLimitsGroup .jointStopReset:hover,
+#jointLimitsGroup .jointStopResetAll:hover {background:#d9ecfb;border-color:#75a5ca;}
+#jointLimitsGroup button:focus-visible {outline:2px solid #1978b7;outline-offset:1px;}
+#jointLimitsGroup .jointStopSetStatus {font-size:10px;line-height:1.4;color:#3b6f89;}
 #jointLimitsGroup .jointStopSetStatus:empty {display:none;}
 #jointLimitsGroup .jointStopSetStatus[data-state="error"] {color:#a54537;}
-
-/* Tab name is the settings rail title; avoid repeating the active category. */
-.config > .section[data-category="motors"] > .sectheader,
-.config > .section[data-category="mechanics"] > .sectheader,
-.config > .section[data-category="display"] > .sectheader { display:none; }
-.config .railTitle #settingsTitle {font-weight:750;}
-.config > .section[data-category="linkage"] {padding-top:6px;padding-bottom:6px;border-bottom:0;}
-.config > .section[data-category="linkage"] .linkageAccordion {margin:0;}
-.config > .section[data-category="linkage"] .linkageAccordion > summary {
-  font-weight:700;color:#375d7a;
-}
-.config > .section[data-category="linkage"] .linkageAccordion .mechanicsGroupBody {padding-top:10px;}
