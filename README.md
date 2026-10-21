@@ -18,6 +18,21 @@ I started building a chess robot using a five-bar linkage and wanted a way to ex
 - Motion Study with playback, torque/RPM bars, and selectable graphs.
 - Unified Files & Export workspace: JSON import via paste or file, preview and copy/save JSON, SolidWorks TXT, Markdown calculation audits and workspace SVG.
 
+### Dimensioned CAD drawing
+
+Use **Display → Show CAD dimensions** to annotate the live board drawing with motor spacing, all four links, and the distance from motor mounting midpoint **M** to the nearest **outer board edge midpoint** (not the board centre). The Files & Export **CAD drawing** SVG provides a clean print-friendly orthographic plan including the playing-area dimensions, overall board dimensions, and a L1/L2/R1/R2 width × height cross-section schedule with wall thickness.
+
+### Deterministic configuration permalinks
+
+**Files & Export → Share links** provides two self-contained URLs:
+
+- **Studio:** `https://tricko3d.github.io/fivebar-linkage-studio/#c=...`
+- **Standalone report:** `https://tricko3d.github.io/fivebar-linkage-studio/r/#c=...`
+
+Links encode only the non-default configuration parameters as sorted, versioned, URL-safe JSON bytes (Base64URL, no server). The same complete configuration produces the same link independent of key order. Visiting a shared studio URL loads the encoded settings **before** any locally saved settings. Editing the settings clears the shared snapshot from the address bar to avoid stale links. The `/r/` page reconstructs the state without a backend and offers the formatted math report, copy/save Markdown, and a link back to the exact studio configuration.
+
+A URL contains all shared settings, including any custom text field values. Share it only if those settings are suitable for public disclosure. Invalid/unsupported payloads display a visible error rather than silently loading an unrelated local setup.
+
 ### Files & Export
 
 Use **Files & Export** in the header. The dialog stays a consistent size while you switch among these file views:
@@ -25,7 +40,8 @@ Use **Files & Export** in the header. The dialog stays a consistent size while y
 - **Configuration (JSON):** Inspect, copy, or save current settings. Select **Import / paste** to paste JSON and apply it, or choose **Load JSON file**. Loading and pasting use the same validation and migration path.
 - **SolidWorks variables (TXT):** Preview, copy, or save Tools → Equations compatible variable declarations.
 - **Calculation report (MD):** Read a concise summary with utilization bars. Expand any of 11 explained audit sections for mathematical derivations and labeled tables, including a four-step Jacobian and torque calculation. The original full-precision logs are separately collapsible. Copy or save the complete report.
-- **Workspace drawing (SVG):** View the exportable vector drawing; copy its SVG markup or save the file.
+- **CAD drawing (SVG):** Preview and copy/save the dimensioned technical plan including four link lengths, outer-board edge datum and section dimensions. The separate workspace SVG button still exports the interactive board view.
+- **Share links:** Copy or open deterministic configuration and standalone report permalinks.
 
 Math is typeset by [KaTeX](https://katex.org/) in the browser; if its CDN is unavailable, the original LaTeX remains visible instead. GitHub renders the downloaded Markdown's `$ ... $` display equations. Each expanded audit section begins with explanations, equations and concise values; a second **Raw calculation log — full precision** disclosure retains the original intermediate numbers, 64-square data and movement trace for verification.
 
@@ -75,4 +91,4 @@ Inspired by [unswei/fivebar](https://github.com/unswei/fivebar) by Oliver Obst.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+**MIT Licensed.** See [LICENSE](LICENSE). The Files & Export footer links to this license and the [GitHub source code](https://github.com/tricko3D/fivebar-linkage-studio).
