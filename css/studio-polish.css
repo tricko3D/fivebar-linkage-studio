@@ -967,3 +967,11 @@ body.materialPickerOpen{overflow:hidden;}
 
 /* Keep the internal native <select> out of the narrow configuration rail. */
 #material[hidden]{display:none!important;}
+
+/* Four-process curated picker: no need for the former oversized directory. */
+.materialPickerDialog { width:min(700px,100%); max-height:min(620px,calc(100dvh - 36px)); }
+.materialPickerLayout { grid-template-columns:185px minmax(0,1fr); }
+@media(max-width:650px) {
+  .materialPickerDialog { max-height:calc(100dvh - 12px); }
+  .materialPickerLayout { grid-template-columns:minmax(0,1fr); }
+}
