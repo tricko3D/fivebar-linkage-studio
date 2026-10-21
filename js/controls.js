@@ -33,6 +33,10 @@ function setupMaterialOptions() {
   if (!materialPresets[state.material] && state.material !== 'custom')
     state.material = 'custom'; // preserve numeric values from obsolete JSON files
   select.value = state.material;
+  state.manufacturing = manufacturingMethods.some(method => method.key === state.manufacturing)
+    && (state.material === 'custom' ||
+        materialMethodKeys[state.manufacturing].includes(state.material))
+    ? state.manufacturing : manufacturingForMaterial(state.material);
   updateMaterialPresetNote();
 }
 function updateMaterialPresetNote() {
@@ -64,6 +68,7 @@ function persist() {
   } catch (e) {}
 }
 function change(recalc = true) {
+  if (typeof refreshMaterialPickerTrigger === 'function') refreshMaterialPickerTrigger();
   stopRoute();
   updateBoardReadout();
   updateTransmissionReadout();
@@ -174,7 +179,10 @@ function initControls() {
         for (const other of ['boardW', 'boardH', 'outerW', 'outerH']) $(other).value = state[other];
       }
       if (key === 'toolMode') updateToolSettings();
-      if (key === 'material') applyMaterialPreset(state.material);
+      if (key === 'material') {
+        state.manufacturing = manufacturingForMaterial(state.material, state.manufacturing);
+        applyMaterialPreset(state.material);
+      }
       if (['youngMPa', 'density', 'stressLimit', 'stiffFactor'].includes(key) &&
           state.material !== 'custom') {
         state.material = 'custom';
@@ -281,6 +289,11 @@ function initControls() {
           newState[key] = parsed[key];
       }
       state = newState;
+      // Older JSON configurations did not have a manufacturing process field.
+      if (!Object.prototype.hasOwnProperty.call(parsed, 'manufacturing') ||
+          !materialMethodKeys[state.manufacturing]?.includes(state.material) &&
+          state.material !== 'custom')
+        state.manufacturing = manufacturingForMaterial(state.material);
       state.outerW = Math.max(state.boardW, state.outerW);
       state.outerH = Math.max(state.boardH, state.outerH);
       writeControls();
