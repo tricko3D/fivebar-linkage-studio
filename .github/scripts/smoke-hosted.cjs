@@ -189,10 +189,27 @@ const fs = require('node:fs');
   await pickerTrigger.click();
   const overlay=page.locator('#materialPickerOverlay');
   if(!(await overlay.isVisible()))throw Error('Material overlay did not open');
-  if(await overlay.locator('[data-manufacturing]').count()!==7)
-    throw Error('Manufacturing process selector must have seven options');
-  if(await overlay.locator('[data-material-choice]').count()!==25)
-    throw Error('FDM catalog should have 24 filaments plus Custom');
+  if(await overlay.locator('[data-manufacturing]').count()!==4)
+    throw Error('Manufacturing picker must list only FDM, SLS, SLA and CNC');
+  const groups=await overlay.locator('[data-manufacturing]').evaluateAll(items =>
+    items.map(item=>item.dataset.manufacturing));
+  if(groups.join(',')!=='fdm,sls,sla,cnc')
+    throw Error('Unexpected manufacturing methods: '+groups.join(','));
+  for(const [method,expected,values] of [
+    ['fdm',5,['petg','pla-cf','petg-cf','pa6-cf','custom']],
+    ['sls',4,['pa12-sls','pa11-sls','pa12-gf-sls','custom']],
+    ['sla',4,['resin-tough','resin-rigid','resin-hightemp','custom']],
+    ['cnc',5,['al6061','steel1018','ti64','pom','custom']]
+  ]){
+    await overlay.locator('[data-manufacturing="'+method+'"]').click();
+    const choices=await overlay.locator('[data-material-choice]').evaluateAll(items =>
+      items.map(item=>item.dataset.materialChoice));
+    if(choices.length!==expected || choices.join(',')!==values.join(','))
+      throw Error('Wrong '+method+' materials: '+choices.join(','));
+  }
+  await overlay.locator('[data-manufacturing="fdm"]').click();
+  if((await overlay.locator('#materialPickerProcessName').innerText()).trim()!=='FDM')
+    throw Error('FDM label should not include FFF');
   await page.locator('#materialPickerSearch').fill('PLA-CF');
   if(await overlay.locator('[data-material-choice="pla-cf"]').count()!==1||
      await overlay.locator('[data-material-choice="petg"]').count()!==0)
@@ -254,6 +271,21 @@ const fs = require('node:fs');
     throw Error('Restoring PETG did not restore original FDM defaults');
   if(!(await page.locator('#materialPresetNote').isVisible()))
     throw Error('Material warning should remain visible outside tooltips');
+  // Older saved MJF, sheet and discontinued FDM choices are not discarded:
+  // load as Custom and retain each field's numerical properties.
+  const previousMaterialAudit=await page.evaluate(()=>{
+    const before={...state};
+    state.manufacturing='mjf';
+    state.material='pa12-mjf';
+    state.youngMPa=4242;
+    normalizeMaterialSelection();
+    const result={material:state.material,process:state.manufacturing,E:state.youngMPa};
+    Object.assign(state,before);
+    return result;
+  });
+  if(previousMaterialAudit.material!=='custom' ||
+     previousMaterialAudit.process!=='sls' || previousMaterialAudit.E!==4242)
+    throw Error('Legacy process/material migration lost numerical properties');
   await page.locator('#sectionsGroup').evaluate(el=>el.open=true);
   if(!(await page.locator('#l1W').isVisible()))throw Error('Cross section fields missing');
   await auditActiveFieldRows();
