@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 164" role="img" aria-labelledby="title description">
+  <title id="title">Fivebar Linkage Studio</title>
+  <desc id="description">The Fivebar Linkage Studio logo, showing a five-bar robot linkage, beside the project title.</desc>
+  <defs>
+    <linearGradient id="headerBackground" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111d2a"/>
+      <stop offset="1" stop-color="#172e41"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="948" height="162" rx="21" fill="url(#headerBackground)" stroke="#365b75" stroke-width="2"/>
+  <g transform="translate(38 32) scale(1.56)">
+    <rect width="64" height="64" rx="14" fill="#17354d"/>
+    <path d="M8 10h48M8 54h48" stroke="#3a6984" stroke-width="2" opacity=".45"/>
+    <path d="M16 49 25 32 32 17 39 32 48 49" fill="none" stroke="#b5dff0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M16 49 32 41 48 49" fill="none" stroke="#36a6c4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="16" cy="49" r="5" fill="#6ed1e5" stroke="#fff" stroke-width="1.5"/>
+    <circle cx="48" cy="49" r="5" fill="#897cec" stroke="#fff" stroke-width="1.5"/>
+    <circle cx="32" cy="17" r="5" fill="#ffbe75" stroke="#fff" stroke-width="1.5"/>
+    <circle cx="32" cy="41" r="5.5" fill="#f4fbff" stroke="#17354d" stroke-width="2"/>
+  </g>
+  <text x="170" y="103" font-family="Segoe UI, Inter, Arial, Helvetica, sans-serif" font-size="57" font-weight="750" letter-spacing="-1.6" fill="#eef5fa">Fivebar <tspan fill="#8bd4f1">Linkage</tspan> Studio</text>
+</svg>
