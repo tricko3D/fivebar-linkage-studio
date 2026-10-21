@@ -89,12 +89,14 @@ function cadDimensions(s=state,solution=null,detail=false){
   if(detail){
     out+=cadDimension({x:b.x,y:b.y},{x:b.x+b.w,y:b.y},
       'OUTER BOARD '+cadNum(s.outerW)+' mm',-40);
-    out+=cadDimension({x:b.x+b.w,y:b.y},{x:b.x+b.w,y:b.y+b.h},
-      'OUTER '+cadNum(s.outerH)+' mm',-39);
+    // Put vertical board dimensions outside the mechanism. Stagger labels so
+    // they cannot overlap each other or the elbow/joint marker.
+    out+=cadDimension({x:b.x,y:b.y},{x:b.x,y:b.y+b.h},
+      'OUTER '+cadNum(s.outerH)+' mm',102,'#287caa',{labelT:.30});
     out+=cadDimension({x:0,y:0},{x:s.boardW,y:0},
       'PLAYING '+cadNum(s.boardW)+' mm',-11);
     out+=cadDimension({x:0,y:0},{x:0,y:s.boardH},
-      'PLAYING '+cadNum(s.boardH)+' mm',11);
+      'PLAYING '+cadNum(s.boardH)+' mm',77,'#287caa',{labelT:.66});
   }
   return out+'</g>';
 }
