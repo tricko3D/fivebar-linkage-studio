@@ -60,6 +60,11 @@ const defaults = {
   bearingFrictionNm: 0.015,
   servoTravel: 180,
   servoMargin: 10,
+  useJointLimits: false,
+  leftMinAngle: 0,
+  leftMaxAngle: 360,
+  rightMinAngle: 0,
+  rightMaxAngle: 360,
   showServoArcs: true,
 };
 let state = { ...defaults };
