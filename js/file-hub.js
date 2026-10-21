@@ -168,20 +168,34 @@ function fileHubImported(filename) {
 }
 async function copyFileHubText() {
   if (!fileHubContent) return;
+  let copied=false;
   try {
-    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(fileHubContent);
-    else {
-      const field=document.getElementById('fileHubText');
-      const wasHidden=field.hidden;
-      field.hidden=false;
-      field.focus();field.select();
-      if (!document.execCommand('copy')) throw new Error('Clipboard access denied');
-      field.hidden=wasHidden;
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(fileHubContent);
+      copied=true;
     }
-    fileHubStatus('Copied '+fileHubKinds[fileHubKind].filename+' content.');
-  } catch(error) {
-    fileHubStatus('Copy blocked. Open the source view and select the text.',true);
+  } catch (_) {
+    // Fall through to the legacy copy command if Clipboard API permission fails.
   }
+  if (!copied) {
+    const field=document.getElementById('fileHubText');
+    const wasHidden=field.hidden, wasReadOnly=field.readOnly;
+    try {
+      field.hidden=false;
+      field.readOnly=true;
+      field.focus();
+      field.select();
+      copied=!!document.execCommand('copy');
+    } catch (_) {
+      copied=false;
+    } finally {
+      field.hidden=wasHidden;
+      field.readOnly=wasReadOnly;
+    }
+  }
+  fileHubStatus(copied
+    ? 'Copied '+fileHubKinds[fileHubKind].filename+' content.'
+    : 'Copy blocked. Open the source view and select the text.', !copied);
 }
 function initFileHub() {
   if (fileHubInitialized) return;
