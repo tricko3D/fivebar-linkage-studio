@@ -1,8 +1,6 @@
 // Standalone report at /r/#c=... — no remote storage or backend.
 'use strict';
 let standaloneReportMarkdown='';
-let standaloneCadSvg='';
-let standaloneCadUrl=null;
 function standaloneStatus(message){document.getElementById('reportStatus').textContent=message;}
 function standaloneDownload(name,source,mime='text/markdown'){
   const url=URL.createObjectURL(new Blob([source],{type:mime+';charset=utf-8'}));
@@ -19,10 +17,6 @@ function initStandaloneReport(){
     state.outerW=Math.max(state.outerW,state.boardW);
     state.outerH=Math.max(state.outerH,state.boardH);
     standaloneReportMarkdown=buildAuditReport();
-    standaloneCadSvg=buildCadDrawingSvg(state);
-    standaloneCadUrl=URL.createObjectURL(new Blob([standaloneCadSvg],{type:'image/svg+xml'}));
-    document.getElementById('reportCadImage').src=standaloneCadUrl;
-    document.getElementById('reportCadFull').href=standaloneCadUrl;
     source.value=standaloneReportMarkdown;
     renderReportPreview(standaloneReportMarkdown);
     document.getElementById('reportBack').href=shareLink('studio',state);
@@ -30,7 +24,6 @@ function initStandaloneReport(){
   }catch(err){
     error.textContent='Unable to open report: '+err.message;
     error.hidden=false;preview.hidden=true;
-    document.querySelector('.reportCad').hidden=true;
     standaloneStatus('Invalid or missing configuration');
   }
   window.renderStudioMath=()=>{
@@ -51,17 +44,20 @@ function initStandaloneReport(){
   };
   document.getElementById('reportCopy').addEventListener('click',()=>copy(standaloneReportMarkdown,'Markdown copied'));
   document.getElementById('reportCopyLink').addEventListener('click',()=>copy(window.location.href,'Report link copied'));
-  document.getElementById('reportCadSave').addEventListener('click',()=>{
-    if(standaloneCadSvg)standaloneDownload('fivebar-dimensioned-cad.svg',standaloneCadSvg,'image/svg+xml');
-  });
-  document.getElementById('reportCadToggle').addEventListener('click',event=>{
-    const body=document.getElementById('reportCadBody');
-    body.hidden=!body.hidden;
-    event.currentTarget.textContent=body.hidden?'Show drawing':'Hide drawing';
-    event.currentTarget.setAttribute('aria-expanded',String(!body.hidden));
-  });
-  window.addEventListener('pagehide',()=>{
-    if(standaloneCadUrl)URL.revokeObjectURL(standaloneCadUrl);
+  document.getElementById('reportPrint').addEventListener('click',()=>{
+    if(!standaloneReportMarkdown)return;
+    // Always print the formatted report, never its Markdown source textarea.
+    if(!source.hidden){
+      source.hidden=true;
+      preview.hidden=false;
+      renderReportPreview(standaloneReportMarkdown);
+      const mode=document.getElementById('reportMode');
+      mode.textContent='Markdown source';
+      mode.setAttribute('aria-pressed','false');
+    }
+    // Includes all nested full-precision logs — do not omit any calculations.
+    preview.querySelectorAll('details').forEach(section=>{section.open=true;});
+    window.print();
   });
   document.getElementById('reportZip').addEventListener('click',async()=>{
     const btn=document.getElementById('reportZip');
