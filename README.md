@@ -12,7 +12,7 @@ I started building a chess robot using a five-bar linkage and wanted a way to ex
 - Independent linkage lengths, assembly branches, and gripper attachments.
 - Reachability visualization and servo travel estimates.
 - Compact manufacturing/material picker: FDM, SLS, SLA and CNC.
-- 14 curated material choices (3–4 per process), with Custom values and preserved legacy material properties.
+- 15 curated material choices (3–5 per process), with Custom values and preserved legacy material properties.
 - Automatic modulus, density, effective stiffness and bending-threshold inputs; manual editing switches to Custom.
 - Link materials, cross-sections, loads, motor and transmission settings.
 - Motion Study with playback, torque/RPM bars, and selectable graphs.
@@ -36,7 +36,7 @@ I added the detailed Markdown report so I can check the intermediate numbers and
 
 ### Manufacturing/material picker
 
-Open **Mechanics & Loads → Material & bending limits**, then click the manufacturing/material selector. Choose FDM, SLS, SLA or CNC, then select one of 3–4 materials (or Custom values). The picker overlays the simulator, so the narrow settings panel does not clip the catalog. Escape or clicking outside closes it without changes.
+Open **Mechanics & Loads → Material & bending limits**, then click the manufacturing/material selector. Choose FDM, SLS, SLA or CNC, then select one of 3–5 materials (or Custom values). The picker overlays the simulator, so the narrow settings panel does not clip the catalog. Escape or clicking outside closes it without changes.
 
 Manufacturing process and material are both saved in the JSON configuration. The selected process is also included in the calculation report and SolidWorks TXT export. Existing PLA/PETG material IDs are preserved. **Custom values** keeps the current modulus, density, stiffness factor and bending limit while assigning a manufacturing process.
 
