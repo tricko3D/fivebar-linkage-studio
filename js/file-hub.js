@@ -110,7 +110,20 @@ function renderReportPreview(markdown) {
         row.forEach((val,index)=>{
           const td=document.createElement('td');
           if(index>0&&/^[\d,.%+\-≥]/.test(val))td.classList.add('numeric');
-          rich(td,val);tr.append(td);
+          // Render model utilization as a compact bar; the Markdown download
+          // retains the precise percentage in a normal table.
+          if(rows[0][index]==='Used' && /^\d+(?:\.\d+)?%$/.test(val)){
+            const amount=Number.parseFloat(val);
+            const view=document.createElement('div');view.className='fileHubUsage';
+            view.setAttribute('aria-label',val+' of model threshold');
+            const label=document.createElement('span');label.textContent=val;
+            const track=document.createElement('span');track.className='fileHubUsageTrack';
+            const bar=document.createElement('span');bar.className='fileHubUsageBar';
+            bar.style.width=Math.min(100,Math.max(0,amount))+'%';
+            if(amount>100)bar.classList.add('is-over-limit');
+            track.append(bar);view.append(label,track);td.append(view);
+          }else rich(td,val);
+          tr.append(td);
         });
         body.append(tr);
       });
