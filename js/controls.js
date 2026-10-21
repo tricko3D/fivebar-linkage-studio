@@ -12,13 +12,28 @@ function sanitizeSquareText(v) {
 }
 // Single source of truth: dropdown groups, presets and exported material codes
 // are all derived from materialGroups/materialPresets declared in state.js.
+// Keep property values from legacy/removed choices instead of silently
+// replacing them with a different material's assumptions.
+function normalizeMaterialSelection() {
+  if (!availablePickerMaterial(state.material) && state.material !== 'custom')
+    state.material = 'custom';
+  if (!manufacturingMethods.some(method => method.key === state.manufacturing)) {
+    const legacy = { mjf: 'sls', sheet: 'cnc', lpbf: 'cnc' };
+    state.manufacturing = legacy[state.manufacturing] || manufacturingForMaterial(state.material);
+  }
+  if (state.material !== 'custom' &&
+      !materialMethodKeys[state.manufacturing].includes(state.material))
+    state.manufacturing = manufacturingForMaterial(state.material);
+}
 function setupMaterialOptions() {
+  // Internal hidden select still supports config/state binding; only the curated
+  // processes and material choices are included.
   const select = $('material');
   select.replaceChildren();
-  for (const group of materialGroups) {
+  for (const method of manufacturingMethods) {
     const options = document.createElement('optgroup');
-    options.label = group.label;
-    for (const preset of group.items) {
+    options.label = method.label;
+    for (const preset of materialOptionsForMethod(method.key)) {
       const option = document.createElement('option');
       option.value = preset.key;
       option.textContent = preset.label;
@@ -30,13 +45,8 @@ function setupMaterialOptions() {
   custom.value = 'custom';
   custom.textContent = 'Custom values';
   select.appendChild(custom);
-  if (!materialPresets[state.material] && state.material !== 'custom')
-    state.material = 'custom'; // preserve numeric values from obsolete JSON files
+  normalizeMaterialSelection();
   select.value = state.material;
-  state.manufacturing = manufacturingMethods.some(method => method.key === state.manufacturing)
-    && (state.material === 'custom' ||
-        materialMethodKeys[state.manufacturing].includes(state.material))
-    ? state.manufacturing : manufacturingForMaterial(state.material);
   updateMaterialPresetNote();
 }
 function updateMaterialPresetNote() {
@@ -289,12 +299,8 @@ function initControls() {
           newState[key] = parsed[key];
       }
       state = newState;
-      // Older JSON configurations did not have a manufacturing process field.
-      if (!Object.prototype.hasOwnProperty.call(parsed, 'manufacturing') ||
-          !manufacturingMethods.some(method => method.key === state.manufacturing) ||
-          (state.material !== 'custom' &&
-           !materialMethodKeys[state.manufacturing]?.includes(state.material)))
-        state.manufacturing = manufacturingForMaterial(state.material);
+      // Preserve numeric properties while migrating older or removed choices.
+      normalizeMaterialSelection();
       state.outerW = Math.max(state.boardW, state.outerW);
       state.outerH = Math.max(state.boardH, state.outerH);
       writeControls();
