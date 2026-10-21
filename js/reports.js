@@ -348,10 +348,11 @@ function buildAuditReport() {
   // Readers see conclusions, key parameters, then formulas. Preserve the
   // complete original audit as collapsed sections, including the 64 squares.
   const fmt=(n, digits=2, unit='')=>Number.isFinite(n)
-    ? Number(n).toLocaleString('en-US',{maximumFractionDigits:digits})+(unit?' '+unit:'')
+    ? Number(n).toLocaleString('en-US',{maximumFractionDigits:digits})+(unit?(unit==='%'||unit==='°'?'':' ')+unit:'')
     : 'N/A';
   const perc=(n,d)=>d>0?fmt(n/d*100,1,'%'):'N/A';
   const cap=n=>n>=capPayloadG-.5?'≥2,000 g (search cap)':fmt(n,1,'g');
+  const usage=(estimate,limit)=>limit>0&&Number.isFinite(estimate)?fmt(100*estimate/limit,0,'%'):'N/A';
   const validTorque=sol.valid&&!!m.gradient;
   const maxTorque=Math.max(m.torque.L,m.torque.R);
   const summary=!sol.valid?'Unreachable target: '+(sol.reason||'invalid linkage geometry')
@@ -381,12 +382,12 @@ function buildAuditReport() {
     '',
     '### Key engineering estimates',
     '',
-    '| Quantity | Model estimate | Model threshold |',
-    '|:---|---:|---:|',
-    `| Vertical deflection | ${fmt(st.sag,3,'mm')} | ${fmt(s.sagLimit,2,'mm')} |`,
-    `| Maximum bending stress | ${fmt(st.stress,2,'MPa')} | ${fmt(s.stressLimit,2,'MPa')} |`,
-    `| Maximum output motor torque | ${validTorque?fmt(maxTorque,3,'N·m'):'Unavailable'} | ${fmt(base.allowTorque,3,'N·m')} |`,
-    `| Combined screening payload | ${validTorque?cap(m.finalLimit):'Unavailable'} | ${fmt(s.payloadG,0,'g')+' selected'} |`,
+    '| Quantity | Model estimate | Model threshold | Used |',
+    '|:---|---:|---:|---:|',
+    `| Vertical deflection | ${fmt(st.sag,3,'mm')} | ${fmt(s.sagLimit,2,'mm')} | ${usage(st.sag,s.sagLimit)} |`,
+    `| Maximum bending stress | ${fmt(st.stress,2,'MPa')} | ${fmt(s.stressLimit,2,'MPa')} | ${usage(st.stress,s.stressLimit)} |`,
+    `| Maximum output motor torque | ${validTorque?fmt(maxTorque,3,'N·m'):'Unavailable'} | ${fmt(base.allowTorque,3,'N·m')} | ${validTorque?usage(maxTorque,base.allowTorque):'N/A'} |`,
+    `| Combined screening payload | ${validTorque?cap(m.finalLimit):'Unavailable'} | ${fmt(s.payloadG,0,'g')+' selected'} | — |`,
     '',
     'These values are **proxies**, not predictions of real-world load capacity. Vertical bending is position-independent in the current model; XY torque does not represent static vertical lifting.',
     '',
@@ -424,7 +425,7 @@ $$`,
     '',
     '### 2. Vertical bending',
     '',
-    'Each link is approximated as a cantilever. The two branches share a load using their compliances:',
+    'Each link is approximated as a cantilever. The two branches share a load using their compliances. Here L is link length, E is Young modulus, I is bending inertia, F is the combined head-and-payload weight in newtons, and the factor 1,000 converts metres to millimetres:',
     '',
     String.raw`$$
 \begin{aligned}
