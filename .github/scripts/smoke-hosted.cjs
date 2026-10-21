@@ -151,10 +151,12 @@ const fs = require('node:fs');
     throw Error('Report does not render model comparison tables');
   if(await reportPane.locator('.fileHubUsage').count()!==3)
     throw Error('Three visual limit-utilization bars are missing');
-  if(await reportPane.locator('.fileHubEquation').count()!==5)
-    throw Error('Expected five displayed LaTeX equations');
-  if(await reportPane.locator('.fileHubAuditDetails').count()!==11)
-    throw Error('Reproducible detail appendices were lost');
+  if(await reportPane.locator('.fileHubEquation').count()<13)
+    throw Error('Detailed equations are not formatted as LaTeX');
+  if(await reportPane.locator('.fileHubAuditDetails').count()!==22)
+    throw Error('Explained audit sections or nested raw-precision logs were lost');
+  if(await reportPane.locator('.fileHubAuditDetails .fileHubAuditDetails').count()!==11)
+    throw Error('Each audit section must have its own optional raw calculation log');
   if(await reportPane.locator('.fileHubAuditDetails[open]').count())
     throw Error('Detailed audits should start collapsed');
   const summary=await reportPane.locator('h2').first().innerText();
@@ -167,16 +169,35 @@ const fs = require('node:fs');
   }else if(await eq.locator('code').count()!==0) {
     // The raw LaTeX fallback is still available when third-party CDN is blocked.
   }else throw Error('Missing equation fallback');
-  await reportPane.locator('.fileHubAuditDetails summary').first().click();
-  if(await reportPane.locator('.fileHubAuditDetails[open]').count()!==1)
-    throw Error('Expanded detail section failed to open');
+  // Expanding a section should reveal real explanations, matrices and tables,
+  // not immediately expose a block of decimal-heavy logging.
+  const jacSummary=reportPane.locator('.fileHubAuditDetails > summary')
+    .filter({hasText:'XY MOTOR TORQUE / FINITE-DIFFERENCE JACOBIAN'});
+  await jacSummary.click();
+  const jacSection=jacSummary.locator('..');
+  if(!(await jacSection.getByText('Step 1 — Sample nearby motor angles').isVisible()))
+    throw Error('Jacobian audit missing step-by-step explanation');
+  if(await jacSection.locator('.fileHubReportTable').count()<4 ||
+     await jacSection.locator('.fileHubEquation').count()<4)
+    throw Error('Jacobian steps are not presented as mathematical tables and LaTeX');
+  if(await jacSection.locator('details[open]').count())
+    throw Error('Raw numerical log should remain collapsed inside Jacobian explanation');
+  const rawSummary=jacSection.locator('details > summary').filter({hasText:'Raw calculation log'});
+  await rawSummary.click();
+  if(!(await jacSection.locator('details pre').isVisible()))
+    throw Error('Full-precision raw log cannot be expanded');
+  await jacSummary.click();
+  if(await jacSection.getAttribute('open')!==null)
+    throw Error('Explained section failed to collapse');
   await page.locator('[data-md-mode="source"]').click();
   const markdown=await page.locator('#fileHubText').inputValue();
   if(!markdown.includes('## Executive summary') ||
      !markdown.includes('\\frac') ||
      !markdown.includes('$$') ||
      !markdown.includes('<details>') ||
-     !markdown.includes('ALL 64 SQUARE CENTRES'))
+     !markdown.includes('ALL 64 SQUARE CENTRES') ||
+     !markdown.includes('J_{\\\\theta\\\\leftarrow xy}') ||
+     !markdown.includes('Raw calculation log — full precision'))
     throw Error('Source Markdown lost LaTeX or raw calculations');
   const [md]=await Promise.all([page.waitForEvent('download'),page.locator('#fileHubSave').click()]);
   if(!md.suggestedFilename().endsWith('.md'))throw Error('Markdown download wrong name');
