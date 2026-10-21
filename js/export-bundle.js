@@ -77,6 +77,21 @@ function bundleOfflineReport(markdown,cadSvg,faviconSvg){
     '<footer>Engineering estimates are indicative; check real mechanical and motor limits.</footer>'+
     '</body></html>';
 }
+async function buildStandaloneHtmlReport(config=state){
+  const response=await fetch(new URL('favicon.svg',shareRootUrl()));
+  if(!response.ok)throw new Error('Could not load the Fivebar favicon');
+  const icon=await response.text();
+  return bundleOfflineReport(buildAuditReport(),buildCadDrawingSvg(config),icon);
+}
+async function downloadFivebarHtmlReport(config=state){
+  const html=await buildStandaloneHtmlReport(config);
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url;link.download='fivebar-engineering-report.html';
+  document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
 async function fivebarBundleFiles(config=state){
   const markdown=buildAuditReport(),cad=buildCadDrawingSvg(config);
   const response=await fetch(new URL('favicon.svg',shareRootUrl()));
