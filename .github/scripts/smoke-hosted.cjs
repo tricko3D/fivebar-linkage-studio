@@ -149,6 +149,8 @@ const fs = require('node:fs');
     throw Error('Engineering report headings missing');
   if(await reportPane.locator('.fileHubReportTable').count()<4)
     throw Error('Report does not render model comparison tables');
+  if(await reportPane.locator('.fileHubUsage').count()!==3)
+    throw Error('Three visual limit-utilization bars are missing');
   if(await reportPane.locator('.fileHubEquation').count()!==5)
     throw Error('Expected five displayed LaTeX equations');
   if(await reportPane.locator('.fileHubAuditDetails').count()!==11)
@@ -172,7 +174,7 @@ const fs = require('node:fs');
   const markdown=await page.locator('#fileHubText').inputValue();
   if(!markdown.includes('## Executive summary') ||
      !markdown.includes('\\frac') ||
-     !markdown.includes('$') ||
+     !markdown.includes('$$') ||
      !markdown.includes('<details>') ||
      !markdown.includes('ALL 64 SQUARE CENTRES'))
     throw Error('Source Markdown lost LaTeX or raw calculations');
