@@ -21,21 +21,12 @@
       <button id="reportCopy" type="button">Copy Markdown</button>
       <button id="reportSave" type="button" class="reportPrimary">Save .md</button>
       <button id="reportZip" type="button" class="reportPrimary">Download ZIP</button>
+      <button id="reportPrint" type="button" class="reportPrimary"><span aria-hidden="true">⎙</span> Print</button>
     </nav>
   </header>
   <main class="reportSheet">
     <span id="reportStatus" class="reportScreenReaderStatus" role="status" aria-live="polite"></span>
     <div id="reportError" class="reportError" hidden role="alert"></div>
-    <section class="reportCad" aria-labelledby="reportCadTitle">
-      <div class="reportCadActions" aria-label="Drawing actions">
-        <button id="reportCadToggle" type="button" aria-expanded="true" aria-controls="reportCadBody">Hide drawing</button>
-        <button id="reportCadSave" type="button">Save SVG</button>
-        <a id="reportCadFull" href="#" target="_blank" rel="noopener noreferrer">Open full size</a>
-      </div>
-      <div id="reportCadBody" class="reportCadBody">
-        <img id="reportCadImage" alt="Fivebar CAD drawing with arrows measuring motor spacing, four links and the motor midpoint to the outer board edge midpoint"/>
-      </div>
-    </section>
     <article id="fileHubMarkdownPreview" class="fileHubMarkdownPreview" aria-label="Calculation report"></article>
     <textarea id="reportMarkdownSource" class="reportMarkdownSource" spellcheck="false" readonly hidden aria-label="Markdown source"></textarea>
   </main>
