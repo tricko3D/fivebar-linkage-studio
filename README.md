@@ -35,13 +35,15 @@ A URL contains all shared settings, including any custom text field values. Shar
 
 ### Files & Export
 
-Use **Files & Export** in the header. It opens on **Share links**, the first tab, and stays a consistent size while you switch among these file views:
+Use **Files & Export** in the header. The five tabs are ordered **Share links → Report → Config → SW variables → CAD drawing**. The **Report** header button opens the Report tab directly, and the Reset action has a visible label:
 
 - **Configuration (JSON):** Inspect, copy, or save current settings. Select **Import / paste** to paste JSON and apply it, or choose **Load JSON file**. Loading and pasting use the same validation and migration path.
 - **SolidWorks variables (TXT):** Preview, copy, or save Tools → Equations compatible variable declarations.
 - **Calculation report (MD):** Read a concise summary with utilization bars. Expand any of 11 explained audit sections for mathematical derivations and labeled tables, including a four-step Jacobian and torque calculation. The original full-precision logs are separately collapsible. Copy or save the complete report.
-- **CAD drawing (SVG):** Preview and copy/save the dimensioned technical plan including four link lengths, outer-board edge datum and section dimensions. The separate workspace SVG button still exports the interactive board view.
+- **CAD drawing (SVG):** Preview and copy/save the technical plan with a single midpoint-to-outer-edge dimension, all four link lengths and a MIN/MAX angle schedule for both motor joints. When joint limits are enabled, boundary rays and arcs appear at the pivots.
 - **Share links:** Copy or open deterministic configuration and standalone report permalinks.
+
+**Download ZIP** exports `report.html` (a fully self-contained document with inlined CAD drawing, CSS, favicon and MathML equations), `drawing.svg`, `configuration.json`, `solidworks-variables.txt` and `report.md`. Open `report.html` directly after unzipping; it needs no network connection. The standalone report page also offers the same ZIP download.
 
 Math is typeset by [KaTeX](https://katex.org/) in the browser; if its CDN is unavailable, the original LaTeX remains visible instead. GitHub renders the downloaded Markdown's `$ ... $` display equations. Each expanded audit section begins with explanations, equations and concise values; a second **Raw calculation log — full precision** disclosure retains the original intermediate numbers, 64-square data and movement trace for verification.
 
