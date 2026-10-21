@@ -33,6 +33,7 @@ function renderReportPreview(markdown) {
   const root=document.getElementById('fileHubMarkdownPreview');
   root.replaceChildren();
   const lines=markdown.split(/\r?\n/);
+  const parentStack=[root];
   let parent=root,paragraph=[],list=null;
   const rich=(node,value)=>{
     for(const part of value.split(/(\*\*[^*]+\*\*)/g)){
@@ -81,9 +82,14 @@ function renderReportPreview(markdown) {
     if(line==='<details>'){
       flush();
       const details=document.createElement('details');details.className='fileHubAuditDetails';
-      root.append(details);parent=details;continue;
+      parent.append(details);
+      parentStack.push(details);parent=details;continue;
     }
-    if(line==='</details>'){flush();parent=root;continue;}
+    if(line==='</details>'){
+      flush();
+      if(parentStack.length>1)parentStack.pop();
+      parent=parentStack[parentStack.length-1];continue;
+    }
     const match=line.match(/^<summary>(.*?)<\/summary>$/);
     if(match){
       flush();
