@@ -26,45 +26,71 @@ function cadLine(a,b,color='#50809b',width=1,dash=''){
     '" stroke="'+color+'" stroke-width="'+width+'" fill="none"'+
     (dash?' stroke-dasharray="'+dash+'"':'')+'/>';
 }
-function cadDimension(a,b,label,offset=15,color='#287caa'){
-  const dx=b.x-a.x,dy=b.y-a.y,distAB=Math.hypot(dx,dy);
-  if(distAB<.005)return cadLabel({x:a.x+25,y:a.y-15},label,color);
-  const ux=dx/distAB,uy=dy/distAB,nx=-uy,ny=ux;
-  const p={x:a.x+nx*offset,y:a.y+ny*offset},
-    q={x:b.x+nx*offset,y:b.y+ny*offset};
-  const ext=5,arrow=Math.min(7,distAB*.16);
-  const tip=(point,sign)=>'<path d="M'+point.x+' '+point.y+
-    ' l'+((ux*arrow+nx*2.3)*sign)+' '+((uy*arrow+ny*2.3)*sign)+
-    ' l'+(-nx*4.6*sign)+' '+(-ny*4.6*sign)+' Z" fill="'+color+'"/>';
-  const mid={x:(p.x+q.x)/2+nx*10,y:(p.y+q.y)/2+ny*10};
+// Traditional drafting arrows: tips sit precisely on the measured points,
+// with small symmetric arrowheads pointing into the dimension line.
+function cadDimension(a,b,label,offset=15,color='#287caa',options={}){
+  const dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy);
+  if(length<.005)return cadLabel({x:a.x+25,y:a.y-15},label,color);
+  const ux=dx/length,uy=dy/length,nx=-uy,ny=ux;
+  const p={x:a.x+nx*offset,y:a.y+ny*offset};
+  const q={x:b.x+nx*offset,y:b.y+ny*offset};
+  const ext=Math.sign(offset||1)*5;
+  const arrow=Math.min(5,Math.max(2.5,length*.10));
+  const halfWidth=1.6;
+  const tip=(at,direction)=>{
+    const bx=at.x+ux*direction*arrow,by=at.y+uy*direction*arrow;
+    return '<path d="M '+at.x+' '+at.y+' L '+(bx+nx*halfWidth)+' '+(by+ny*halfWidth)+
+      ' L '+(bx-nx*halfWidth)+' '+(by-ny*halfWidth)+' Z" fill="'+color+'"/>';
+  };
+  const t=options.labelT??.5;
+  const mid={x:p.x+(q.x-p.x)*t+nx*(options.labelOffset||0),
+    y:p.y+(q.y-p.y)*t+ny*(options.labelOffset||0)};
   return '<g class="cadDimension" pointer-events="none">'+
-    cadLine(a,{x:p.x+nx*ext,y:p.y+ny*ext},color,.75)+
-    cadLine(b,{x:q.x+nx*ext,y:q.y+ny*ext},color,.75)+
-    cadLine(p,q,color,1.1)+tip(p,1)+tip(q,-1)+cadLabel(mid,label,color,9.5)+'</g>';
+    cadLine(a,{x:p.x+nx*ext,y:p.y+ny*ext},color,.65)+
+    cadLine(b,{x:q.x+nx*ext,y:q.y+ny*ext},color,.65)+
+    cadLine(p,q,color,1.0)+tip(p,1)+tip(q,-1)+
+    cadLabel(mid,label,color,9.5)+'</g>';
+}
+function cadExteriorOffset(a,b,centroid,distance=24){
+  const dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy)||1;
+  const nx=-dy/length,ny=dx/length;
+  const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+  return (nx*(mid.x-centroid.x)+ny*(mid.y-centroid.y)>=0?1:-1)*distance;
 }
 function cadDimensions(s=state,solution=null,detail=false){
   const b=boardBounds(s),pv=pivots(s),
     sol=solution||calc(vec(s.targetX,s.targetY),{...s,useJointLimits:false,forbidCrossings:false});
   const ref=cadEdgeReference(s);
   let out='<g id="cadDimensions" pointer-events="none">';
-  // Board edge midpoint is an explicit datum; NOT the middle of the board.
+  // Explicit datum marker at physical board EDGE MIDPOINT, never board centre.
   out+='<circle cx="'+ref.point.x+'" cy="'+ref.point.y+
     '" r="4" fill="#fff" stroke="#c47727" stroke-width="1.8"/>';
-  out+=cadLine(ref.point,pv.M,'#ce8e42',1.1,'4 4');
-  out+=cadDimension(ref.point,pv.M,'EDGE MID → M  '+cadNum(ref.distance)+' mm',
-    ref.side==='BOTTOM'?-24:ref.side==='TOP'?24:ref.side==='LEFT'?-25:25,'#ad6d2a');
-  out+=cadDimension(pv.A,pv.B,'M₁–M₂  '+cadNum(s.sep)+' mm',-24);
+  out+=cadLine(ref.point,pv.M,'#ce8e42',1.0,'3 5');
+  out+=cadDimension(ref.point,pv.M,'EDGE → M '+cadNum(ref.distance)+' mm',
+    ref.side==='BOTTOM'?-30:ref.side==='TOP'?30:ref.side==='LEFT'?-30:30,
+    '#ad6d2a',{labelT:.19});
+  out+=cadDimension(pv.A,pv.B,'M₁–M₂ '+cadNum(s.sep)+' mm',-25);
   if(sol?.EL&&sol?.ER&&sol?.P){
-    out+=cadDimension(pv.A,sol.EL,'L1  '+cadNum(s.l1)+' mm',-15,'#177e97');
-    out+=cadDimension(sol.EL,sol.P,'L2  '+cadNum(s.l2)+' mm',14,'#177e97');
-    out+=cadDimension(pv.B,sol.ER,'R1  '+cadNum(s.r1)+' mm',15,'#755ab6');
-    out+=cadDimension(sol.ER,sol.P,'R2  '+cadNum(s.r2)+' mm',-14,'#755ab6');
+    const vertices=[pv.A,pv.B,sol.EL,sol.ER,sol.P];
+    const centroid={
+      x:vertices.reduce((sum,p)=>sum+p.x,0)/vertices.length,
+      y:vertices.reduce((sum,p)=>sum+p.y,0)/vertices.length
+    };
+    for(const [start,end,name,len,color] of [
+      [pv.A,sol.EL,'L1',s.l1,'#177e97'],
+      [sol.EL,sol.P,'L2',s.l2,'#177e97'],
+      [pv.B,sol.ER,'R1',s.r1,'#755ab6'],
+      [sol.ER,sol.P,'R2',s.r2,'#755ab6']
+    ]){
+      out+=cadDimension(start,end,name+' '+cadNum(len)+' mm',
+        cadExteriorOffset(start,end,centroid,25),color);
+    }
   }
   if(detail){
     out+=cadDimension({x:b.x,y:b.y},{x:b.x+b.w,y:b.y},
       'OUTER BOARD '+cadNum(s.outerW)+' mm',-40);
     out+=cadDimension({x:b.x+b.w,y:b.y},{x:b.x+b.w,y:b.y+b.h},
-      'OUTER '+cadNum(s.outerH)+' mm',40);
+      'OUTER '+cadNum(s.outerH)+' mm',-39);
     out+=cadDimension({x:0,y:0},{x:s.boardW,y:0},
       'PLAYING '+cadNum(s.boardW)+' mm',-11);
     out+=cadDimension({x:0,y:0},{x:0,y:s.boardH},
@@ -108,11 +134,11 @@ function buildCadDrawingSvg(s=state){
   }
   for(const [p,name] of [[pv.A,'M₁'],[pv.B,'M₂'],[pv.M,'M']]){
     g+='<circle cx="'+p.x+'" cy="'+p.y+'" r="4.7" fill="#fff" stroke="#254f69" stroke-width="1.8"/>';
-    g+=cadLabel({x:p.x+14,y:p.y-9},name);
+    g+=cadLabel({x:p.x+(name==='M'?14:name==='M₁'?20:-20),y:p.y-17},name);
   }
   for(const [p,label] of [[solution.EL,'E₁'],[solution.ER,'E₂'],[solution.P,'P']]){
     if(p){g+='<circle cx="'+p.x+'" cy="'+p.y+'" r="3.7" fill="#fff" stroke="#254f69" stroke-width="1.5"/>';
-      g+=cadLabel({x:p.x+14,y:p.y-9},label);}
+      g+=cadLabel({x:p.x+(label==='E₂'?-21:21),y:p.y-17},label);}
   }
   g+=cadDimensions(s,solution,true);
   // Dimensioned cross sections: orthographic not-to-scale sketches for each link.
