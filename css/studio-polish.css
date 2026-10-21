@@ -918,14 +918,6 @@ body.materialPickerOpen{overflow:hidden;}
 .materialPickerProcessName{font-size:15px;font-weight:800;color:#315774;}
 .materialPickerProcessHelp{margin:3px 0 10px;font-size:11px;line-height:1.3;color:#71899a;}
 .materialPickerCount{white-space:nowrap;font-size:10px;color:#71899a;padding-top:3px;}
-.materialPickerSearchWrap{display:flex;align-items:center;gap:8px;
-  border:1px solid #c5d3df;background:white;border-radius:6px;padding:0 9px;flex:0 0 auto;}
-.materialPickerSearchWrap svg{height:16px;width:16px;color:#658aa4;}
-.materialPickerSearchWrap input{
- border:0;outline:none;box-shadow:none;background:transparent;color:#294b66;
- height:35px;min-width:0;width:100%;font:inherit;font-size:12px;
-}
-.materialPickerSearchWrap:focus-within{outline:2px solid #b4d8ef;}
 .materialPickerChoices{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;
  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
  align-content:start;padding:10px 3px 8px 0;}
