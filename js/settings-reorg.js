@@ -100,8 +100,10 @@
   for (const row of config.querySelectorAll('.fieldrow'))
     if (row.children.length === 0) row.remove();
 
-  // Collapse the three linkage subsections independently while preserving
-  // every original data-key control, hint and listener target.
+  // All Linkage cards must share ONE settings section, like Motors & Drive.
+  // Otherwise each child section flexes to fill a third of the rail height,
+  // leaving artificial gaps and separator lines between the cards.
+  mounting.classList.add('linkageStack');
   for (const section of [mounting, linkage, gripper]) {
     const header = section.querySelector(':scope > .sectheader');
     const details = document.createElement('details');
@@ -119,9 +121,10 @@
     for (const node of Array.from(section.children)) if (node !== header) body.append(node);
     header.remove();
     details.append(summary, body);
-    section.append(details);
+    mounting.append(details);
+    if (section !== mounting) section.remove();
   }
 
-  // Place tabs in assembly/configuration workflow order.
-  config.append(board, mounting, linkage, gripper, motors, mechanics, display);
+  // Five actual sections: Board, Linkage, Motors, Mechanics and Display.
+  config.append(board, mounting, motors, mechanics, display);
 })();
