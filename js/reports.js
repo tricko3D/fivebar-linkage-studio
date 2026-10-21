@@ -415,10 +415,10 @@ function buildAuditReport() {
     '',
     'The bending model uses an effective Young modulus and a second moment of area. For a hollow section, the inner rectangle is subtracted:',
     '',
-    String.raw`$
+    String.raw`$$
 E_{\mathrm{eff}} = E_{\mathrm{input}} f_{\mathrm{stiff}},
 \qquad I = \frac{bh^3-b_i h_i^3}{12}
-$`,
+$$`,
     '',
     `For ${mat}, this model uses **${fmt(s.youngMPa*s.stiffFactor,0,'MPa')}** effective modulus, from **${fmt(s.youngMPa,0,'MPa')}** input × **${fmt(s.stiffFactor,2)}** factor.`,
     '',
@@ -426,13 +426,13 @@ $`,
     '',
     'Each link is approximated as a cantilever. The two branches share a load using their compliances:',
     '',
-    String.raw`$
+    String.raw`$$
 \begin{aligned}
 C_i &= \frac{L_i^3}{3 E_{\mathrm{eff}} I_i} \\
 C_{\mathrm{tip}} &= \frac{C_L C_R}{C_L+C_R} \\
 \delta_{\mathrm{tip}} &= 10^3(\delta_{\mathrm{self}} + F C_{\mathrm{tip}})
 \end{aligned}
-$`,
+$$`,
     '',
     `Result: **${fmt(st.sag,3,'mm')}**, against your **${fmt(s.sagLimit,2,'mm')}** threshold. Real pivot and frame flexibility are not modeled.`,
     '',
@@ -440,18 +440,18 @@ $`,
     '',
     'The available output-joint torque is derated for gearing efficiency and safety:',
     '',
-    String.raw`$
+    String.raw`$$
 \tau_{\mathrm{allow}} =
 \frac{\tau_{\mathrm{motor}}\,r\,\eta}{SF}
-$`,
+$$`,
     '',
     `For **${fmt(s.ratio,2)}:1** reduction and **${fmt(s.efficiency,1,'%')}** efficiency, the allowance is **${fmt(base.allowTorque,3,'N·m')} per motor**.`,
     '',
     'A finite-difference inverse-kinematics Jacobian estimates the planar torque demand:',
     '',
-    String.raw`$
+    String.raw`$$
 \tau_i \approx F_{xy} J_i + \tau_{\mathrm{friction}}
-$`,
+$$`,
     '',
     'This is a planar motion screening proxy. It omits full arm inertia and the real motor torque-speed curve.',
     '',
@@ -459,9 +459,9 @@ $`,
     '',
     'A position must satisfy the linkage geometry and enabled physical limits. Servo travel is assessed separately:',
     '',
-    String.raw`$
+    String.raw`$$
 \mathrm{Coverage}=\frac{N_{\mathrm{reachable}}}{64}\times100\%
-$`,
+$$`,
     '',
     `**${cov.okCenters} of 64 centres** and **${cov.angles.length} of 576 samples** are reachable under the sampled criteria.`,
     '',
