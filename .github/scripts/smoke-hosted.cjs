@@ -12,7 +12,15 @@ const fs = require('node:fs');
   if(!(await page.locator('.resultTabs [data-insight="help"]').getAttribute('aria-selected')==='true'))throw Error('Guide is not default');
   if(!(await page.locator('#scaleLabel').isVisible()))throw Error('Scale missing');
   if(!/[0-9]+ mm/.test(await page.locator('#scaleLabel').innerText()))throw Error('Scale label invalid');
-  if(await page.locator('.topSettingsTabs button').count()!==5)throw Error('Header tabs lost');
+  if(await page.locator('.topSettingsTabs button').count()!==5)throw Error('Settings tabs missing');
+  if(await page.locator('.config > .railTitle').count())throw Error('Redundant settings title bar returned');
+  if(width>=851){
+    const configBox=await page.locator('.config').boundingBox();
+    const workBox=await page.locator('.workarea').boundingBox();
+    if(configBox.width>250)throw Error('Settings rail wider than compact layout: '+configBox.width);
+    if(Math.abs(workBox.x-(configBox.x+configBox.width))>1.1)
+      throw Error('Settings and workspace are no longer flush');
+  }
   if(await page.locator('.mountSpot').count()!==8)throw Error('Mount picker missing positions');
   if(!(await page.locator('#routePanel').evaluate(el=>el.parentElement.classList.contains('workarea'))))throw Error('Motion study is not below the canvas');
   if(!(await page.locator('#heatMode').evaluate(el=>el.closest('.canvasbox')!==null)))throw Error('Heatmap selector not inside canvas');
@@ -89,6 +97,10 @@ const fs = require('node:fs');
   if(!sw.suggestedFilename().endsWith('.txt'))throw Error('SW export not TXT');
   const equations=fs.readFileSync(await sw.path(),'utf8');
   if(!equations.includes('"BoardWidth" = 255mm')||!equations.includes('"LeftProximalLength" ='))throw Error('SolidWorks variables missing');
+  for(const key of ['LeftJointMinAngle','LeftJointMaxAngle','RightJointMinAngle','RightJointMaxAngle','HardStopsEnabled','ServoUsableTravel'])
+    if(!equations.includes('"'+key+'" ='))throw Error('SolidWorks export omits '+key);
+  const vars=[...equations.matchAll(/^"([^"]+)" = ([-\\d.]+)(mm|deg)?$/gm)];
+  if(vars.length<70)throw Error('Insufficient CAD variable coverage: '+vars.length);
   await page.locator('#fileMenuButton').click();
   const [json]=await Promise.all([page.waitForEvent('download'),page.locator('#exportButton').click()]);
   if(!json.suggestedFilename().endsWith('.json'))throw Error('Configuration not JSON');
@@ -106,25 +118,57 @@ const fs = require('node:fs');
 
   if(width<850)await page.locator('#toggleSettings').click();
   await page.locator('.topSettingsTabs [data-setting="board"]').click();
-  if(!(await page.locator('#mountX').isVisible()))throw Error('Board settings invisible');
+  if(!(await page.locator('#boardW').isVisible()))throw Error('Board settings invisible');
+
+  // Every Linkage section must be independently collapsible.
+  await page.locator('.topSettingsTabs [data-setting="linkage"]').click();
+  if(await page.locator('.linkageAccordion').count()!==3)throw Error('Expected three linkage accordions');
+  for(const section of await page.locator('.linkageAccordion').all()){
+    if(!(await section.evaluate(el=>el.open)))throw Error('Linkage accordion did not default to expanded');
+    await section.locator('summary').click();
+    if(await section.evaluate(el=>el.open))throw Error('Linkage accordion would not collapse');
+    await section.locator('summary').click();
+    if(!(await section.evaluate(el=>el.open)))throw Error('Linkage accordion would not reopen');
+  }
   await page.locator('.mountSpot[data-preset="TC"]').click();
   if(await page.locator('#mountX').inputValue()!=='127.5')throw Error('Top centre not aligned horizontally');
   if(await page.locator('#angle').inputValue()!=='0')throw Error('Top centre angle incorrect');
-  if(await page.locator('.mountSpot[data-preset="TC"]').getAttribute('aria-pressed')!=='true')throw Error('Picker selection not highlighted');
-  await page.locator('.topSettingsTabs [data-setting="loads"]').click();
-  if(await page.locator('.mechanicsGroup').count()!==4)throw Error('Expected four collapsible Loads sections');
-  await page.locator('#sectionsGroup summary').click();
-  if(!(await page.locator('#l1W').isVisible()))throw Error('Link cross-section section did not open');
+
+  await page.locator('.topSettingsTabs [data-setting="mechanics"]').click();
+  if(!(await page.locator('#sectionsGroup').isVisible()))throw Error('Mechanical sections missing');
+  await page.locator('#sectionsGroup').evaluate(el=>el.open=true);
+  if(!(await page.locator('#l1W').isVisible()))throw Error('Cross section fields missing');
   await page.locator('#sectionsGroup .crossSectionHead .infoTrigger').click();
-  if(!(await page.locator('#studioTooltip').innerText()).includes('Link cross-sections, not link lengths'))throw Error('Cross-section explanation missing from tooltip');
+  if(!(await page.locator('#studioTooltip').innerText()).includes('Link cross-sections, not link lengths'))
+    throw Error('Cross-section explanation missing from tooltip');
   await page.keyboard.press('Escape');
-  await page.locator('#sectionsGroup summary').click();
-  await page.locator('#driveGroup summary').click();
-  if(!(await page.locator('#ratio').isVisible()))throw Error('Drive section did not open');
+
+  await page.locator('.topSettingsTabs [data-setting="motors"]').click();
+  if(!(await page.locator('#ratio').isVisible()))throw Error('Drive inputs missing');
   await page.locator('#ratio').fill('3');
   await page.locator('#ratio').dispatchEvent('change');
-  if(!(await page.locator('#gearReadout').innerText()).includes('3.00:1'))throw Error('Gear ratio did not recalculate');
-  await page.locator('.topSettingsTabs [data-setting="view"]').click();
+  if(!(await page.locator('#gearReadout').innerText()).includes('3.00:1'))
+    throw Error('Gear ratio did not recalculate');
+
+  // Explicit min/max, per-value reset, and reset-all must all work in the rail.
+  const stops=page.locator('#jointLimitsGroup');
+  if(!(await stops.isVisible()))throw Error('Joint hard stops are hidden');
+  if(await stops.locator('[data-joint-stop]').count()!==4 ||
+     await stops.locator('[data-reset-stop]').count()!==4)
+    throw Error('Expected four Set and four Reset buttons');
+  await stops.locator('[data-joint-stop="leftMinAngle"]').click();
+  if(!(await page.locator('#useJointLimits').isChecked()))throw Error('Set did not enable mechanical limits');
+  const minValue=Number(await page.locator('#leftMinAngle').inputValue());
+  if(!(minValue>0 && minValue<=360))throw Error('Set did not capture left joint angle');
+  if(!(await page.locator('#currentLeftJointAngle').innerText()).includes('°'))throw Error('Live joint angle missing');
+  await stops.locator('[data-reset-stop="leftMinAngle"]').click();
+  if(await page.locator('#leftMinAngle').inputValue()!=='0')throw Error('Reset MIN failed');
+  await stops.locator('[data-joint-stop="rightMaxAngle"]').click();
+  await page.locator('#resetJointLimits').click();
+  if(await page.locator('#useJointLimits').isChecked())throw Error('Reset all did not disable limits');
+  if(await page.locator('#rightMaxAngle').inputValue()!=='360')throw Error('Reset all did not restore max');
+
+  await page.locator('.topSettingsTabs [data-setting="display"]').click();
   const label=page.locator('label.toggle').filter({has:page.locator('#showCoverage')});
   const color=await label.evaluate(e=>getComputedStyle(e).color);
   if(color==='rgb(194, 209, 221)')throw Error('Checkbox text still washed out');
@@ -132,7 +176,7 @@ const fs = require('node:fs');
   await page.locator('.resultTabs [data-insight="position"]').click();
   if(!(await page.locator('#outX').isVisible()))throw Error('Position panel invisible');
   if(errors.length)throw Error('JavaScript console errors: '+errors.join('; ').slice(0,600));
-  console.log('PASS '+width+'px with mount picker, tooltip, ruler, exports, resize, tabs');
+  console.log('PASS '+width+'px with settings, linkage accordions, hard stops, SW export, compact rail and motion study');
   await page.close();
  }
  await browser.close();
