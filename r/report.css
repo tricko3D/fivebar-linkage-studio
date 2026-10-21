@@ -72,3 +72,13 @@ body{margin:0;background:#edf3f8;color:#29465b;min-height:100dvh;display:flex;fl
   .reportCadActions{right:12px;top:12px;gap:3px}
   .reportCadActions a,.reportCadActions button{font-size:9px;padding:4px 5px}
 }
+
+/* Keep the drawing clear: compact controls above it, never over the CAD labels. */
+.reportCadActions{
+  position:static;display:flex;justify-content:flex-end;gap:5px;
+  padding:6px 12px;border-bottom:1px solid #dce7ee;background:#f7fafc;
+}
+.reportCadBody{padding:7px 10px 12px;}
+@media(max-width:650px){
+  .reportCadActions{position:static;padding:5px 7px;}
+}
