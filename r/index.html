@@ -26,6 +26,22 @@
     <div class="reportMeta"><span>Live report generated locally from the configuration URL. No saved server state.</span>
       <span id="reportStatus" role="status" aria-live="polite"></span></div>
     <div id="reportError" class="reportError" hidden role="alert"></div>
+    <section class="reportCad" aria-labelledby="reportCadTitle">
+      <div class="reportCadHeader">
+        <div>
+          <h2 id="reportCadTitle">Dimensioned CAD drawing</h2>
+          <p>Plan view · board-edge midpoint datum · link dimensions and cross-sections</p>
+        </div>
+        <div class="reportCadActions">
+          <button id="reportCadToggle" type="button" aria-expanded="true" aria-controls="reportCadBody">Hide drawing</button>
+          <button id="reportCadSave" type="button">Save SVG</button>
+          <a id="reportCadFull" href="#" target="_blank" rel="noopener noreferrer" aria-label="Open CAD drawing full size">Open full size</a>
+        </div>
+      </div>
+      <div id="reportCadBody" class="reportCadBody">
+        <img id="reportCadImage" alt="Fivebar CAD drawing with arrows measuring motor spacing, four links and the motor midpoint to the outer board edge midpoint"/>
+      </div>
+    </section>
     <article id="fileHubMarkdownPreview" class="fileHubMarkdownPreview" aria-label="Calculation report"></article>
     <textarea id="reportMarkdownSource" class="reportMarkdownSource" spellcheck="false" readonly hidden aria-label="Markdown source"></textarea>
   </main>
@@ -41,6 +57,7 @@
   <script defer src="../js/coverage.js"></script>
   <script defer src="../js/render.js"></script>
   <script defer src="../js/movement.js"></script>
+  <script defer src="../js/cad-drawing.js"></script>
   <script defer src="../js/share-links.js"></script>
   <script defer src="../js/report-sections.js"></script>
   <script defer src="../js/reports.js"></script>
