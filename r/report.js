@@ -1,9 +1,11 @@
 // Standalone report at /r/#c=... — no remote storage or backend.
 'use strict';
 let standaloneReportMarkdown='';
+let standaloneCadSvg='';
+let standaloneCadUrl=null;
 function standaloneStatus(message){document.getElementById('reportStatus').textContent=message;}
-function standaloneDownload(name,source){
-  const url=URL.createObjectURL(new Blob([source],{type:'text/markdown;charset=utf-8'}));
+function standaloneDownload(name,source,mime='text/markdown'){
+  const url=URL.createObjectURL(new Blob([source],{type:mime+';charset=utf-8'}));
   const a=document.createElement('a');
   a.href=url;a.download=name;document.body.append(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),0);
@@ -17,6 +19,10 @@ function initStandaloneReport(){
     state.outerW=Math.max(state.outerW,state.boardW);
     state.outerH=Math.max(state.outerH,state.boardH);
     standaloneReportMarkdown=buildAuditReport();
+    standaloneCadSvg=buildCadDrawingSvg(state);
+    standaloneCadUrl=URL.createObjectURL(new Blob([standaloneCadSvg],{type:'image/svg+xml'}));
+    document.getElementById('reportCadImage').src=standaloneCadUrl;
+    document.getElementById('reportCadFull').href=standaloneCadUrl;
     source.value=standaloneReportMarkdown;
     renderReportPreview(standaloneReportMarkdown);
     document.getElementById('reportBack').href=shareLink('studio',state);
@@ -24,6 +30,7 @@ function initStandaloneReport(){
   }catch(err){
     error.textContent='Unable to open report: '+err.message;
     error.hidden=false;preview.hidden=true;
+    document.querySelector('.reportCad').hidden=true;
     standaloneStatus('Invalid or missing configuration');
   }
   window.renderStudioMath=()=>{
@@ -44,6 +51,18 @@ function initStandaloneReport(){
   };
   document.getElementById('reportCopy').addEventListener('click',()=>copy(standaloneReportMarkdown,'Markdown copied'));
   document.getElementById('reportCopyLink').addEventListener('click',()=>copy(window.location.href,'Report link copied'));
+  document.getElementById('reportCadSave').addEventListener('click',()=>{
+    if(standaloneCadSvg)standaloneDownload('fivebar-dimensioned-cad.svg',standaloneCadSvg,'image/svg+xml');
+  });
+  document.getElementById('reportCadToggle').addEventListener('click',event=>{
+    const body=document.getElementById('reportCadBody');
+    body.hidden=!body.hidden;
+    event.currentTarget.textContent=body.hidden?'Show drawing':'Hide drawing';
+    event.currentTarget.setAttribute('aria-expanded',String(!body.hidden));
+  });
+  window.addEventListener('pagehide',()=>{
+    if(standaloneCadUrl)URL.revokeObjectURL(standaloneCadUrl);
+  });
   document.getElementById('reportSave').addEventListener('click',()=>{
     if(standaloneReportMarkdown)standaloneDownload('fivebar-calculation-report.md',standaloneReportMarkdown);
   });
