@@ -5,7 +5,7 @@
   'use strict';
   const config = document.querySelector('.config');
   const configSections = Array.from(config.querySelectorAll(':scope > .section'));
-  const groups = { board: [0], linkage: [1, 2, 3], motors: [4], mechanics: [5], display: [6] };
+  const groups = { board: [0], linkage: [1], motors: [2], mechanics: [3], display: [4] };
   const inspector = document.querySelector('.analysis');
   const inspectors = Array.from(inspector.querySelectorAll(':scope > .panel'));
   const results = { servo: [0], forces: [1], position: [2], corners: [3], help: [4] };
