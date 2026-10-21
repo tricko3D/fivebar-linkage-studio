@@ -271,37 +271,66 @@
           <details class="mechanicsGroup" id="jointLimitsGroup" open>
             <summary><span>Mechanical joint stops</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
             <div class="mechanicsGroupBody">
-              <label class="toggle"><input id="useJointLimits" data-key="useJointLimits" type="checkbox" />
-                Enforce physical joint limits</label>
-              <div class="fieldrow">
-                <div class="field"><label for="leftMinAngle">Left M₁ minimum · °</label>
-                  <div class="jointStopInput"><input id="leftMinAngle" data-key="leftMinAngle" type="number" min="0" max="360" step="0.1" />
-                    <button class="jointStopSet" type="button" data-joint-stop="leftMinAngle"
-                      aria-label="Set left motor minimum stop to its current angle"
-                      title="Capture current M₁ angle as minimum stop"><i data-lucide="crosshair" aria-hidden="true"></i><span>Set</span></button></div></div>
-                <div class="field"><label for="leftMaxAngle">Left M₁ maximum · °</label>
-                  <div class="jointStopInput"><input id="leftMaxAngle" data-key="leftMaxAngle" type="number" min="0" max="360" step="0.1" />
-                    <button class="jointStopSet" type="button" data-joint-stop="leftMaxAngle"
-                      aria-label="Set left motor maximum stop to its current angle"
-                      title="Capture current M₁ angle as maximum stop"><i data-lucide="crosshair" aria-hidden="true"></i><span>Set</span></button></div></div>
+              <div class="jointStopToolbar">
+                <label class="toggle"><input id="useJointLimits" data-key="useJointLimits" type="checkbox" /> Enforce hard stops</label>
+                <button id="resetJointLimits" class="jointStopResetAll" type="button" title="Reset all four limits and disable them">
+                  <i data-lucide="rotate-ccw" aria-hidden="true"></i> Reset all
+                </button>
               </div>
-              <div class="fieldrow">
-                <div class="field"><label for="rightMinAngle">Right M₂ minimum · °</label>
-                  <div class="jointStopInput"><input id="rightMinAngle" data-key="rightMinAngle" type="number" min="0" max="360" step="0.1" />
-                    <button class="jointStopSet" type="button" data-joint-stop="rightMinAngle"
-                      aria-label="Set right motor minimum stop to its current angle"
-                      title="Capture current M₂ angle as minimum stop"><i data-lucide="crosshair" aria-hidden="true"></i><span>Set</span></button></div></div>
-                <div class="field"><label for="rightMaxAngle">Right M₂ maximum · °</label>
-                  <div class="jointStopInput"><input id="rightMaxAngle" data-key="rightMaxAngle" type="number" min="0" max="360" step="0.1" />
-                    <button class="jointStopSet" type="button" data-joint-stop="rightMaxAngle"
-                      aria-label="Set right motor maximum stop to its current angle"
-                      title="Capture current M₂ angle as maximum stop"><i data-lucide="crosshair" aria-hidden="true"></i><span>Set</span></button></div></div>
+              <p class="hint">Move the gripper, then select <strong>Set</strong> next to a boundary.
+                <strong>MIN</strong> is the start of the clockwise permitted sweep; <strong>MAX</strong> is the end.
+                Each reset icon restores just that value.</p>
+              <div class="jointStopMotor" aria-label="M₁ motor joint stops">
+                <div class="jointStopMotorHeader">
+                  <strong>M₁ · Left motor</strong>
+                  <span>Current: <output id="currentLeftJointAngle">—</output></span>
+                </div>
+                <div class="fieldrow">
+                  <div class="field jointStopField" data-stop-kind="min">
+                    <label for="leftMinAngle"><span class="stopType">MIN · START</span><span class="stopDirection">Sweep starts here</span></label>
+                    <div class="jointStopInput">
+                      <input id="leftMinAngle" data-key="leftMinAngle" type="number" min="0" max="360" step="0.1" />
+                      <button class="jointStopSet" type="button" data-joint-stop="leftMinAngle" aria-label="Set left motor min stop to current angle" title="Capture current M₁ angle">Set</button>
+                      <button class="jointStopReset" type="button" data-reset-stop="leftMinAngle" aria-label="Reset left motor min stop" title="Reset to 0°"><i data-lucide="rotate-ccw" aria-hidden="true"></i></button>
+                    </div>
+                  </div>
+                  <div class="field jointStopField" data-stop-kind="max">
+                    <label for="leftMaxAngle"><span class="stopType">MAX · END</span><span class="stopDirection">Sweep ends here</span></label>
+                    <div class="jointStopInput">
+                      <input id="leftMaxAngle" data-key="leftMaxAngle" type="number" min="0" max="360" step="0.1" />
+                      <button class="jointStopSet" type="button" data-joint-stop="leftMaxAngle" aria-label="Set left motor max stop to current angle" title="Capture current M₁ angle">Set</button>
+                      <button class="jointStopReset" type="button" data-reset-stop="leftMaxAngle" aria-label="Reset left motor max stop" title="Reset to 360°"><i data-lucide="rotate-ccw" aria-hidden="true"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="jointStopMotor" aria-label="M₂ motor joint stops">
+                <div class="jointStopMotorHeader">
+                  <strong>M₂ · Right motor</strong>
+                  <span>Current: <output id="currentRightJointAngle">—</output></span>
+                </div>
+                <div class="fieldrow">
+                  <div class="field jointStopField" data-stop-kind="min">
+                    <label for="rightMinAngle"><span class="stopType">MIN · START</span><span class="stopDirection">Sweep starts here</span></label>
+                    <div class="jointStopInput">
+                      <input id="rightMinAngle" data-key="rightMinAngle" type="number" min="0" max="360" step="0.1" />
+                      <button class="jointStopSet" type="button" data-joint-stop="rightMinAngle" aria-label="Set right motor min stop to current angle" title="Capture current M₂ angle">Set</button>
+                      <button class="jointStopReset" type="button" data-reset-stop="rightMinAngle" aria-label="Reset right motor min stop" title="Reset to 0°"><i data-lucide="rotate-ccw" aria-hidden="true"></i></button>
+                    </div>
+                  </div>
+                  <div class="field jointStopField" data-stop-kind="max">
+                    <label for="rightMaxAngle"><span class="stopType">MAX · END</span><span class="stopDirection">Sweep ends here</span></label>
+                    <div class="jointStopInput">
+                      <input id="rightMaxAngle" data-key="rightMaxAngle" type="number" min="0" max="360" step="0.1" />
+                      <button class="jointStopSet" type="button" data-joint-stop="rightMaxAngle" aria-label="Set right motor max stop to current angle" title="Capture current M₂ angle">Set</button>
+                      <button class="jointStopReset" type="button" data-reset-stop="rightMaxAngle" aria-label="Reset right motor max stop" title="Reset to 360°"><i data-lucide="rotate-ccw" aria-hidden="true"></i></button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div id="jointStopSetStatus" class="jointStopSetStatus" role="status" aria-live="polite"></div>
-              <p class="hint">Position the gripper, then press <strong>Set</strong> beside a minimum or maximum angle to capture that motor's current position.</p>
-              <p class="hint">Joint angles: 0° points right (+X), 90° points down (+Y).
-                Minimum above maximum wraps across 0° (e.g. 300° → 60°).
-                These are simulated limits at the output joints, not physical safety protection.</p>
+              <p class="hint">Joint angles: 0° points right, 90° down. A minimum above the maximum means the allowed sweep passes through 0° (e.g. 300° → 60°).
+                The colored MIN/MAX markers on the canvas are labels, not controls. Physical safety stops must be designed separately.</p>
               <div class="derived" id="jointLimitReadout">Mechanical joint limits disabled</div>
             </div>
           </details>
