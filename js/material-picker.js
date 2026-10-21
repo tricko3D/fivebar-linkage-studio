@@ -64,9 +64,7 @@ function renderManufacturingChoices() {
     methodList.append(button);
   }
 
-  const term = $('materialPickerSearch').value.trim().toLocaleLowerCase();
-  const items = materialOptionsForMethod(pickerMethod).filter(item =>
-    !term || (item.label + ' ' + item.note).toLocaleLowerCase().includes(term));
+  const items = materialOptionsForMethod(pickerMethod);
   $('materialPickerCount').textContent = items.length + ' materials';
   for (const item of items) {
     const button = document.createElement('button');
@@ -98,7 +96,7 @@ function renderManufacturingChoices() {
     materialList.append(button);
   }
   // Custom values are possible under any process, without overwriting inputs.
-  if (!term || 'custom values manual'.includes(term)) {
+  {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'materialPickerChoice materialPickerCustom' +
@@ -115,12 +113,6 @@ function renderManufacturingChoices() {
     button.append(title,note);
     materialList.append(button);
   }
-  if (!items.length && term && !('custom values manual'.includes(term))) {
-    const empty = document.createElement('p');
-    empty.className = 'materialPickerEmpty';
-    empty.textContent = 'No materials match this search within ' + method.label + '.';
-    materialList.append(empty);
-  }
 }
 function closeMaterialPicker() {
   const overlay = $('materialPickerOverlay');
@@ -136,13 +128,12 @@ function openMaterialPicker() {
   if (!overlay || !overlay.hidden) return;
   materialPickerReturnFocus = document.activeElement;
   pickerMethod = materialMethodForState();
-  $('materialPickerSearch').value = '';
   overlay.hidden = false;
   document.body.classList.add('materialPickerOpen');
   $('materialPickerTrigger').setAttribute('aria-expanded', 'true');
   renderManufacturingChoices();
-  // Focus the process chooser: the user can select process or Tab to search.
-  $('materialPickerSearch').focus();
+  // The first process is the keyboard entry point; only 3–4 materials appear per process.
+  $('materialProcessOptions').querySelector('button')?.focus();
 }
 function initMaterialPicker() {
   if (materialPickerInitialized) return;
@@ -158,7 +149,6 @@ function initMaterialPicker() {
     const process = event.target.closest('[data-manufacturing]');
     if (process && overlay.contains(process)) {
       pickerMethod = process.dataset.manufacturing;
-      $('materialPickerSearch').value = '';
       renderManufacturingChoices();
       $('materialPickerChoices').scrollTop = 0;
       return;
@@ -175,7 +165,6 @@ function initMaterialPicker() {
     closeMaterialPicker();
     change();
   });
-  $('materialPickerSearch').addEventListener('input',renderManufacturingChoices);
   document.addEventListener('keydown', event => {
     if (overlay.hidden) return;
     if (event.key === 'Escape') {
