@@ -41,6 +41,13 @@ const fs = require('node:fs');
   if(await route.locator('.motionBarRow').count()!==2)throw Error('Expected one torque and one RPM bar');
   if(!(await page.locator('#routeScrub').isVisible()))throw Error('Playback scrub is not integrated into the monitor');
   if(!(await page.locator('#routePlay').isVisible()))throw Error('Play button is not integrated');
+  const playColor=await page.locator('#routePlay').evaluate(el=>getComputedStyle(el).color);
+  if(playColor!=='rgb(255, 255, 255)')
+    throw Error('Active blue Play button should use white text: '+playColor);
+  const coverageBottom=await page.locator('.statbar').evaluate(el=>el.getBoundingClientRect().bottom);
+  const canvasTop=await page.locator('.canvasbox').evaluate(el=>el.getBoundingClientRect().top);
+  if(Math.abs(canvasTop-coverageBottom)>1.5)
+    throw Error('Unwanted gap between KPI cards and drawing: '+(canvasTop-coverageBottom));
   const initialHeight=await route.evaluate(el=>el.getBoundingClientRect().height);
   console.log('Motion monitor '+width+'px height '+Math.round(initialHeight)+'px');
   if(width>=1500&&initialHeight>220)throw Error('Motion monitor still occupies too much vertical space');
@@ -112,6 +119,24 @@ const fs = require('node:fs');
     throw Error('Brand logo must be the favicon');
   if(await page.locator('#headerReportButton').count()!==1)
     throw Error('Report shortcut missing in header');
+  const resetSize=await page.locator('#resetButton').evaluate(el=>{
+    const button=el.getBoundingClientRect(),label=el.querySelector('.resetText').getBoundingClientRect();
+    return {button:button.width,contained:label.left>=button.left&&label.right<=button.right};
+  });
+  if(resetSize.button<65||!resetSize.contained)
+    throw Error('Reset label is clipped: '+JSON.stringify(resetSize));
+  if(await page.locator('#fileHubViewResults').count())
+    throw Error('Obsolete View Results link still exists');
+  if(await page.locator('.fileHubSidebar #fileHubReportDownload').count()!==1||
+     await page.locator('.fileHubSidebar #fileHubZip').count()!==1)
+    throw Error('Report and ZIP download buttons must be in the sidebar');
+  const svgAsset=await page.evaluate(async()=>{
+    const response=await fetch('screenshots/coverage-stats.svg');
+    return response.ok?await response.text():null;
+  });
+  if(!svgAsset||!svgAsset.includes('64 / 64')||
+     !svgAsset.includes('100%')||!svgAsset.includes('381 mm'))
+    throw Error('Vector coverage graphic for README missing');
   await page.locator('[data-file-kind="json"]').click();
   if(!(await page.locator('#fileHubText').inputValue()).includes('"boardW": 255'))
     throw Error('JSON preview lacks current board settings');
@@ -298,6 +323,15 @@ const fs = require('node:fs');
   await page.locator('#fileHubApply').click();
   if(!(await page.locator('#fileHubStatus').innerText()).includes('Imported'))
     throw Error('Pasting a report URL did not import the configuration');
+  const [htmlReport]=await Promise.all([
+    page.waitForEvent('download'),page.locator('#fileHubReportDownload').click()
+  ]);
+  if(htmlReport.suggestedFilename()!=='fivebar-engineering-report.html')
+    throw Error('Sidebar did not download the standalone HTML report');
+  const reportHTML=fs.readFileSync(await htmlReport.path(),'utf8');
+  if(!reportHTML.includes('<style>')||!reportHTML.includes('<svg ')||
+     /<script|(?:src|href)="https?:/i.test(reportHTML))
+    throw Error('HTML report download is not self-contained');
   const [zip]=await Promise.all([
     page.waitForEvent('download'),page.locator('#fileHubZip').click()
   ]);
@@ -689,12 +723,14 @@ const fs = require('node:fs');
   if(width<850){
     await page.locator('#closeSettings').click();
     await page.locator('#fileMenuButton').click();
-    await page.locator('#fileHubViewResults').click();
-    if(!(await page.locator('.analysis').isVisible()))
-      throw Error('Results panel inaccessible on mobile without header toggle');
+    if(!(await page.locator('.fileHubSidebar #fileHubZip').isVisible()))
+      throw Error('Sidebar downloads inaccessible on mobile');
+    await page.locator('#fileHubClose').click();
   }
-  await page.locator('.resultTabs [data-insight="position"]').click();
-  if(!(await page.locator('#outX').isVisible()))throw Error('Position panel invisible');
+  if(width>=851){
+    await page.locator('.resultTabs [data-insight="position"]').click();
+    if(!(await page.locator('#outX').isVisible()))throw Error('Position panel invisible');
+  }
   if(errors.length)throw Error('JavaScript console errors: '+errors.join('; ').slice(0,600));
   console.log('PASS '+width+'px with settings, linkage accordions, hard stops, SW export, compact rail and motion study');
   await page.close();
