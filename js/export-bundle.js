@@ -85,7 +85,7 @@ async function fivebarBundleFiles(config=state){
   return [
     ['report.html',bundleOfflineReport(markdown,cad,icon)],
     ['drawing.svg',cad],
-    ['configuration.json',buildConfigurationJson()],
+    ['configuration.json',JSON.stringify({schema:'fivebar-chess-v3',...config},null,2)],
     ['solidworks-variables.txt',buildSolidWorksVariables()],
     ['report.md',markdown]
   ];
