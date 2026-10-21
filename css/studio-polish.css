@@ -789,3 +789,32 @@
   }
   .config > .section.is-active:first-of-type {padding-top:37px;}
 }
+
+/* True edge-to-edge viewport: no outer strip above/beside the workspace. */
+@media screen {
+  html, body {margin:0;}
+  body > header {width:100%;margin:0;}
+  body > header .head {width:100%;max-width:none;margin:0;padding:0 5px;}
+  main.app {width:100%;max-width:none;margin:0;padding:0;gap:0;}
+  main.app > .config, main.app > .analysis, main.app .canvasbox {border-radius:0;}
+  /* Linkage: one scrollable parent with three independently collapsing cards. */
+  .config > .section.linkageStack.is-active {
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:flex-start;
+    gap:9px;
+  }
+  .config > .section.linkageStack .linkageAccordion {
+    flex:0 0 auto;
+    margin:0;
+    width:100%;
+  }
+  .config > .section.linkageStack .linkageAccordion > summary {
+    width:100%;
+  }
+}
+@media screen and (max-width:850px) {
+  .config {left:0;bottom:0;border-radius:0;}
+  .config > .section.linkageStack.is-active {gap:8px;}
+}
