@@ -11,8 +11,8 @@ I started building a chess robot using a five-bar linkage and wanted a way to ex
 - Adjustable chessboard dimensions and motor mounting positions.
 - Independent linkage lengths, assembly branches, and gripper attachments.
 - Reachability visualization and servo travel estimates.
-- Custom manufacturing/material overlay with FDM, SLS, SLA/DLP, MJF, CNC machining, sheet cutting, and metal LPBF process filters.
-- 52 material presets spanning engineering filaments, powder-bed nylons, photopolymer resins, metals, and sheet materials.
+- Compact manufacturing/material picker: FDM, SLS, SLA and CNC.
+- 14 curated material choices (3–4 per process), with Custom values and preserved legacy material properties.
 - Automatic modulus, density, effective stiffness and bending-threshold inputs; manual editing switches to Custom.
 - Link materials, cross-sections, loads, motor and transmission settings.
 - Motion Study with playback, torque/RPM bars, and selectable graphs.
@@ -36,15 +36,15 @@ I added the detailed Markdown report so I can check the intermediate numbers and
 
 ### Manufacturing/material picker
 
-Open **Mechanics & Loads → Material & bending limits**, then click the manufacturing/material selector. Choose a process (FDM/FFF, SLS, SLA/DLP, MJF, CNC machining, sheet cutting, or metal LPBF/SLM), search for a material and select it. The picker overlays the simulator, so the narrow settings panel does not clip the catalog. Escape or clicking outside closes it without changes.
+Open **Mechanics & Loads → Material & bending limits**, then click the manufacturing/material selector. Choose FDM, SLS, SLA or CNC, then select one of 3–4 materials (or Custom values). The picker overlays the simulator, so the narrow settings panel does not clip the catalog. Escape or clicking outside closes it without changes.
 
 Manufacturing process and material are both saved in the JSON configuration. The selected process is also included in the calculation report and SolidWorks TXT export. Existing PLA/PETG material IDs are preserved. **Custom values** keeps the current modulus, density, stiffness factor and bending limit while assigning a manufacturing process.
 
-Material properties depend on manufacturing route; PA12 for FDM, SLS and MJF is represented by separate presets. Material-based calculations are still simplified screening estimates. The dialog's process choices do not verify printer, cutter, or CNC compatibility.
+Material properties depend on manufacturing route; the SLS and SLA options have process-specific assumptions. Older saved selections that are no longer in the curated menu become Custom while retaining their numeric material parameters. Material-based calculations remain simplified screening estimates. Process choices do not verify machine compatibility.
 
 ### Material preset limitations
 
-The material dropdown contains **indicative, room-temperature screening values** for simplified beam calculations. The elastic/bending modulus is a nominal representative value, while *effective stiffness factor* discounts it (especially for printed links). *Allowable bending* is a conservative adjustable screening threshold; **it is not a guaranteed failure stress or design allowable**. Choosing metal assumes a homogeneous solid material; G10/FR-4 and carbon-filled polymers are direction-dependent. Real part strength depends on orientation, annealing, layer adhesion, moisture, temperature, density of infill, and many other variables. TPU in particular is not well modeled by a linear small-deflection beam approximation.
+The material picker contains **indicative, room-temperature screening values** for simplified beam calculations. The elastic/bending modulus is a nominal representative value, while *effective stiffness factor* discounts it (especially for printed links). *Allowable bending* is a conservative adjustable screening threshold; **it is not a guaranteed failure stress or design allowable**. Choosing metal assumes a homogeneous solid material; G10/FR-4 and carbon-filled polymers are direction-dependent. Real part strength depends on orientation, annealing, layer adhesion, moisture, temperature, density of infill, and many other variables. TPU in particular is not well modeled by a linear small-deflection beam approximation.
 
 These presets are **not printer compatibility profiles**. High-temperature grades such as PEEK, PEI and PPS-CF may require industrial hardware. Confirm nozzle/chamber requirements against your printer and filament datasheets.
 
