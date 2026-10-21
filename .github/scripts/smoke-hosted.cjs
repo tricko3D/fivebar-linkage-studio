@@ -303,6 +303,29 @@ const fs = require('node:fs');
   ]);
   if(zip.suggestedFilename()!=='fivebar-studio-export.zip')
     throw Error('Offline HTML ZIP bundle missing from Files & Export');
+  const archive=fs.readFileSync(await zip.path());
+  const zipped=new Map();
+  for(let offset=0;offset+30<archive.length&&archive.readUInt32LE(offset)===0x04034b50;){
+    const size=archive.readUInt32LE(offset+18);
+    const nameSize=archive.readUInt16LE(offset+26);
+    const extra=archive.readUInt16LE(offset+28);
+    const name=archive.toString('utf8',offset+30,offset+30+nameSize);
+    const start=offset+30+nameSize+extra;
+    zipped.set(name,archive.subarray(start,start+size).toString('utf8'));
+    offset=start+size;
+  }
+  const expected=['report.html','drawing.svg','configuration.json',
+    'solidworks-variables.txt','report.md'];
+  if(zipped.size!==expected.length||expected.some(name=>!zipped.has(name)))
+    throw Error('ZIP is missing its offline report or other requested files');
+  const html=zipped.get('report.html');
+  if(!html.includes('<style>')||!html.includes('<svg ')||
+     !html.includes('data:image/svg+xml;base64,')||
+     !html.includes('Executive summary')||
+     /<script|(?:src|href)="https?:/i.test(html))
+    throw Error('ZIP report HTML is not fully self-contained');
+  if(!zipped.get('drawing.svg').includes('MOTOR JOINT ANGLES'))
+    throw Error('ZIP CAD drawing lost its MIN/MAX schedule');
   await page.locator('#fileHubClose').click();
   if(await hub.isVisible())throw Error('File workspace failed to close');
   if(await page.locator('link[rel="icon"][href="favicon.svg"]').count()!==1)
