@@ -63,7 +63,11 @@ function bundleOfflineReport(markdown,cadSvg,faviconSvg){
     const math=element.querySelector('.katex-mathml math');
     if(math){element.replaceChildren(math.cloneNode(true));element.classList.remove('mathFallback');}
   }
-  // Keep detailed audits collapsed in the offline document; native details work without JS.
+  // Inline the exact exported CAD image in the report body; no duplicate
+  // drawing section and no external image assets needed when opening the HTML.
+  for(const image of holder.querySelectorAll('.fileHubReportDrawing img'))
+    image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(cadSvg);
+  // Keep audits collapsible; Print expands both levels when requested.
   const bytes=new TextEncoder().encode(faviconSvg);
   let binary='';for(const byte of bytes)binary+=String.fromCharCode(byte);
   const icon='data:image/svg+xml;base64,'+btoa(binary);
@@ -72,7 +76,6 @@ function bundleOfflineReport(markdown,cadSvg,faviconSvg){
     '<title>Fivebar Engineering Report</title><link rel="icon" href="'+icon+'">'+
     '<style>'+BUNDLE_CSS+'</style></head><body>'+
     '<header><img src="'+icon+'" alt=""><strong>Fivebar Studio — Engineering Report</strong></header>'+
-    '<section class="drawing" aria-label="Dimensioned CAD drawing">'+cadSvg+'</section>'+
     '<main>'+holder.innerHTML+'</main>'+
     '<footer>Engineering estimates are indicative; check real mechanical and motor limits.</footer>'+
     '</body></html>';
