@@ -136,11 +136,18 @@ function buildCadDrawingSvg(s=state){
   }
   for(const [p,name] of [[pv.A,'M₁'],[pv.B,'M₂'],[pv.M,'M']]){
     g+='<circle cx="'+p.x+'" cy="'+p.y+'" r="4.7" fill="#fff" stroke="#254f69" stroke-width="1.8"/>';
-    g+=cadLabel({x:p.x+(name==='M'?14:name==='M₁'?20:-20),y:p.y-17},name);
+    // Mounting-point names sit beside the motor, not on top of the link.
+    const namePosition=name==='M'
+      ? {x:p.x,y:p.y-22}
+      : {x:p.x+(name==='M₁'?25:-25),y:p.y+3};
+    g+=cadLabel(namePosition,name);
   }
   for(const [p,label] of [[solution.EL,'E₁'],[solution.ER,'E₂'],[solution.P,'P']]){
     if(p){g+='<circle cx="'+p.x+'" cy="'+p.y+'" r="3.7" fill="#fff" stroke="#254f69" stroke-width="1.5"/>';
-      g+=cadLabel({x:p.x+(label==='E₂'?-21:21),y:p.y-17},label);}
+      const namePosition=label==='P'
+        ? {x:p.x,y:p.y-22}
+        : {x:p.x+(label==='E₂'?-25:25),y:p.y-12};
+      g+=cadLabel(namePosition,label);}
   }
   g+=cadDimensions(s,solution,true);
   // Dimensioned cross sections: orthographic not-to-scale sketches for each link.
