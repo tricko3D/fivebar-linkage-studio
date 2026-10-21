@@ -364,6 +364,7 @@ function renderSvg() {
       'font-weight="800" pointer-events="none"',
     );
   }
+  if (state.showDimensions) out += cadDimensions(state,sol,false);
   svg.innerHTML = out;
   return sol;
 }
