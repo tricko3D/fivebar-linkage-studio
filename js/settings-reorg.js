@@ -100,6 +100,28 @@
   for (const row of config.querySelectorAll('.fieldrow'))
     if (row.children.length === 0) row.remove();
 
+  // Collapse the three linkage subsections independently while preserving
+  // every original data-key control, hint and listener target.
+  for (const section of [mounting, linkage, gripper]) {
+    const header = section.querySelector(':scope > .sectheader');
+    const details = document.createElement('details');
+    details.className = 'mechanicsGroup linkageAccordion';
+    details.open = true;
+    const summary = document.createElement('summary');
+    const name = document.createElement('span');
+    name.textContent = header.textContent.trim();
+    const arrow = document.createElement('i');
+    arrow.dataset.lucide = 'chevron-down';
+    arrow.setAttribute('aria-hidden', 'true');
+    summary.append(name, arrow);
+    const body = document.createElement('div');
+    body.className = 'mechanicsGroupBody';
+    for (const node of Array.from(section.children)) if (node !== header) body.append(node);
+    header.remove();
+    details.append(summary, body);
+    section.append(details);
+  }
+
   // Place tabs in assembly/configuration workflow order.
   config.append(board, mounting, linkage, gripper, motors, mechanics, display);
 })();
