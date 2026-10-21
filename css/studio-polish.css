@@ -1106,3 +1106,77 @@ body.fileHubOpen{overflow:hidden;}
  .fileHubFooterButtons{width:100%;justify-content:flex-end;}
  .fileHubFooterButtons button{min-height:28px;}
 }
+
+/* Readable engineering report: compact comparison tables, well-spaced math,
+   and optional numerical appendices instead of a wall of raw figures. */
+.fileHubMarkdownPreview {
+  padding:18px 22px 24px;
+  font-size:12px;
+  line-height:1.65;
+  overflow-wrap:anywhere;
+}
+.fileHubMarkdownPreview h1{font-size:20px;line-height:1.3;margin:0 0 18px;}
+.fileHubMarkdownPreview h2{font-size:16px;margin:29px 0 14px;padding:0 0 8px;
+  border-bottom:1px solid #d3dfeb;color:#274d6b;}
+.fileHubMarkdownPreview h3{font-size:13px;margin:20px 0 11px;color:#315d7f;}
+.fileHubMarkdownPreview p{font-size:12px;line-height:1.65;margin:0 0 14px;}
+.fileHubMarkdownPreview blockquote {
+  margin:13px 0 21px;padding:10px 13px;border-left:3px solid #7baac8;
+  background:#f0f6fb;color:#3d617a;border-radius:3px;
+  font-size:12px;line-height:1.6;
+}
+.fileHubMarkdownPreview blockquote strong{font-weight:750;}
+.fileHubReportTableScroll {
+  margin:10px 0 18px;overflow-x:auto;border:1px solid #d5e1eb;
+  border-radius:7px;background:#fff;
+}
+.fileHubReportTable{
+  border-collapse:collapse;width:100%;min-width:380px;
+  font-size:11px;line-height:1.45;font-variant-numeric:tabular-nums;
+}
+.fileHubReportTable thead{background:#eef5fa;color:#345d79;}
+.fileHubReportTable th {
+  padding:10px 11px;font-weight:800;text-align:left;
+  border-bottom:1px solid #cddce8;white-space:nowrap;
+}
+.fileHubReportTable td {
+  padding:8px 11px;border-bottom:1px solid #edf1f5;
+  color:#446079;vertical-align:top;
+}
+.fileHubReportTable tbody tr:last-child td{border-bottom:0;}
+.fileHubReportTable tbody tr:nth-child(even){background:#fafcff;}
+.fileHubReportTable td.numeric{text-align:right;white-space:nowrap;}
+.fileHubReportTable td:first-child{font-weight:650;color:#315670;}
+.fileHubEquation {
+  padding:15px 12px;margin:12px 0 18px;background:#f4f8fc;
+  border:1px solid #d9e6ef;border-radius:7px;overflow-x:auto;
+  text-align:center;color:#254c6a;
+}
+.fileHubEquation .katex-display{margin:.2em 0;overflow:visible;}
+.fileHubEquation .katex{font-size:1.13em;}
+.fileHubEquation.mathFallback code {
+  font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;
+  white-space:pre-wrap;overflow-wrap:anywhere;text-align:left;
+  display:block;color:#426884;
+}
+.fileHubAuditDetails{
+  margin:8px 0;border:1px solid #d1dfeb;border-radius:6px;
+  background:#fbfdff;overflow:hidden;
+}
+.fileHubAuditDetails > summary{
+  display:list-item;cursor:pointer;padding:11px 13px;
+  background:#edf4fa;color:#315c79;font-size:11px;font-weight:800;
+  line-height:1.45;
+}
+.fileHubAuditDetails[open] > summary{border-bottom:1px solid #d1dfeb;}
+.fileHubAuditDetails > pre{margin:12px;max-height:370px;overflow:auto;font-size:10px;}
+.fileHubAuditDetails > p{margin:11px 13px;}
+.fileHubMarkdownPreview ul{margin:0 0 14px;padding-left:22px;}
+.fileHubMarkdownPreview li{margin-bottom:6px;font-size:12px;}
+@media(max-width:680px) {
+  .fileHubMarkdownPreview{padding:12px;}
+  .fileHubReportTable{font-size:10px;min-width:340px;}
+  .fileHubReportTable th,.fileHubReportTable td{padding:8px;}
+  .fileHubEquation{padding:10px 6px;}
+  .fileHubEquation .katex{font-size:1em;}
+}
