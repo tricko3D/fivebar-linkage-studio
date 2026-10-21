@@ -79,6 +79,9 @@
     if (!child.classList.contains('sectheader')) travelBody.append(child);
   travelCard.append(summary, travelBody);
   motors.append(travelCard);
+  // Hard stops must be a separate collapsible card, not nested in servo travel.
+  const jointStopsCard = document.getElementById('jointLimitsGroup');
+  if (jointStopsCard) motors.append(jointStopsCard);
 
   const transmissionReadout = document.getElementById('gearReadout');
   motors.append(
