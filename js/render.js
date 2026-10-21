@@ -12,6 +12,48 @@ function svgArc(center, r, start, span, col) {
     b = vec(center.x + r * Math.cos(en), center.y + r * Math.sin(en));
   return `<path d="M ${a.x} ${a.y} A ${r} ${r} 0 ${span > 180 ? 1 : 0} 1 ${b.x} ${b.y}" fill="none" stroke="${col}" stroke-width="3.6" opacity=".95" stroke-linecap="round" pointer-events="none"/>`;
 }
+// Show the actual output-shaft angles of user-defined mechanical stop boundaries.
+// Works independently of servo-travel overlays and shows a faded preview when
+// enforcement is disabled. An unrestricted 360° range has no physical endpoints.
+function svgJointStopGuides(config, motorPivots) {
+  let marks = '';
+  for (const [joint, motor, pivot, min, max] of [
+    ['left', 'M₁', motorPivots.A, config.leftMinAngle, config.leftMaxAngle],
+    ['right', 'M₂', motorPivots.B, config.rightMinAngle, config.rightMaxAngle],
+  ]) {
+    const sweep = hardStopSweep(min, max);
+    if (sweep >= 359.999) continue;
+    const near = sweep < 18 || sweep > 342;
+    marks += `<g opacity="${config.useJointLimits ? 1 : 0.55}" pointer-events="none">`;
+    if (sweep > 0.001)
+      marks += svgArc(pivot, 42, min, sweep, '#d6a476');
+    for (const [type, angle, color] of [
+      ['MIN', min, '#1593a7'],
+      ['MAX', max, '#cb7620'],
+    ]) {
+      const t = angle * RAD, ux = Math.cos(t), uy = Math.sin(t);
+      // Separate the markers when both limits point in nearly the same direction.
+      const far = near && type === 'MAX';
+      const radius = far ? 59 : 42;
+      const a = vec(pivot.x + (radius - 9) * ux, pivot.y + (radius - 9) * uy);
+      const b = vec(pivot.x + (radius + 9) * ux, pivot.y + (radius + 9) * uy);
+      marks += svgLine(a, b, color, 3.5,
+        `data-joint-stop-boundary="${joint}-${type.toLowerCase()}" pointer-events="none"`);
+      marks += svgCircle(b, 3.8, color, '#fff', 1.2, 'pointer-events="none"');
+      const labelR = far ? 95 : 69;
+      const side = type === 'MIN' ? -9 : 9;
+      marks += txt(vec(
+        pivot.x + labelR * ux - side * uy,
+        pivot.y + labelR * uy + side * ux
+      ), motor + ' ' + type, 10, color,
+      'font-weight="800" text-anchor="middle" dominant-baseline="central" ' +
+      'stroke="#fff" stroke-width="3" stroke-linejoin="round" paint-order="stroke" pointer-events="none"');
+    }
+    marks += '</g>';
+  }
+  return marks;
+}
+
 function color(cell) {
   if (cell.hits === 0) return '#e16e7a';
   if (cell.hits === 9) return '#48d3a5';
@@ -240,34 +282,9 @@ function renderSvg() {
     out += svgLine(sol.EL, sol.P, '#93edf0', 5);
     out += svgCircle(sol.P, 7, '#d8dce4', '#273544', 2);
   }
-  // Active servo travel arcs, drawn around fixed motor pivots.
+  // Physical stop positions are drawn at the pivots, regardless of servo overlay.
+  out += svgJointStopGuides(state, p);
   if (state.showServoArcs && lastServoMap) {
-    if (state.useJointLimits) {
-      // Boundary markers are labels only; no interactive controls are put on SVG.
-      for (const [pivot, min, max] of [
-        [p.A, state.leftMinAngle, state.leftMaxAngle],
-        [p.B, state.rightMinAngle, state.rightMaxAngle]
-      ]) {
-        const sweep = hardStopSweep(min, max);
-        if (sweep >= 359.999) continue; // No endpoints for an unrestricted revolution.
-        out += svgArc(pivot, 42, min, sweep, '#e3af71');
-        for (const [angle, name, color, side] of [
-          [min, 'MIN', '#49d5e6', -1],
-          [max, 'MAX', '#ffb963', 1]
-        ]) {
-          const t = angle * RAD;
-          out += svgLine(
-            vec(pivot.x + 36 * Math.cos(t), pivot.y + 36 * Math.sin(t)),
-            vec(pivot.x + 52 * Math.cos(t), pivot.y + 52 * Math.sin(t)),
-            color, 3.5, 'pointer-events="none"');
-          out += txt(vec(
-            pivot.x + 66 * Math.cos(t) - side * 8 * Math.sin(t),
-            pivot.y + 66 * Math.sin(t) + side * 8 * Math.cos(t)
-          ), name, 10, color,
-          'font-weight="800" text-anchor="middle" dominant-baseline="central" pointer-events="none"');
-        }
-      }
-    }
     if (lastServoMap.leftWindow)
       out += svgArc(p.A, 28, lastServoMap.leftWindow.start, lastServoMap.usable, '#62d5e0');
     if (lastServoMap.rightWindow)
