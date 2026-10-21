@@ -933,7 +933,10 @@
         </header>
         <div class="fileHubLayout">
           <nav class="fileHubTabs" aria-label="File formats">
-            <button type="button" class="fileHubTab is-active" data-file-kind="json" aria-pressed="true">
+            <button type="button" class="fileHubTab is-active" data-file-kind="share" aria-pressed="true">
+              <i data-lucide="link-2" aria-hidden="true"></i><span><strong>Share links</strong><small>Permalinks · full configuration</small></span>
+            </button>
+            <button type="button" class="fileHubTab" data-file-kind="json" aria-pressed="false">
               <i data-lucide="braces" aria-hidden="true"></i><span><strong>Configuration</strong><small>JSON · import / export</small></span>
             </button>
             <button type="button" class="fileHubTab" data-file-kind="sw" aria-pressed="false">
@@ -945,14 +948,12 @@
             <button type="button" class="fileHubTab" data-file-kind="svg" aria-pressed="false">
               <i data-lucide="ruler" aria-hidden="true"></i><span><strong>CAD drawing</strong><small>SVG · dimensioned plan</small></span>
             </button>
-            <button type="button" class="fileHubTab" data-file-kind="share" aria-pressed="false">
-              <i data-lucide="link-2" aria-hidden="true"></i><span><strong>Share links</strong><small>Permalinks · full configuration</small></span>
-            </button>
+
           </nav>
           <div class="fileHubMain">
             <div class="fileHubTitleRow">
-              <div><h3 id="fileHubKindTitle">Configuration · JSON</h3>
-                <p id="fileHubKindHelp">Full current settings, including saved materials and motion parameters.</p></div>
+              <div><h3 id="fileHubKindTitle">Share configuration links</h3>
+                <p id="fileHubKindHelp">Deterministic URLs containing the complete current settings.</p></div>
               <button id="fileHubRefresh" type="button" class="fileHubSmallButton" title="Refresh from current simulator settings">
                 <i data-lucide="refresh-cw" aria-hidden="true"></i> Refresh
               </button>
