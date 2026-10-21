@@ -1,0 +1,24 @@
+*{box-sizing:border-box}
+:root{font:14px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#2f5067;background:#edf3f8}
+body{margin:0;background:#edf3f8;color:#29465b;min-height:100dvh;display:flex;flex-direction:column}
+.reportHeader{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;padding:13px max(20px,calc((100vw - 1100px)/2));background:#fff;border-bottom:2px solid #3685b5;box-shadow:0 2px 9px #112f4514}
+.reportIdentity{display:flex;gap:12px;align-items:center}
+.reportIdentity div{display:flex;flex-direction:column;line-height:1.35}
+.reportIdentity strong{color:#234f6d;font-size:16px}
+.reportIdentity span{color:#7a92a5;font-size:11px}
+.reportActions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.reportActions a,.reportActions button{border:1px solid #bacfdf;background:#f4f8fc;color:#365c79;border-radius:6px;padding:8px 11px;font:inherit;font-size:12px;text-decoration:none;cursor:pointer}
+.reportActions a:hover,.reportActions button:hover{background:#e1eff9}
+.reportActions .reportPrimary{background:#287eae;border-color:#287eae;color:#fff}
+.reportSheet{width:min(1100px,calc(100% - 32px));min-height:65dvh;margin:24px auto;flex:1;background:#fff;border:1px solid #cbdbe6;box-shadow:0 10px 36px #1c425612;border-radius:9px;overflow:hidden}
+.reportMeta{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:13px 24px;border-bottom:1px solid #dbe5ed;background:#f6fafc;font-size:11px;color:#668396}
+#reportStatus{font-weight:700;color:#247a9f}
+#fileHubMarkdownPreview{max-width:980px;margin:auto;padding:25px 30px 35px;min-height:300px;overflow:visible}
+.reportMarkdownSource{display:block;width:calc(100% - 40px);min-height:75dvh;margin:20px;border:1px solid #cbdbe6;border-radius:6px;background:#fcfdff;color:#2d4c62;font:12px/1.6 ui-monospace,Menlo,Consolas,monospace;padding:18px;resize:vertical;white-space:pre}
+[hidden]{display:none!important}
+.reportError{background:#fff0e9;color:#a34332;margin:15px 24px;padding:14px;border:1px solid #dfa18f;border-radius:5px}
+.reportFoot{display:flex;justify-content:center;align-items:center;gap:24px;flex-wrap:wrap;padding:17px;color:#6d8594;font-size:11px}
+.reportFoot a{color:#417995}
+.fileHubAuditDetails{overflow:visible}
+.fileHubAuditDetails > pre{max-height:370px;overflow:auto}
+@media(max-width:640px){.reportHeader{padding:12px}.reportSheet{width:calc(100% - 12px);margin:7px auto}.reportActions{gap:5px}.reportActions a,.reportActions button{padding:6px 8px;font-size:11px}#fileHubMarkdownPreview{padding:12px}.reportMeta{padding:10px 13px}}
