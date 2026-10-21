@@ -744,3 +744,48 @@
 #jointLimitsGroup .jointStopSetStatus {font-size:10px;line-height:1.4;color:#3b6f89;}
 #jointLimitsGroup .jointStopSetStatus:empty {display:none;}
 #jointLimitsGroup .jointStopSetStatus[data-state="error"] {color:#a54537;}
+
+/* Narrow, edge-to-edge settings rail. Remove the redundant header above controls. */
+@media screen and (min-width:1101px) {
+  .app {
+    grid-template-columns:245px minmax(0,1fr) 250px;
+    column-gap:0;
+    row-gap:6px;
+    padding:5px 5px 6px;
+  }
+}
+@media screen and (min-width:851px) and (max-width:1100px) {
+  .app {
+    grid-template-columns:235px minmax(0,1fr);
+    column-gap:0;
+    row-gap:6px;
+    padding:5px;
+  }
+}
+@media screen and (min-width:851px) {
+  .config {border-top-right-radius:0;border-bottom-right-radius:0;}
+  .workarea {margin-left:0;}
+  .config > .section {padding:10px 9px;}
+  .config .fieldrow {column-gap:6px;row-gap:6px;margin-bottom:7px;}
+  .config > .section .field input,
+  .config > .section .field select {height:30px;padding:4px 6px;font-size:11px;}
+  .config .mechanicsGroup summary {padding:8px;}
+  .config .mechanicsGroupBody {padding:8px;}
+  .config .hint {margin-top:6px;}
+}
+@media screen and (max-width:850px) {
+  /* The drawer still needs a close button, but no title strip. */
+  .config .settingsClose {
+    display:block;
+    position:absolute;
+    z-index:2;
+    top:7px;
+    right:7px;
+    width:26px;
+    height:26px;
+    background:#f0f5fa;
+    border:1px solid #b4c5d5;
+    color:#315671;
+  }
+  .config > .section.is-active:first-of-type {padding-top:37px;}
+}
