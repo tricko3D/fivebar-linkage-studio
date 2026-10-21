@@ -22,3 +22,32 @@ body{margin:0;background:#edf3f8;color:#29465b;min-height:100dvh;display:flex;fl
 .fileHubAuditDetails{overflow:visible}
 .fileHubAuditDetails > pre{max-height:370px;overflow:auto}
 @media(max-width:640px){.reportHeader{padding:12px}.reportSheet{width:calc(100% - 12px);margin:7px auto}.reportActions{gap:5px}.reportActions a,.reportActions button{padding:6px 8px;font-size:11px}#fileHubMarkdownPreview{padding:12px}.reportMeta{padding:10px 13px}}
+/* Dimensioned drawing lives with the report, not in a separate export modal. */
+.reportCad {border-bottom:1px solid #d6e3eb;background:#fff;}
+.reportCadHeader {
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
+  gap:12px;padding:17px 24px;background:#f7fafc;
+}
+.reportCadHeader h2 {font-size:15px;line-height:1.35;margin:0;color:#254e6b;}
+.reportCadHeader p {font-size:11px;margin:3px 0 0;color:#6d8597;}
+.reportCadActions {display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.reportCadActions a,.reportCadActions button {
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid #bad0df;border-radius:5px;background:#fff;
+  padding:7px 11px;color:#345d7a;cursor:pointer;font:inherit;font-size:11px;
+  text-decoration:none;
+}
+.reportCadActions a:hover,.reportCadActions button:hover {background:#e5f2fa;}
+.reportCadBody {
+  padding:15px 18px 19px;text-align:center;background:#eef3f6;
+}
+.reportCadBody img {
+  display:block;width:100%;height:auto;max-height:820px;
+  object-fit:contain;background:#fff;border:1px solid #cedce5;
+  box-shadow:0 3px 12px #1d40530d;
+}
+@media(max-width:640px){
+  .reportCadHeader{padding:11px 13px;gap:8px;}
+  .reportCadBody{padding:7px;}
+  .reportCadBody img{max-height:none;}
+}
