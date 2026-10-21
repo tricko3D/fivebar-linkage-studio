@@ -1,5 +1,6 @@
-# Fivebar Linkage Studio
-
+<p align="center">
+  <img src="screenshots/fivebar-header.svg" alt="Fivebar Linkage Studio — project logo and title" width="800">
+</p>
 I'm building a chess robot using a five-bar linkage. I made this interactive simulator to experiment with motor placement, link lengths and the reachable workspace before making physical prototypes.
 
 **[Try Fivebar Studio](https://tricko3d.github.io/fivebar-linkage-studio/)**
