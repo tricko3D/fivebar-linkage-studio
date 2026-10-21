@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Engineering Report · Fivebar Studio</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg"/>
+  <link rel="stylesheet" href="../css/studio-polish.css"/>
+  <link rel="stylesheet" href="report.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.css"/>
+</head>
+<body>
+  <header class="reportHeader">
+    <div class="reportIdentity"><img src="../favicon.svg" width="34" height="34" alt=""/><div>
+      <strong>Fivebar Studio</strong><span>Engineering report · shared snapshot</span>
+    </div></div>
+    <nav class="reportActions" aria-label="Report tools">
+      <a id="reportBack" href="../">Open in Studio</a>
+      <button id="reportCopyLink" type="button">Copy permalink</button>
+      <button id="reportMode" type="button" aria-pressed="false">Markdown source</button>
+      <button id="reportCopy" type="button">Copy Markdown</button>
+      <button id="reportSave" type="button" class="reportPrimary">Save .md</button>
+    </nav>
+  </header>
+  <main class="reportSheet">
+    <div class="reportMeta"><span>Live report generated locally from the configuration URL. No saved server state.</span>
+      <span id="reportStatus" role="status" aria-live="polite"></span></div>
+    <div id="reportError" class="reportError" hidden role="alert"></div>
+    <article id="fileHubMarkdownPreview" class="fileHubMarkdownPreview" aria-label="Calculation report"></article>
+    <textarea id="reportMarkdownSource" class="reportMarkdownSource" spellcheck="false" readonly hidden aria-label="Markdown source"></textarea>
+  </main>
+  <footer class="reportFoot">
+    <a href="https://github.com/tricko3D/fivebar-linkage-studio" target="_blank" rel="noopener noreferrer">Source Code · GitHub</a>
+    <a href="https://github.com/tricko3D/fivebar-linkage-studio/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT Licensed</a>
+    <span>Engineering screening only · not a certified load rating</span>
+  </footer>
+  <svg id="scene" hidden aria-hidden="true"></svg>
+  <script defer src="../js/state.js"></script>
+  <script defer src="../js/kinematics.js"></script>
+  <script defer src="../js/mechanics.js"></script>
+  <script defer src="../js/coverage.js"></script>
+  <script defer src="../js/render.js"></script>
+  <script defer src="../js/movement.js"></script>
+  <script defer src="../js/share-links.js"></script>
+  <script defer src="../js/report-sections.js"></script>
+  <script defer src="../js/reports.js"></script>
+  <script defer src="../js/file-hub.js"></script>
+  <script defer src="report.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.js" onload="window.renderStudioMath?.()"></script>
+</body>
+</html>
