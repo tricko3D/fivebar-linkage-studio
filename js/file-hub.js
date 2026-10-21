@@ -13,7 +13,8 @@ const fileHubKinds = {
   json: { title:'Configuration · JSON', help:'All simulator parameters, saved material and manufacturing choices.', filename:'fivebar-chess-config.json', mime:'application/json' },
   sw: { title:'SolidWorks variables · TXT', help:'Global variables for Tools → Equations → Import in SolidWorks.', filename:'fivebar-solidworks-variables.txt', mime:'text/plain' },
   md: { title:'Calculation report · Markdown', help:'Reproducible calculations. Preview the report or inspect its Markdown source.', filename:'fivebar-calculation-report.md', mime:'text/markdown' },
-  svg: { title:'Workspace drawing · SVG', help:'Scalable diagram of the current board and linkage configuration.', filename:'fivebar-chessboard.svg', mime:'image/svg+xml' }
+  svg: { title:'CAD drawing · dimensioned SVG', help:'Plan view with outer-board edge datum, all four link lengths, motor separation and cross-sections.', filename:'fivebar-dimensioned-cad.svg', mime:'image/svg+xml' },
+  share: { title:'Share configuration links', help:'Deterministic URLs containing the complete current settings.', filename:'', mime:'' }
 };
 function fileHubStatus(message, error = false) {
   const el = document.getElementById('fileHubStatus');
@@ -169,7 +170,7 @@ function fileHubGenerate(kind=fileHubKind) {
     case 'json': return buildConfigurationJson();
     case 'sw': return buildSolidWorksVariables();
     case 'md': return buildAuditReport();
-    case 'svg': return buildWorkspaceSvg();
+    case 'svg': return buildCadDrawingSvg();
     default: throw new Error('Unknown file format');
   }
 }
@@ -185,8 +186,10 @@ function refreshFileHub() {
   document.getElementById('fileHubJsonActions').hidden = fileHubKind!=='json';
   document.getElementById('fileHubMarkdownActions').hidden = fileHubKind!=='md';
   document.getElementById('fileHubImportActions').hidden = !importing;
-  document.getElementById('fileHubCopy').hidden = importing;
-  document.getElementById('fileHubSave').hidden = importing;
+  const sharing=fileHubKind==='share';
+  document.getElementById('fileHubCopy').hidden = importing||sharing;
+  document.getElementById('fileHubSave').hidden = importing||sharing;
+  document.getElementById('fileHubOpenReport').hidden = fileHubKind!=='md';
   document.querySelectorAll('[data-json-mode]').forEach(button=>{
     const active=button.dataset.jsonMode===fileHubJsonMode;
     button.classList.toggle('is-active',active);
@@ -202,13 +205,21 @@ function refreshFileHub() {
   const md=document.getElementById('fileHubMarkdownPreview');
   const svgPreview=document.getElementById('fileHubSvgPreview');
   const showMd=fileHubKind==='md'&&fileHubMarkdownMode==='preview';
-  const showSvg=fileHubKind==='svg';
-  field.hidden=showMd||showSvg;
+  const showSvg=fileHubKind==='svg',showShare=fileHubKind==='share';
+  field.hidden=showMd||showSvg||showShare;
   md.hidden=!showMd;
   svgPreview.hidden=!showSvg;
+  document.getElementById('fileHubSharePreview').hidden=!showShare;
   field.readOnly=!importing;
   field.placeholder=importing?'Paste a Fivebar Studio JSON configuration here…':'';
-  if (importing) {
+  if (showShare) {
+    try {
+      document.getElementById('shareStudioUrl').value=shareLink('studio');
+      document.getElementById('shareReportUrl').value=shareLink('report');
+      fileHubStatus('Share this exact configuration via either link.');
+    }catch(error){fileHubStatus('Cannot generate links: '+error.message,true);}
+    fileHubContent='';
+  } else if (importing) {
     field.value='';
     fileHubStatus('Paste JSON and Apply, or load a JSON file.');
   } else {
@@ -326,6 +337,26 @@ function initFileHub() {
     download(item.filename,fileHubContent,item.mime+';charset=utf-8');
     fileHubStatus('Saving '+item.filename+'.');
   });
+  const copyShare=async (inputId,label)=>{
+    const text=document.getElementById(inputId).value;
+    if(!text)return;
+    try {
+      await navigator.clipboard.writeText(text);
+      fileHubStatus('Copied '+label+' permalink.');
+    } catch(error) {
+      const input=document.getElementById(inputId);
+      input.focus();input.select();
+      fileHubStatus('Select and copy the '+label+' URL.',true);
+    }
+  };
+  document.getElementById('shareStudioCopy').addEventListener('click',()=>copyShare('shareStudioUrl','studio'));
+  document.getElementById('shareReportCopy').addEventListener('click',()=>copyShare('shareReportUrl','report'));
+  document.getElementById('shareStudioOpen').addEventListener('click',()=>{
+    window.open(document.getElementById('shareStudioUrl').value,'_blank','noopener');
+  });
+  const openReport=()=>window.open(shareLink('report'),'_blank','noopener');
+  document.getElementById('shareReportOpen').addEventListener('click',openReport);
+  document.getElementById('fileHubOpenReport').addEventListener('click',openReport);
   document.getElementById('fileHubViewResults').addEventListener('click',()=>{
     closeFileHub();
     window.openStudioResults?.();
