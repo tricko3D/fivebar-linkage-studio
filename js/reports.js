@@ -366,6 +366,8 @@ function buildAuditReport() {
     '',
     `Generated: ${new Date().toISOString()} · All dimensions in mm unless stated otherwise; +Y points down.`,
     '',
+    '![Dimensioned CAD drawing](drawing.svg)',
+    '',
     '> **Screening only:** Simplified mechanical and kinematic estimates; NOT FEA, a validated motor model, or a safe working-load certification.',
     '',
     '## Executive summary',
