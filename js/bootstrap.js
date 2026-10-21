@@ -129,6 +129,8 @@ try {
 } catch (e) {}
 state.outerW = Math.max(state.boardW, state.outerW);
 state.outerH = Math.max(state.boardH, state.outerH);
+// Generate all material options BEFORE writeControls() restores saved choices.
+setupMaterialOptions();
 writeControls();
 initControls();
 updateTransmissionReadout();
