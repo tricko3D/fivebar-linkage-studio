@@ -72,6 +72,39 @@ function applyMaterialPreset(key) {
   return true;
 }
 
+function buildConfigurationJson() {
+  return JSON.stringify({ schema:'fivebar-chess-v3', ...state }, null, 2);
+}
+function buildWorkspaceSvg() {
+  const drawing = svg.cloneNode(true);
+  drawing.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  drawing.setAttribute('width', '1200');
+  drawing.setAttribute('height', '950');
+  return new XMLSerializer().serializeToString(drawing);
+}
+// Same validation and migration path for uploaded JSON and pasted text.
+function importConfigurationJson(source) {
+  const parsed = JSON.parse(source);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+    throw new Error('Expected a JSON object containing studio settings.');
+  const keys = Object.keys(defaults);
+  if (!keys.some(key => Object.prototype.hasOwnProperty.call(parsed, key)))
+    throw new Error('No recognized Fivebar Studio configuration fields found.');
+  const updated = { ...defaults };
+  for (const key of keys) {
+    if (typeof parsed[key] !== typeof defaults[key]) continue;
+    if (typeof parsed[key] === 'number' && !Number.isFinite(parsed[key])) continue;
+    updated[key] = parsed[key];
+  }
+  state = updated;
+  normalizeMaterialSelection();
+  state.outerW = Math.max(state.boardW, state.outerW);
+  state.outerH = Math.max(state.boardH, state.outerH);
+  writeControls();
+  change();
+  return true;
+}
+
 function persist() {
   try {
     localStorage.setItem('fivebar-linkage-studio-v1', JSON.stringify(state));
@@ -256,23 +289,8 @@ function initControls() {
     writeControls();
     change();
   };
-  $('exportButton').onclick = () =>
-    download(
-      'fivebar-chess-config.json',
-      JSON.stringify({ schema: 'fivebar-chess-v3', ...state }, null, 2),
-      'application/json',
-    );
-  $('svgButton').onclick = () => {
-    const copy = svg.cloneNode(true);
-    copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    copy.setAttribute('width', '1200');
-    copy.setAttribute('height', '950');
-    download(
-      'fivebar-chessboard.svg',
-      new XMLSerializer().serializeToString(copy),
-      'image/svg+xml',
-    );
-  };
+  $('svgButton').onclick = () =>
+    download('fivebar-chessboard.svg',buildWorkspaceSvg(),'image/svg+xml');
   $('routePlay').onclick = toggleRoutePlay;
   $('routeReset').onclick = () => {
     stopRoute();
@@ -282,32 +300,16 @@ function initControls() {
     stopRoute();
     setRouteCursor(Number($('routeScrub').value) / 1000);
   });
-  $('reportButton').onclick = downloadAuditMarkdown;
-  $('swVariablesButton').onclick = downloadSolidWorksVariables;
-  $('importButton').onclick = () => $('importFile').click();
-  $('importFile').onchange = async (e) => {
-    const file = e.target.files?.[0];
+  $('importFile').onchange = async (event) => {
+    const file = event.target.files?.[0];
     if (!file) return;
     try {
-      const parsed = JSON.parse(await file.text());
-      const newState = { ...defaults };
-      for (const key of Object.keys(defaults)) {
-        if (
-          typeof parsed[key] === typeof defaults[key] &&
-          (!['number'].includes(typeof parsed[key]) || Number.isFinite(parsed[key]))
-        )
-          newState[key] = parsed[key];
-      }
-      state = newState;
-      // Preserve numeric properties while migrating older or removed choices.
-      normalizeMaterialSelection();
-      state.outerW = Math.max(state.boardW, state.outerW);
-      state.outerH = Math.max(state.boardH, state.outerH);
-      writeControls();
-      change();
-    } catch (e) {
-      alert('Invalid configuration JSON.');
+      importConfigurationJson(await file.text());
+      if (typeof fileHubImported === 'function') fileHubImported(file.name);
+    } catch (error) {
+      if (typeof fileHubStatus === 'function') fileHubStatus(error.message, true);
+      else alert('Invalid configuration: ' + error.message);
     }
-    e.target.value = '';
+    event.target.value = '';
   };
 }
