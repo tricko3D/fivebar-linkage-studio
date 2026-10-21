@@ -198,8 +198,8 @@ const fs = require('node:fs');
   for(const [method,expected,values] of [
     ['fdm',5,['petg','pla-cf','petg-cf','pa6-cf','custom']],
     ['sls',4,['pa12-sls','pa11-sls','pa12-gf-sls','custom']],
-    ['sla',4,['resin-tough','resin-rigid','resin-hightemp','custom']],
-    ['cnc',5,['al6061','steel1018','ti64','pom','custom']]
+    ['sla',4,['formlabs-tough2000-v2','formlabs-rigid4000','formlabs-high-temp','custom']],
+    ['cnc',5,['al6061','al7075','steel1018','ss304','custom']]
   ]){
     await overlay.locator('[data-manufacturing="'+method+'"]').click();
     const choices=await overlay.locator('[data-material-choice]').evaluateAll(items =>
@@ -227,6 +227,9 @@ const fs = require('node:fs');
     throw Error('CNC process was not selected');
   if(await overlay.locator('[data-material-choice="pla-cf"]').count())
     throw Error('CNC process displays FDM filament');
+  if(await overlay.locator('[data-material-choice="ti64"]').count() ||
+     await overlay.locator('[data-material-choice="pom"]').count())
+    throw Error('Titanium or POM must not appear in the CNC picker');
   await overlay.locator('[data-material-choice="al6061"]').click();
   const aluminum=await getValues();
   if(aluminum.material!=='al6061'||aluminum.manufacturing!=='cnc'||aluminum.youngMPa!==69000||
@@ -247,13 +250,19 @@ const fs = require('node:fs');
 
   await pickerTrigger.click();
   await overlay.locator('[data-manufacturing="sla"]').click();
-  if(await overlay.locator('[data-material-choice="resin-tough"]').count()!==1||
+  if(await overlay.locator('[data-material-choice="formlabs-tough2000-v2"]').count()!==1||
+     await overlay.locator('[data-material-choice="resin-tough"]').count()!==0||
      await overlay.locator('[data-material-choice="al6061"]').count()!==0)
-    throw Error('SLA catalog does not contain the right resin materials');
-  await overlay.locator('[data-material-choice="resin-tough"]').click();
+    throw Error('SLA picker does not show only real commercial resins');
+  await overlay.locator('[data-material-choice="formlabs-tough2000-v2"]').click();
   const resin=await getValues();
-  if(resin.material!=='resin-tough'||resin.manufacturing!=='sla'||resin.youngMPa!==2100)
-    throw Error('SLA resin selection failed');
+  if(resin.material!=='formlabs-tough2000-v2'||resin.manufacturing!=='sla'||
+     resin.youngMPa!==1800||resin.density!==1.09)
+    throw Error('Formlabs Tough 2000 V2 selection failed');
+  const resinSW=await page.evaluate(()=>buildSolidWorksVariables());
+  if(!resinSW.includes('"MaterialPresetCode" = 53')||
+     !resinSW.includes('"MaterialYoungModulus_MPa" = 1800'))
+    throw Error('Real SLA resin property export failed');
 
   await pickerTrigger.click();
   await page.keyboard.press('Escape');
@@ -286,6 +295,19 @@ const fs = require('node:fs');
   if(previousMaterialAudit.material!=='custom' ||
      previousMaterialAudit.process!=='sls' || previousMaterialAudit.E!==4242)
     throw Error('Legacy process/material migration lost numerical properties');
+  const retiredResinAudit=await page.evaluate(()=>{
+    const snapshot={...state};
+    state.manufacturing='sla';
+    state.material='resin-tough';
+    state.youngMPa=3141;
+    normalizeMaterialSelection();
+    const outcome={material:state.material,process:state.manufacturing,E:state.youngMPa};
+    Object.assign(state,snapshot);
+    return outcome;
+  });
+  if(retiredResinAudit.material!=='custom'||retiredResinAudit.process!=='sla'||
+     retiredResinAudit.E!==3141)
+    throw Error('Legacy generic SLA material lost its manual properties');
   await page.locator('#sectionsGroup').evaluate(el=>el.open=true);
   if(!(await page.locator('#l1W').isVisible()))throw Error('Cross section fields missing');
   await auditActiveFieldRows();
