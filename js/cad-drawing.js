@@ -46,8 +46,8 @@ function cadDimension(a,b,label,offset=15,color='#287caa',options={}){
   const mid={x:p.x+(q.x-p.x)*t+nx*(options.labelOffset||0),
     y:p.y+(q.y-p.y)*t+ny*(options.labelOffset||0)};
   return '<g class="cadDimension" pointer-events="none">'+
-    cadLine(a,{x:p.x+nx*ext,y:p.y+ny*ext},color,.65)+
-    cadLine(b,{x:q.x+nx*ext,y:q.y+ny*ext},color,.65)+
+    (offset===0?'':cadLine(a,{x:p.x+nx*ext,y:p.y+ny*ext},color,.65)+
+      cadLine(b,{x:q.x+nx*ext,y:q.y+ny*ext},color,.65))+
     cadLine(p,q,color,1.0)+tip(p,1)+tip(q,-1)+
     cadLabel(mid,label,color,9.5)+'</g>';
 }
@@ -65,10 +65,9 @@ function cadDimensions(s=state,solution=null,detail=false){
   // Explicit datum marker at physical board EDGE MIDPOINT, never board centre.
   out+='<circle cx="'+ref.point.x+'" cy="'+ref.point.y+
     '" r="4" fill="#fff" stroke="#c47727" stroke-width="1.8"/>';
-  out+=cadLine(ref.point,pv.M,'#ce8e42',1.0,'3 5');
+  // One direct arrow dimension between both midpoints. No duplicate dashed line.
   out+=cadDimension(ref.point,pv.M,'EDGE → M '+cadNum(ref.distance)+' mm',
-    ref.side==='BOTTOM'?-30:ref.side==='TOP'?30:ref.side==='LEFT'?-30:30,
-    '#ad6d2a',{labelT:.19});
+    0,'#ad6d2a',{labelT:.22,labelOffset:ref.side==='BOTTOM'?67:ref.side==='TOP'?-67:ref.side==='LEFT'?-67:67});
   out+=cadDimension(pv.A,pv.B,'M₁–M₂ '+cadNum(s.sep)+' mm',-25);
   if(sol?.EL&&sol?.ER&&sol?.P){
     const vertices=[pv.A,pv.B,sol.EL,sol.ER,sol.P];
@@ -126,7 +125,6 @@ function buildCadDrawingSvg(s=state){
     g+=cadLine({x:0,y:s.boardH*k/8},{x:s.boardW,y:s.boardH*k/8},'#e1e7ec',.65);
   }
   const edge=cadEdgeReference(s);
-  g+=cadLine(edge.point,pv.M,'#c28337',1.3,'4 5');
   g+=cadLine(pv.A,pv.B,'#465f71',3.3);
   if(solution.EL&&solution.ER&&solution.P){
     for(const [a,b,c] of [
@@ -170,6 +168,37 @@ function buildCadDrawingSvg(s=state){
     g+='<text x="'+(right+58)+'" y="'+(yy+10)+'" font-family="Arial" font-size="10" fill="#516f82">'+
       cadNum(ww)+' W × '+cadNum(hh)+' H'+(s.sectionType==='box'?' · t='+cadNum(s.wall):' · solid')+' mm</text>';
   }
+  g+='</g>';
+  // Show mechanical min/max motor output angles as an engineering schedule.
+  // Arc rays appear only for active, non-full-circle stop ranges.
+  g+='<g id="cadJointAngles">';
+  const angleTop=top+248;
+  g+='<rect x="'+right+'" y="'+angleTop+'" width="187" height="116" fill="#f7fafc" stroke="#a7bac8"/>';
+  g+='<text x="'+(right+12)+'" y="'+(angleTop+19)+'" font-family="Arial" font-size="12" font-weight="700" fill="#315a75">MOTOR JOINT ANGLES</text>';
+  g+='<text x="'+(right+12)+'" y="'+(angleTop+38)+'" font-family="Arial" font-size="10" fill="#657f91">Output angles · degrees</text>';
+  for(const [num,joint,min,max,col] of [
+    ['M₁',pv.A,s.leftMinAngle,s.leftMaxAngle,'#1687a5'],
+    ['M₂',pv.B,s.rightMinAngle,s.rightMaxAngle,'#7e65b8']
+  ]){
+    const y=angleTop+(num==='M₁'?61:86);
+    g+='<text x="'+(right+12)+'" y="'+y+'" font-family="Arial" font-size="11" font-weight="700" fill="'+col+'">'+num+'</text>';
+    g+='<text x="'+(right+45)+'" y="'+y+'" font-family="Arial" font-size="10.5" fill="#385a70">MIN '+cadNum(min)+'°</text>';
+    g+='<text x="'+(right+115)+'" y="'+y+'" font-family="Arial" font-size="10.5" fill="#385a70">MAX '+cadNum(max)+'°</text>';
+    const full=Math.abs(max-min)>=359.999;
+    if(s.useJointLimits&&!full){
+      const radius=27,lo=min*Math.PI/180,hi=max*Math.PI/180;
+      const sweep=((max-min)%360+360)%360;
+      const radial=(theta,r)=>({x:joint.x+Math.cos(theta)*r,y:joint.y+Math.sin(theta)*r});
+      const start=radial(lo,radius),end=radial(hi,radius);
+      g+='<path d="M '+start.x+' '+start.y+' A '+radius+' '+radius+
+        ' 0 '+(sweep>180?1:0)+' 1 '+end.x+' '+end.y+
+        '" fill="none" stroke="'+col+'" stroke-width="2" stroke-dasharray="3 3"/>';
+      g+=cadLine(radial(lo,17),radial(lo,36),col,1.4);
+      g+=cadLine(radial(hi,17),radial(hi,36),col,1.4);
+    }
+  }
+  g+='<text x="'+(right+12)+'" y="'+(angleTop+105)+'" font-family="Arial" font-size="9" fill="#748b9b">'+
+    (s.useJointLimits?'Limits enforced · highlighted at joints':'Limits disabled · nominal ranges shown')+'</text>';
   g+='</g>';
   const blockY=ymax-82;
   g+='<rect x="'+(xmin+25)+'" y="'+blockY+'" width="'+(w-50)+'" height="52" fill="#f4f8fa" stroke="#a4b6c2"/>';
