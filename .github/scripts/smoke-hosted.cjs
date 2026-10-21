@@ -85,32 +85,85 @@ const fs = require('node:fs');
   if(await page.locator('[data-overlay-series="rpmR"]').isChecked())throw Error('Series selection did not persist across views');
   await page.locator('[data-motion-view="bars"]').click();
 
+  // Unified Files & Export replaces the old dropdown and header Results button.
+  if(await page.locator('#toggleInsights,#fileMenu').count())
+    throw Error('Legacy Results button or file dropdown remains');
+  if(!((await page.locator('#fileMenuButton').innerText()).includes('Files')))
+    throw Error('Renamed Files & Export button missing');
   await page.locator('#fileMenuButton').click();
-  await page.waitForTimeout(400);
-  if(!(await page.locator('#fileMenu').isVisible()))throw Error('File menu did not open');
-  for(const x of ['importButton','exportButton','swVariablesButton','reportButton'])
-   if(!(await page.locator('#'+x).isVisible()))throw Error('File action invisible: '+x);
-  if(await page.locator('#fileMenu #svgButton').count())throw Error('SVG should only be on canvas');
-  if(await page.locator('#printButton').count())throw Error('PDF export should be gone');
-  if(await page.locator('.appHeader svg.lucide').count()<8)throw Error('Lucide did not load');
-  const [md] = await Promise.all([page.waitForEvent('download'),page.locator('#reportButton').click()]);
-  if(!md.suggestedFilename().endsWith('.md'))throw Error('Markdown export wrong name');
-  const markdown=fs.readFileSync(await md.path(),'utf8');
-  if(!markdown.includes('## ')||!markdown.includes('Calculation audit'))throw Error('Markdown export is not formatted');
-  await page.locator('#fileMenuButton').click();
-  const [sw]=await Promise.all([page.waitForEvent('download'),page.locator('#swVariablesButton').click()]);
-  if(!sw.suggestedFilename().endsWith('.txt'))throw Error('SW export not TXT');
-  const equations=fs.readFileSync(await sw.path(),'utf8');
-  if(!equations.includes('"BoardWidth" = 255mm')||!equations.includes('"LeftProximalLength" ='))throw Error('SolidWorks variables missing');
+  if(!(await page.locator('#fileHubOverlay').isVisible()))
+    throw Error('File workspace did not open');
+  if(await page.locator('[data-file-kind]').count()!==4)
+    throw Error('Expected JSON, SolidWorks, Markdown and SVG views');
+  const hub=page.locator('#fileHubOverlay');
+  if(!(await page.locator('#fileHubText').inputValue()).includes('"boardW": 255'))
+    throw Error('JSON preview lacks current board settings');
+
+  // Configuration export, inline paste import, file loading and validation.
+  const [json]=await Promise.all([page.waitForEvent('download'),page.locator('#fileHubSave').click()]);
+  if(!json.suggestedFilename().endsWith('.json'))throw Error('Configuration not JSON');
+  const sourceJSON=await page.locator('#fileHubText').inputValue();
+  await page.locator('[data-json-mode="import"]').click();
+  if(await page.locator('#fileHubText').getAttribute('readonly')!==null)
+    throw Error('Paste view is not editable');
+  await page.locator('#fileHubText').fill('{ definitely not json }');
+  await page.locator('#fileHubApply').click();
+  if(!(await page.locator('#fileHubStatus').innerText()).includes('Import failed'))
+    throw Error('Invalid pasted JSON was not rejected');
+  const payload=JSON.parse(sourceJSON);
+  payload.boardW=280;
+  await page.locator('#fileHubText').fill(JSON.stringify(payload));
+  await page.locator('#fileHubApply').click();
+  if(await page.locator('#boardW').inputValue()!=='280')
+    throw Error('Pasted JSON did not restore simulator fields');
+  if(!(await page.locator('#fileHubText').inputValue()).includes('"boardW": 280'))
+    throw Error('Updated imported JSON was not previewed');
+  // Load a JSON file through the same import path, restoring original values.
+  await page.locator('[data-json-mode="import"]').click();
+  await page.locator('#importFile').setInputFiles({
+    name:'restored-config.json',mimeType:'application/json',
+    buffer:Buffer.from(sourceJSON,'utf8')
+  });
+  if(await page.locator('#boardW').inputValue()!=='255')
+    throw Error('Loading JSON file did not restore the configuration');
+
+  // SolidWorks source preview and download.
+  await page.locator('[data-file-kind="sw"]').click();
+  const equations=await page.locator('#fileHubText').inputValue();
+  if(!equations.includes('"BoardWidth" = 255mm')||
+     !equations.includes('"LeftProximalLength" ='))
+    throw Error('SolidWorks variables missing from preview');
   for(const key of ['LeftJointMinAngle','LeftJointMaxAngle','RightJointMinAngle','RightJointMaxAngle','HardStopsEnabled','ServoUsableTravel'])
     if(!equations.includes('"'+key+'" ='))throw Error('SolidWorks export omits '+key);
-  const vars=[...equations.matchAll(/^"([^"]+)" = ([-\d.]+)(mm|deg)?$/gm)];
+  const vars=[...equations.matchAll(/^"([^"]+)" = ([-\\d.]+)(mm|deg)?$/gm)];
   if(vars.length<70)throw Error('Insufficient CAD variable coverage: '+vars.length);
-  await page.locator('#fileMenuButton').click();
-  const [json]=await Promise.all([page.waitForEvent('download'),page.locator('#exportButton').click()]);
-  if(!json.suggestedFilename().endsWith('.json'))throw Error('Configuration not JSON');
-  const [svg]=await Promise.all([page.waitForEvent('download'),page.locator('#svgButton').click()]);
+  const [sw]=await Promise.all([page.waitForEvent('download'),page.locator('#fileHubSave').click()]);
+  if(!sw.suggestedFilename().endsWith('.txt'))throw Error('SW export not TXT');
+
+  // Calculation audit defaults to rendered Markdown. Source and download match.
+  await page.locator('[data-file-kind="md"]').click();
+  if(!(await page.locator('#fileHubMarkdownPreview').isVisible()) ||
+     await page.locator('#fileHubMarkdownPreview h2').count()<6)
+    throw Error('Formatted Markdown preview missing');
+  await page.locator('[data-md-mode="source"]').click();
+  const markdown=await page.locator('#fileHubText').inputValue();
+  if(!markdown.includes('## ')||!markdown.includes('Calculation audit'))
+    throw Error('Markdown source preview is not formatted');
+  const [md]=await Promise.all([page.waitForEvent('download'),page.locator('#fileHubSave').click()]);
+  if(!md.suggestedFilename().endsWith('.md'))throw Error('Markdown download wrong name');
+
+  // SVG graphic preview, then download. SVG toolbar export remains available.
+  await page.locator('[data-file-kind="svg"]').click();
+  if(!(await page.locator('#fileHubSvgPreview').isVisible()) ||
+     !(await page.locator('#fileHubSvgImage').getAttribute('src')).startsWith('blob:'))
+    throw Error('SVG image preview is missing');
+  const [svg]=await Promise.all([page.waitForEvent('download'),page.locator('#fileHubSave').click()]);
   if(!svg.suggestedFilename().endsWith('.svg'))throw Error('Canvas SVG missing');
+  await page.locator('#fileHubClose').click();
+  if(await hub.isVisible())throw Error('File workspace failed to close');
+  if(await page.locator('#printButton').count())throw Error('PDF export should be gone');
+  if(await page.locator('.appHeader svg.lucide').count()<5)
+    throw Error('Header icons did not load');
   await page.locator('#canvasHelp').click();
   if(!(await page.locator('#studioTooltip').isVisible()))throw Error('Contextual tooltip not shown');
   await page.keyboard.press('Escape');
@@ -189,6 +242,7 @@ const fs = require('node:fs');
   await pickerTrigger.click();
   const overlay=page.locator('#materialPickerOverlay');
   if(!(await overlay.isVisible()))throw Error('Material overlay did not open');
+  const dialogBefore=await page.locator('.materialPickerDialog').boundingBox();
   if(await overlay.locator('[data-manufacturing]').count()!==4)
     throw Error('Manufacturing picker must list only FDM, SLS, SLA and CNC');
   const groups=await overlay.locator('[data-manufacturing]').evaluateAll(items =>
@@ -207,6 +261,10 @@ const fs = require('node:fs');
     if(choices.length!==expected || choices.join(',')!==values.join(','))
       throw Error('Wrong '+method+' materials: '+choices.join(','));
   }
+  const dialogAfter=await page.locator('.materialPickerDialog').boundingBox();
+  if(!dialogBefore||!dialogAfter||
+     Math.abs(dialogBefore.y-dialogAfter.y)>1||Math.abs(dialogBefore.height-dialogAfter.height)>1)
+    throw Error('Material dialog jumps when switching processes');
   await overlay.locator('[data-manufacturing="fdm"]').click();
   if((await overlay.locator('#materialPickerProcessName').innerText()).trim()!=='FDM')
     throw Error('FDM label should not include FFF');
@@ -454,7 +512,13 @@ const fs = require('node:fs');
   const label=page.locator('label.toggle').filter({has:page.locator('#showCoverage')});
   const color=await label.evaluate(e=>getComputedStyle(e).color);
   if(color==='rgb(194, 209, 221)')throw Error('Checkbox text still washed out');
-  if(width<850){await page.locator('#closeSettings').click();await page.locator('#toggleInsights').click();}
+  if(width<850){
+    await page.locator('#closeSettings').click();
+    await page.locator('#fileMenuButton').click();
+    await page.locator('#fileHubViewResults').click();
+    if(!(await page.locator('.analysis').isVisible()))
+      throw Error('Results panel inaccessible on mobile without header toggle');
+  }
   await page.locator('.resultTabs [data-insight="position"]').click();
   if(!(await page.locator('#outX').isVisible()))throw Error('Position panel invisible');
   if(errors.length)throw Error('JavaScript console errors: '+errors.join('; ').slice(0,600));
