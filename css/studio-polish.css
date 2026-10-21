@@ -719,3 +719,15 @@
 }
 #jointLimitsGroup .jointStopSetStatus:empty {display:none;}
 #jointLimitsGroup .jointStopSetStatus[data-state="error"] {color:#a54537;}
+
+/* Tab name is the settings rail title; avoid repeating the active category. */
+.config > .section[data-category="motors"] > .sectheader,
+.config > .section[data-category="mechanics"] > .sectheader,
+.config > .section[data-category="display"] > .sectheader { display:none; }
+.config .railTitle #settingsTitle {font-weight:750;}
+.config > .section[data-category="linkage"] {padding-top:6px;padding-bottom:6px;border-bottom:0;}
+.config > .section[data-category="linkage"] .linkageAccordion {margin:0;}
+.config > .section[data-category="linkage"] .linkageAccordion > summary {
+  font-weight:700;color:#375d7a;
+}
+.config > .section[data-category="linkage"] .linkageAccordion .mechanicsGroupBody {padding-top:10px;}
