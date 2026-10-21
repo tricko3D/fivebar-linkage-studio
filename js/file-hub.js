@@ -27,51 +27,121 @@ function disposeFileHubSvg() {
   const image = document.getElementById('fileHubSvgImage');
   if (image) image.removeAttribute('src');
 }
-// Render the subset of Markdown used by buildAuditReport without injecting HTML.
-// Headings, paragraphs, and fenced code blocks remain fully selectable.
+// Rich, safe report renderer: tables, LaTeX, collapsible audit appendices.
+// All text is inserted as text nodes; never execute Markdown as HTML.
 function renderReportPreview(markdown) {
-  const root = document.getElementById('fileHubMarkdownPreview');
+  const root=document.getElementById('fileHubMarkdownPreview');
   root.replaceChildren();
-  const lines = markdown.split(/\r?\n/);
-  let codeLines = null, paragraph = [];
-  const flushParagraph = () => {
-    if (!paragraph.length) return;
-    const p = document.createElement('p');
-    p.textContent = paragraph.join(' ');
-    root.append(p);
-    paragraph = [];
+  const lines=markdown.split(/\r?\n/);
+  let parent=root,paragraph=[],list=null;
+  const rich=(node,value)=>{
+    for(const part of value.split(/(\*\*[^*]+\*\*)/g)){
+      if(!part)continue;
+      if(part.startsWith('**')&&part.endsWith('**')){
+        const strong=document.createElement('strong');
+        strong.textContent=part.slice(2,-2);node.append(strong);
+      } else node.append(document.createTextNode(part));
+    }
   };
-  for (const line of lines) {
-    if (/^\x60\x60\x60/.test(line)) {
-      if (codeLines) {
-        const pre = document.createElement('pre');
-        const code = document.createElement('code');
-        code.textContent = codeLines.join('\n');
-        pre.append(code); root.append(pre);
-        codeLines = null;
-      } else {
-        flushParagraph(); codeLines = [];
+  const flush=()=>{
+    if(paragraph.length){
+      const p=document.createElement('p');
+      rich(p,paragraph.join(' '));parent.append(p);paragraph=[];
+    }
+    list=null;
+  };
+  const tableLine=s=>/^\|.*\|$/.test(s);
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i].trim();
+    if(line==='$$'){
+      flush();
+      const parts=[];
+      while(++i<lines.length&&lines[i].trim()!=='$$')parts.push(lines[i]);
+      const latex=parts.join('\n').trim();
+      const block=document.createElement('div');
+      block.className='fileHubEquation';
+      block.setAttribute('aria-label','Mathematical equation');
+      try{
+        if(!window.katex?.render)throw new Error('KaTeX not loaded');
+        window.katex.render(latex,block,{displayMode:true,throwOnError:true,trust:false});
+      }catch(_){
+        const fallback=document.createElement('code');
+        fallback.textContent=latex;block.append(fallback);
+        block.classList.add('mathFallback');
       }
-      continue;
+      parent.append(block);continue;
     }
-    if (codeLines) { codeLines.push(line); continue; }
-    const header = line.match(/^(#{1,3})\s+(.+)$/);
-    if (header) {
-      flushParagraph();
-      const title = document.createElement('h' + header[1].length);
-      title.textContent = header[2]; root.append(title);
-    } else if (!line.trim()) {
-      flushParagraph();
-    } else {
-      paragraph.push(line.trim());
+    if(/^\x60{3}/.test(line)){
+      flush();
+      const parts=[];
+      while(++i<lines.length&&!/^\x60{3}/.test(lines[i].trim()))parts.push(lines[i]);
+      const pre=document.createElement('pre'),code=document.createElement('code');
+      code.textContent=parts.join('\n');pre.append(code);parent.append(pre);continue;
     }
+    if(line==='<details>'){
+      flush();
+      const details=document.createElement('details');details.className='fileHubAuditDetails';
+      root.append(details);parent=details;continue;
+    }
+    if(line==='</details>'){flush();parent=root;continue;}
+    const match=line.match(/^<summary>(.*?)<\/summary>$/);
+    if(match){
+      flush();
+      const el=document.createElement('summary');el.textContent=match[1];parent.append(el);continue;
+    }
+    if(tableLine(line)){
+      flush();
+      const rows=[];
+      while(i<lines.length&&tableLine(lines[i].trim())){
+        const columns=lines[i].trim().slice(1,-1).split('|').map(x=>x.trim());
+        if(!columns.every(x=>/^:?-{3,}:?$/.test(x)))rows.push(columns);
+        i++;
+      }
+      i--;
+      if(!rows.length)continue;
+      const scroller=document.createElement('div');scroller.className='fileHubReportTableScroll';
+      const table=document.createElement('table');table.className='fileHubReportTable';
+      const head=document.createElement('thead'),headRow=document.createElement('tr');
+      rows[0].forEach(val=>{const th=document.createElement('th');rich(th,val);headRow.append(th);});
+      head.append(headRow);table.append(head);
+      const body=document.createElement('tbody');
+      rows.slice(1).forEach(row=>{
+        const tr=document.createElement('tr');
+        row.forEach((val,index)=>{
+          const td=document.createElement('td');
+          if(index>0&&/^[\d,.%+\-≥]/.test(val))td.classList.add('numeric');
+          rich(td,val);tr.append(td);
+        });
+        body.append(tr);
+      });
+      table.append(body);scroller.append(table);parent.append(scroller);continue;
+    }
+    const heading=line.match(/^(#{1,4})\s+(.+)$/);
+    if(heading){
+      flush();
+      const el=document.createElement('h'+heading[1].length);
+      rich(el,heading[2]);parent.append(el);continue;
+    }
+    if(line.startsWith('> ')){
+      flush();
+      const el=document.createElement('blockquote');
+      rich(el,line.slice(2));parent.append(el);continue;
+    }
+    if(line.startsWith('- ')){
+      if(paragraph.length)flush();
+      if(!list){list=document.createElement('ul');parent.append(list);}
+      const li=document.createElement('li');rich(li,line.slice(2));list.append(li);continue;
+    }
+    if(!line){flush();continue;}
+    list=null;paragraph.push(line);
   }
-  flushParagraph();
-  if (codeLines) {
-    const pre=document.createElement('pre');
-    pre.textContent=codeLines.join('\n');root.append(pre);
-  }
+  flush();
 }
+window.renderStudioMath=()=>{
+  if(fileHubKind==='md'&&fileHubMarkdownMode==='preview'&&
+     !document.getElementById('fileHubOverlay').hidden&&fileHubContent)
+    renderReportPreview(fileHubContent);
+};
 function fileHubGenerate(kind=fileHubKind) {
   switch(kind) {
     case 'json': return buildConfigurationJson();
