@@ -31,6 +31,23 @@ function properIntersection(a, b, c, d) {
     u = cross(sub(c, a), r) / den;
   return t > 1e-5 && t < 1 - 1e-5 && u > 1e-5 && u < 1 - 1e-5;
 }
+// Absolute output-joint angles: +X=0°, +Y=90° (down on the board).
+// Min > max wraps through 0°. Equal endpoints mean a zero-width sweep.
+function hardStopSweep(min, max) {
+  if (Math.abs(max - min) >= 359.999) return 360;
+  return ((max - min) % 360 + 360) % 360;
+}
+function jointWithinStops(angle, min, max) {
+  const span = hardStopSweep(min, max);
+  return span >= 359.999 ||
+    ((angle - min) % 360 + 360) % 360 <= span + 1e-6;
+}
+function jointStopsPass(a, b, s = state) {
+  return !s.useJointLimits || (
+    jointWithinStops(a, s.leftMinAngle, s.leftMaxAngle) &&
+    jointWithinStops(b, s.rightMinAngle, s.rightMaxAngle)
+  );
+}
 function calc(G, s = state) {
   const { A, B, M } = pivots(s),
     signL = s.branch[0] === '+' ? 1 : -1,
@@ -107,6 +124,19 @@ function calc(G, s = state) {
       ER,
       crossed,
     };
+  const angleL = degree(sub(EL, A)), angleR = degree(sub(ER, B));
+  if (!jointStopsPass(angleL, angleR, s)) {
+    const left = !jointWithinStops(angleL, s.leftMinAngle, s.leftMaxAngle);
+    const name = left ? 'Left (M₁)' : 'Right (M₂)';
+    const angle = left ? angleL : angleR;
+    const lo = left ? s.leftMinAngle : s.rightMinAngle;
+    const hi = left ? s.leftMaxAngle : s.rightMaxAngle;
+    return {
+      valid: false, limitedBy: 'joint-stops',
+      reason: `${name} joint angle ${angle.toFixed(1)}° is outside mechanical stops (${lo}° → ${hi}°).`,
+      A, B, M, G, P, EL, ER, crossed, angleL, angleR,
+    };
+  }
   const serialL = Math.abs(cross(sub(EL, A), sub(P, EL))) / (s.l1 * s.l2),
     serialR = Math.abs(cross(sub(ER, B), sub(P, ER))) / (s.r1 * s.r2),
     parallel = Math.abs(cross(sub(P, EL), sub(P, ER))) / (s.l2 * s.r2);
@@ -121,8 +151,8 @@ function calc(G, s = state) {
     EL,
     ER,
     crossed,
-    angleL: degree(sub(EL, A)),
-    angleR: degree(sub(ER, B)),
+    angleL,
+    angleR,
     margin,
     warning:
       margin < 0.14
