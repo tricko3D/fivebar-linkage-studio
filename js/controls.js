@@ -59,11 +59,42 @@ function captureJointStop(key) {
   change();
   return true;
 }
+function resetJointStop(key) {
+  if (!['leftMinAngle','leftMaxAngle','rightMinAngle','rightMaxAngle'].includes(key)) return false;
+  state[key] = defaults[key];
+  $(key).value = String(defaults[key]);
+  const msg = $('jointStopSetStatus');
+  if (msg) {
+    msg.textContent = (key.includes('left') ? 'M₁' : 'M₂') + ' ' +
+      (key.includes('Min') ? 'MIN' : 'MAX') + ' reset to ' + defaults[key] + '°.';
+    msg.dataset.state = 'success';
+  }
+  change();
+  return true;
+}
+function resetAllJointStops() {
+  for (const key of ['leftMinAngle','leftMaxAngle','rightMinAngle','rightMaxAngle']) {
+    state[key] = defaults[key];
+    $(key).value = String(defaults[key]);
+  }
+  state.useJointLimits = false;
+  $('useJointLimits').checked = false;
+  const msg = $('jointStopSetStatus');
+  if (msg) {
+    msg.textContent = 'Both joints reset to 0°–360°; hard stops disabled.';
+    msg.dataset.state = 'success';
+  }
+  change();
+}
 function initControls() {
   $('resizeButton').addEventListener('click', () => setResizeMode(!resizeMode));
   document.querySelectorAll('[data-joint-stop]').forEach(button => {
     button.addEventListener('click', () => captureJointStop(button.dataset.jointStop));
   });
+  document.querySelectorAll('[data-reset-stop]').forEach(button => {
+    button.addEventListener('click', () => resetJointStop(button.dataset.resetStop));
+  });
+  $('resetJointLimits').addEventListener('click', resetAllJointStops);
   document.querySelectorAll('[data-key]').forEach((el) => {
     const key = el.dataset.key;
     const handle = () => {
