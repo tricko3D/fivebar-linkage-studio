@@ -12,7 +12,7 @@
 <body>
   <header class="reportHeader">
     <div class="reportIdentity"><img src="../favicon.svg" width="34" height="34" alt=""/><div>
-      <strong>Fivebar Studio</strong><span>Engineering report · shared snapshot</span>
+      <strong>Fivebar Studio</strong>
     </div></div>
     <nav class="reportActions" aria-label="Report tools">
       <a id="reportBack" href="../">Open in Studio</a>
@@ -20,23 +20,17 @@
       <button id="reportMode" type="button" aria-pressed="false">Markdown source</button>
       <button id="reportCopy" type="button">Copy Markdown</button>
       <button id="reportSave" type="button" class="reportPrimary">Save .md</button>
+      <button id="reportZip" type="button" class="reportPrimary">Download ZIP</button>
     </nav>
   </header>
   <main class="reportSheet">
-    <div class="reportMeta"><span>Live report generated locally from the configuration URL. No saved server state.</span>
-      <span id="reportStatus" role="status" aria-live="polite"></span></div>
+    <span id="reportStatus" class="reportScreenReaderStatus" role="status" aria-live="polite"></span>
     <div id="reportError" class="reportError" hidden role="alert"></div>
     <section class="reportCad" aria-labelledby="reportCadTitle">
-      <div class="reportCadHeader">
-        <div>
-          <h2 id="reportCadTitle">Dimensioned CAD drawing</h2>
-          <p>Plan view · board-edge midpoint datum · link dimensions and cross-sections</p>
-        </div>
-        <div class="reportCadActions">
-          <button id="reportCadToggle" type="button" aria-expanded="true" aria-controls="reportCadBody">Hide drawing</button>
-          <button id="reportCadSave" type="button">Save SVG</button>
-          <a id="reportCadFull" href="#" target="_blank" rel="noopener noreferrer" aria-label="Open CAD drawing full size">Open full size</a>
-        </div>
+      <div class="reportCadActions" aria-label="Drawing actions">
+        <button id="reportCadToggle" type="button" aria-expanded="true" aria-controls="reportCadBody">Hide drawing</button>
+        <button id="reportCadSave" type="button">Save SVG</button>
+        <a id="reportCadFull" href="#" target="_blank" rel="noopener noreferrer">Open full size</a>
       </div>
       <div id="reportCadBody" class="reportCadBody">
         <img id="reportCadImage" alt="Fivebar CAD drawing with arrows measuring motor spacing, four links and the motor midpoint to the outer board edge midpoint"/>
@@ -48,7 +42,7 @@
   <footer class="reportFoot">
     <a href="https://github.com/tricko3D/fivebar-linkage-studio" target="_blank" rel="noopener noreferrer">Source Code · GitHub</a>
     <a href="https://github.com/tricko3D/fivebar-linkage-studio/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT Licensed</a>
-    <span>Engineering screening only · not a certified load rating</span>
+    
   </footer>
   <svg id="scene" hidden aria-hidden="true"></svg>
   <script defer src="../js/state.js"></script>
@@ -62,6 +56,7 @@
   <script defer src="../js/report-sections.js"></script>
   <script defer src="../js/reports.js"></script>
   <script defer src="../js/file-hub.js"></script>
+  <script defer src="../js/export-bundle.js"></script>
   <script defer src="report.js"></script>
   <script async src="https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.js" onload="window.renderStudioMath?.()"></script>
 </body>
