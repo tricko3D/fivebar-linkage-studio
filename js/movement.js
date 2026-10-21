@@ -78,7 +78,7 @@ function buildRouteData() {
         valid: false,
         start,
         end,
-        reason: `Part of ${state.routeFrom} → ${state.routeTo} is unreachable (${Math.round(i / 1.2)}% along the path).`,
+        reason: `Path rejected at ${Math.round(i / 1.2)}%: ${sol.reason || 'position unreachable'}`,
       };
     if (sol.margin < 0.025)
       return {
