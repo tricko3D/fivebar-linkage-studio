@@ -177,44 +177,83 @@ const fs = require('node:fs');
   await page.locator('.topSettingsTabs [data-setting="mechanics"]').click();
   if(!(await page.locator('#sectionsGroup').isVisible()))throw Error('Mechanical sections missing');
 
-  // Material catalog uses the same source for dropdown, numerical properties,
-  // mechanical model and SolidWorks. Existing PLA/PETG codes stay stable.
-  const materialSelect=page.locator('#material');
-  if(await materialSelect.locator('optgroup').count()!==4 ||
-     await materialSelect.locator('option').count()!==31)
-    throw Error('Expected 30 engineering presets plus Custom in four groups');
-  if(!(await page.locator('#materialPresetNote').isVisible()))
-    throw Error('Material warning should remain visible outside tooltips');
+  // Custom process/material overlay: process tabs filter available materials
+  // and selections update calculations, reports and the persisted configuration.
+  const pickerTrigger=page.locator('#materialPickerTrigger');
+  if(!(await pickerTrigger.isVisible()))throw Error('Material picker trigger hidden');
   const getValues=()=>page.evaluate(()=>({
-    material:state.material, youngMPa:state.youngMPa, density:state.density,
-    stressLimit:state.stressLimit, stiffFactor:state.stiffFactor
+    material:state.material,manufacturing:state.manufacturing,
+    youngMPa:state.youngMPa,density:state.density,
+    stressLimit:state.stressLimit,stiffFactor:state.stiffFactor
   }));
-  await materialSelect.selectOption('pla-cf');
+  await pickerTrigger.click();
+  const overlay=page.locator('#materialPickerOverlay');
+  if(!(await overlay.isVisible()))throw Error('Material overlay did not open');
+  if(await overlay.locator('[data-manufacturing]').count()!==7)
+    throw Error('Manufacturing process selector must have seven options');
+  if(await overlay.locator('[data-material-choice]').count()!==25)
+    throw Error('FDM catalog should have 24 filaments plus Custom');
+  await page.locator('#materialPickerSearch').fill('PLA-CF');
+  if(await overlay.locator('[data-material-choice="pla-cf"]').count()!==1||
+     await overlay.locator('[data-material-choice="petg"]').count()!==0)
+    throw Error('Manufacturing material search does not filter');
+  await overlay.locator('[data-material-choice="pla-cf"]').click();
   const plaCf=await getValues();
-  if(plaCf.material!=='pla-cf'||plaCf.youngMPa!==3950||plaCf.density!==1.22||
-     plaCf.stressLimit!==20||plaCf.stiffFactor!==0.65)
-    throw Error('PLA-CF preset did not update all material parameters');
-  await materialSelect.selectOption('al6061');
+  if(plaCf.material!=='pla-cf'||plaCf.manufacturing!=='fdm'||plaCf.youngMPa!==3950||
+     plaCf.density!==1.22||plaCf.stressLimit!==20||plaCf.stiffFactor!==0.65)
+    throw Error('PLA-CF overlay selection did not update calculations');
+  if(await overlay.isVisible())throw Error('Material picker did not close on selection');
+
+  await pickerTrigger.click();
+  await overlay.locator('[data-manufacturing="cnc"]').click();
+  if(!(await page.locator('#materialPickerProcessName').innerText()).includes('CNC'))
+    throw Error('CNC process was not selected');
+  if(await overlay.locator('[data-material-choice="pla-cf"]').count())
+    throw Error('CNC process displays FDM filament');
+  await overlay.locator('[data-material-choice="al6061"]').click();
   const aluminum=await getValues();
-  if(aluminum.material!=='al6061'||aluminum.youngMPa!==69000||
+  if(aluminum.material!=='al6061'||aluminum.manufacturing!=='cnc'||aluminum.youngMPa!==69000||
      aluminum.density!==2.7||aluminum.stiffFactor!==1||aluminum.stressLimit!==95)
-    throw Error('Aluminum engineering preset did not apply');
+    throw Error('CNC aluminum material did not update all parameters');
   const aluminumSW=await page.evaluate(()=>buildSolidWorksVariables());
   if(!aluminumSW.includes('"MaterialPresetCode" = 25')||
-     !aluminumSW.includes('"MaterialYoungModulus_MPa" = 69000')||
+     !aluminumSW.includes('"ManufacturingMethodCode" = 5')||
      !aluminumSW.includes('"EffectiveYoungModulus_MPa" = 69000'))
-    throw Error('Engineering material SolidWorks variables missing');
+    throw Error('Manufacturing export did not include CNC and aluminum variables');
+
   await page.locator('#youngMPa').fill('73000');
   await page.locator('#youngMPa').dispatchEvent('change');
   const custom=await getValues();
-  if(custom.material!=='custom'||custom.youngMPa!==73000||
-     await materialSelect.inputValue()!=='custom')
-    throw Error('Manually overriding preset did not switch to Custom');
-  await materialSelect.selectOption('petg');
+  if(custom.material!=='custom'||custom.manufacturing!=='cnc'||custom.youngMPa!==73000||
+     !(await page.locator('#materialChoiceLabel').innerText()).includes('Custom'))
+    throw Error('Editing preset values did not switch to Custom for CNC');
+
+  await pickerTrigger.click();
+  await overlay.locator('[data-manufacturing="sla"]').click();
+  if(await overlay.locator('[data-material-choice="resin-tough"]').count()!==1||
+     await overlay.locator('[data-material-choice="al6061"]').count()!==0)
+    throw Error('SLA catalog does not contain the right resin materials');
+  await overlay.locator('[data-material-choice="resin-tough"]').click();
+  const resin=await getValues();
+  if(resin.material!=='resin-tough'||resin.manufacturing!=='sla'||resin.youngMPa!==2100)
+    throw Error('SLA resin selection failed');
+
+  await pickerTrigger.click();
+  await page.keyboard.press('Escape');
+  if(await overlay.isVisible())throw Error('Escape did not close material overlay');
+  await pickerTrigger.click();
+  await page.locator('.materialPickerBackdrop').click({position:{x:10,y:10}});
+  if(await overlay.isVisible())throw Error('Outside click did not dismiss picker');
+
+  await pickerTrigger.click();
+  await overlay.locator('[data-manufacturing="fdm"]').click();
+  await overlay.locator('[data-material-choice="petg"]').click();
   const petg=await getValues();
-  if(petg.material!=='petg'||petg.youngMPa!==1900||
+  if(petg.material!=='petg'||petg.manufacturing!=='fdm'||petg.youngMPa!==1900||
      petg.density!==1.27||petg.stressLimit!==10||petg.stiffFactor!==0.65)
-    throw Error('Restoring PETG did not restore its baseline values');
+    throw Error('Restoring PETG did not restore original FDM defaults');
+  if(!(await page.locator('#materialPresetNote').isVisible()))
+    throw Error('Material warning should remain visible outside tooltips');
   await page.locator('#sectionsGroup').evaluate(el=>el.open=true);
   if(!(await page.locator('#l1W').isVisible()))throw Error('Cross section fields missing');
   await auditActiveFieldRows();
