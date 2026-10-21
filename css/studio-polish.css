@@ -1197,3 +1197,26 @@ body.fileHubOpen{overflow:hidden;}
   display:block;height:100%;border-radius:5px;background:#4494bd;
 }
 .fileHubUsageBar.is-over-limit{background:#c16a54;}
+
+/* Audit sections show readable explanations first; raw logs are visually
+   secondary and available only through a nested disclosure. */
+.fileHubAuditDetails > h3,
+.fileHubAuditDetails > h4 {margin:20px 14px 10px;}
+.fileHubAuditDetails > .fileHubReportTableScroll,
+.fileHubAuditDetails > .fileHubEquation,
+.fileHubAuditDetails > blockquote {margin:12px 14px 17px;}
+.fileHubAuditDetails > ul {margin:10px 14px 14px;padding-left:23px;}
+.fileHubAuditDetails > .fileHubAuditDetails {
+  margin:20px 14px 14px;
+  border-color:#dce5ec;
+  background:#f9fbfd;
+}
+.fileHubAuditDetails > .fileHubAuditDetails > summary {
+  background:#f4f7fa;
+  color:#647b8c;
+  font-size:10px;
+  font-weight:650;
+}
+.fileHubAuditDetails > .fileHubAuditDetails[open] > summary {
+  color:#456880;
+}
