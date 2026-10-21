@@ -242,6 +242,26 @@ function renderSvg() {
   }
   // Active servo travel arcs, drawn around fixed motor pivots.
   if (state.showServoArcs && lastServoMap) {
+    if (state.useJointLimits) {
+      // Outer amber arcs and radial ticks mark the physical stop boundaries.
+      out += svgArc(p.A, 42, state.leftMinAngle,
+        hardStopSweep(state.leftMinAngle, state.leftMaxAngle), '#eaa453');
+      out += svgArc(p.B, 42, state.rightMinAngle,
+        hardStopSweep(state.rightMinAngle, state.rightMaxAngle), '#eaa453');
+      for (const [pivot, min, max] of [
+        [p.A, state.leftMinAngle, state.leftMaxAngle],
+        [p.B, state.rightMinAngle, state.rightMaxAngle]
+      ]) {
+        for (const angle of [min, max]) {
+          const t = angle * RAD;
+          out += svgLine(
+            vec(pivot.x + 34 * Math.cos(t), pivot.y + 34 * Math.sin(t)),
+            vec(pivot.x + 49 * Math.cos(t), pivot.y + 49 * Math.sin(t)),
+            '#ffc47a', 2.5, 'pointer-events="none"'
+          );
+        }
+      }
+    }
     if (lastServoMap.leftWindow)
       out += svgArc(p.A, 28, lastServoMap.leftWindow.start, lastServoMap.usable, '#62d5e0');
     if (lastServoMap.rightWindow)
