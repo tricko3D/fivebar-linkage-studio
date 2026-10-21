@@ -20,7 +20,7 @@ I started building a chess robot using a five-bar linkage and wanted a way to ex
 
 ### Dimensioned CAD drawing
 
-Use **Display → Show CAD dimensions** to annotate the live board drawing with motor spacing, all four links, and the distance from motor mounting midpoint **M** to the nearest **outer board edge midpoint** (not the board centre). The Files & Export **CAD drawing** SVG provides a clean print-friendly orthographic plan including the playing-area dimensions, overall board dimensions, and a L1/L2/R1/R2 width × height cross-section schedule with wall thickness.
+Use **Display → Show CAD dimensions** to annotate the live board drawing with motor spacing, all four links, and the distance from motor mounting midpoint **M** to the nearest **outer board edge midpoint** (not the board centre). The Files & Export **CAD drawing** SVG provides a clean print-friendly orthographic plan including the playing-area dimensions, overall board dimensions, and a L1/L2/R1/R2 width × height cross-section schedule with wall thickness. Dimension arrows use small symmetric drafting arrowheads, the diagonal link lengths are placed outside the mechanism, and callouts are shifted away from joints. The outer-board height and playing-area height use separate offset lines to reduce collisions.
 
 ### Deterministic configuration permalinks
 
@@ -29,13 +29,13 @@ Use **Display → Show CAD dimensions** to annotate the live board drawing with 
 - **Studio:** `https://tricko3d.github.io/fivebar-linkage-studio/#c=...`
 - **Standalone report:** `https://tricko3d.github.io/fivebar-linkage-studio/r/#c=...`
 
-Links encode only the non-default configuration parameters as sorted, versioned, URL-safe JSON bytes (Base64URL, no server). The same complete configuration produces the same link independent of key order. Visiting a shared studio URL loads the encoded settings **before** any locally saved settings. Editing the settings clears the shared snapshot from the address bar to avoid stale links. The `/r/` page reconstructs the state without a backend and offers the formatted math report, copy/save Markdown, and a link back to the exact studio configuration.
+Links encode only the non-default configuration parameters as sorted, versioned, URL-safe JSON bytes (Base64URL, no server). The same complete configuration produces the same link independent of key order. Visiting a shared studio URL loads the encoded settings **before** any locally saved settings. Editing the settings clears the shared snapshot from the address bar to avoid stale links. The `/r/` page reconstructs the state without a backend and offers the formatted math report, **an embedded dimensioned CAD drawing with full-size view and SVG save**, copy/save Markdown, and a link back to the exact studio configuration.
 
 A URL contains all shared settings, including any custom text field values. Share it only if those settings are suitable for public disclosure. Invalid/unsupported payloads display a visible error rather than silently loading an unrelated local setup.
 
 ### Files & Export
 
-Use **Files & Export** in the header. The dialog stays a consistent size while you switch among these file views:
+Use **Files & Export** in the header. It opens on **Share links**, the first tab, and stays a consistent size while you switch among these file views:
 
 - **Configuration (JSON):** Inspect, copy, or save current settings. Select **Import / paste** to paste JSON and apply it, or choose **Load JSON file**. Loading and pasting use the same validation and migration path.
 - **SolidWorks variables (TXT):** Preview, copy, or save Tools → Equations compatible variable declarations.
