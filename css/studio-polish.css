@@ -964,3 +964,6 @@ body.materialPickerOpen{overflow:hidden;}
  .materialPickerChoice{padding:8px;}
  .materialPickerChoiceNote{font-size:9px;}
 }
+
+/* Keep the internal native <select> out of the narrow configuration rail. */
+#material[hidden]{display:none!important;}
