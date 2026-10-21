@@ -275,16 +275,30 @@
                 Enforce physical joint limits</label>
               <div class="fieldrow">
                 <div class="field"><label for="leftMinAngle">Left M₁ minimum · °</label>
-                  <input id="leftMinAngle" data-key="leftMinAngle" type="number" min="0" max="360" step="1" /></div>
+                  <div class="jointStopInput"><input id="leftMinAngle" data-key="leftMinAngle" type="number" min="0" max="360" step="0.1" />
+                    <button class="jointStopSet" type="button" data-joint-stop="leftMinAngle"
+                      aria-label="Set left motor minimum stop to its current angle"
+                      title="Capture current M₁ angle as minimum stop"><i data-lucide="crosshair" aria-hidden="true"></i><span>Set</span></button></div></div>
                 <div class="field"><label for="leftMaxAngle">Left M₁ maximum · °</label>
-                  <input id="leftMaxAngle" data-key="leftMaxAngle" type="number" min="0" max="360" step="1" /></div>
+                  <div class="jointStopInput"><input id="leftMaxAngle" data-key="leftMaxAngle" type="number" min="0" max="360" step="0.1" />
+                    <button class="jointStopSet" type="button" data-joint-stop="leftMaxAngle"
+                      aria-label="Set left motor maximum stop to its current angle"
+                      title="Capture current M₁ angle as maximum stop"><i data-lucide="crosshair" aria-hidden="true"></i><span>Set</span></button></div></div>
               </div>
               <div class="fieldrow">
                 <div class="field"><label for="rightMinAngle">Right M₂ minimum · °</label>
-                  <input id="rightMinAngle" data-key="rightMinAngle" type="number" min="0" max="360" step="1" /></div>
+                  <div class="jointStopInput"><input id="rightMinAngle" data-key="rightMinAngle" type="number" min="0" max="360" step="0.1" />
+                    <button class="jointStopSet" type="button" data-joint-stop="rightMinAngle"
+                      aria-label="Set right motor minimum stop to its current angle"
+                      title="Capture current M₂ angle as minimum stop"><i data-lucide="crosshair" aria-hidden="true"></i><span>Set</span></button></div></div>
                 <div class="field"><label for="rightMaxAngle">Right M₂ maximum · °</label>
-                  <input id="rightMaxAngle" data-key="rightMaxAngle" type="number" min="0" max="360" step="1" /></div>
+                  <div class="jointStopInput"><input id="rightMaxAngle" data-key="rightMaxAngle" type="number" min="0" max="360" step="0.1" />
+                    <button class="jointStopSet" type="button" data-joint-stop="rightMaxAngle"
+                      aria-label="Set right motor maximum stop to its current angle"
+                      title="Capture current M₂ angle as maximum stop"><i data-lucide="crosshair" aria-hidden="true"></i><span>Set</span></button></div></div>
               </div>
+              <div id="jointStopSetStatus" class="jointStopSetStatus" role="status" aria-live="polite"></div>
+              <p class="hint">Position the gripper, then press <strong>Set</strong> beside a minimum or maximum angle to capture that motor's current position.</p>
               <p class="hint">Joint angles: 0° points right (+X), 90° points down (+Y).
                 Minimum above maximum wraps across 0° (e.g. 300° → 60°).
                 These are simulated limits at the output joints, not physical safety protection.</p>
