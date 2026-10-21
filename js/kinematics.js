@@ -39,8 +39,10 @@ function hardStopSweep(min, max) {
 }
 function jointWithinStops(angle, min, max) {
   const span = hardStopSweep(min, max);
-  return span >= 359.999 ||
-    ((angle - min) % 360 + 360) % 360 <= span + 1e-6;
+  if (span >= 359.999) return true;
+  // UI hard-stop angles are stored to 0.1°. Allow half that rounding step.
+  const offset = ((angle - min) % 360 + 360) % 360;
+  return offset <= span + 0.051 || offset >= 360 - 0.051;
 }
 function jointStopsPass(a, b, s = state) {
   return !s.useJointLimits || (
@@ -48,6 +50,37 @@ function jointStopsPass(a, b, s = state) {
     jointWithinStops(b, s.rightMinAngle, s.rightMaxAngle)
   );
 }
+// Constrain manual XY movement to the FIRST reachable hard-stop boundary.
+// Sampling the intervening path also prevents dragging across an invalid
+// region and jumping to a separate valid area in one large pointer event.
+// With limits disabled, preserve the studio's unrestricted drag behavior.
+function constrainedTarget(from, desired, s = state) {
+  if (!s.useJointLimits) return desired;
+  if (!Number.isFinite(desired.x) || !Number.isFinite(desired.y)) return from;
+  // A loaded configuration may start outside new stops. Let the user enter
+  // an allowed pose, but don't allow another out-of-range placement.
+  if (!calc(from, s).valid) return calc(desired, s).valid ? desired : from;
+  const direction = sub(desired, from);
+  const length = Math.hypot(direction.x, direction.y);
+  if (length < 1e-9) return from;
+  // Check the path, not only the endpoint: 3mm spacing resolves narrow
+  // boundaries without requiring a heavyweight path planner on each move.
+  const steps = Math.min(768, Math.max(1, Math.ceil(length / 3)));
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps, point = add(from, mul(direction, t));
+    if (calc(point, s).valid) continue;
+    // Bisect the first invalid segment, stopping on the valid side.
+    let low = (i - 1) / steps, high = t;
+    for (let n = 0; n < 22; n++) {
+      const mid = (low + high) / 2;
+      if (calc(add(from, mul(direction, mid)), s).valid) low = mid;
+      else high = mid;
+    }
+    return add(from, mul(direction, low));
+  }
+  return desired;
+}
+
 function calc(G, s = state) {
   const { A, B, M } = pivots(s),
     signL = s.branch[0] === '+' ? 1 : -1,
