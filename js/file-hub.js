@@ -2,7 +2,7 @@
 // simulation; both pasted and loaded JSON use the same importConfigurationJson.
 'use strict';
 
-let fileHubKind = 'json';
+let fileHubKind = 'share';
 let fileHubJsonMode = 'export';
 let fileHubMarkdownMode = 'preview';
 let fileHubReturnFocus = null;
@@ -249,10 +249,10 @@ function closeFileHub() {
   fileHubReturnFocus?.focus();
   fileHubReturnFocus=null;
 }
-function openFileHub(kind='json') {
+function openFileHub(kind='share') {
   const root=document.getElementById('fileHubOverlay');
   if (!root.hidden) return;
-  if (!fileHubKinds[kind]) kind='json';
+  if (!fileHubKinds[kind]) kind='share';
   fileHubReturnFocus=document.activeElement;
   fileHubKind=kind;
   fileHubJsonMode='export';
