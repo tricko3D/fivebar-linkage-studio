@@ -127,6 +127,18 @@ try {
       if (typeof prior[key] === typeof defaults[key]) state[key] = prior[key];
   }
 } catch (e) {}
+// A shared URL overrides local settings: it is an immutable snapshot.
+try {
+  const linked=shareCurrentFromUrl();
+  if(linked) Object.assign(state,linked);
+} catch(error) {
+  // Do not silently substitute local settings when a shared link is invalid.
+  const warning=document.createElement('aside');
+  warning.className='shareUrlError';
+  warning.setAttribute('role','alert');
+  warning.textContent='Could not open shared configuration: '+error.message;
+  document.body.prepend(warning);
+}
 state.outerW = Math.max(state.boardW, state.outerW);
 state.outerH = Math.max(state.boardH, state.outerH);
 // Infer a manufacturing method for legacy settings saved before the picker existed.
