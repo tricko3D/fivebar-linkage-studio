@@ -274,47 +274,68 @@ const fs = require('node:fs');
   await child.goto(studioLink,{waitUntil:'load',timeout:30000});
   if(await child.locator('#boardW').inputValue()!=='255')
     throw Error('Shared URL did not restore board dimensions');
+  if(!(await child.url()).includes('#c='))
+    throw Error('Initial studio URL must always contain the current config');
+  const originalUrl=child.url();
+  await child.locator('#motorSF').evaluate(input=>{
+    input.value='1.9';
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  if(child.url()===originalUrl ||
+     !(await child.evaluate(()=>shareReadUrl()?.motorSF===1.9)))
+    throw Error('Changing a configuration value must immediately update the URL');
+  await child.locator('#resetButton').click();
+  if(!(await child.evaluate(()=>shareReadUrl()?.motorSF===defaults.motorSF &&
+       shareReadUrl()?.useJointLimits===true &&
+       shareReadUrl()?.leftMinAngle===247.8 &&
+       shareReadUrl()?.leftMaxAngle===31.8)))
+    throw Error('Reset must restore the joint-limited baseline and update the URL');
   await child.close();
   const standalone=await browser.newPage({viewport:{width,height:900}});
   await standalone.goto(reportLink,{waitUntil:'load',timeout:30000});
-  if(!(await standalone.locator('#reportStatus').innerText()).includes('Configuration loaded') ||
+  if(!(await standalone.locator('#reportStatus').innerText()).includes('Report ready') ||
      await standalone.locator('#fileHubMarkdownPreview h2').count()<5)
     throw Error('Standalone /r/ report link failed to render');
   if(!(await standalone.locator('#reportBack').getAttribute('href')).includes('#c='))
     throw Error('Standalone report cannot return to the exact studio snapshot');
-  const cadImg=standalone.locator('#reportCadImage');
-  if(!(await cadImg.getAttribute('src')).startsWith('blob:') ||
-     !(await cadImg.isVisible()))
-    throw Error('Standalone report is missing its CAD plan image');
-  const cadSource=await standalone.evaluate(()=>standaloneCadSvg);
+  if(await standalone.locator('.reportCad').count()!==0)
+    throw Error('CAD drawing must not appear in its own report panel');
+  const inlineCad=standalone.locator('#fileHubMarkdownPreview .fileHubReportDrawing img');
+  if(await inlineCad.count()!==1 ||
+     !(await inlineCad.isVisible()) ||
+     !(await inlineCad.getAttribute('src')).startsWith('data:image/svg+xml'))
+    throw Error('CAD drawing is missing from the report body');
+  const cadSource=await standalone.evaluate(()=>buildCadDrawingSvg(state));
   if(!cadSource.includes('EDGE → M') ||
      !cadSource.includes('MOTOR JOINT ANGLES') ||
-     !cadSource.includes('MIN 0°') ||
+     !cadSource.includes('MIN 247.8°') ||
+     !cadSource.includes('MAX 31.8°') ||
      !cadSource.includes('LINK CROSS SECTIONS'))
-    throw Error('Standalone CAD plan lost datum, min/max angles or section sketches');
-  if((cadSource.match(/class="cadDimension"/g)||[]).length<8)
-    throw Error('CAD dimensions missing from drawing');
-  if(cadSource.includes('stroke-dasharray="4 5"'))
-    throw Error('Duplicated dashed midpoint line was not removed');
-  await standalone.locator('#reportCadToggle').click();
-  if(await standalone.locator('#reportCadBody').isVisible())
-    throw Error('CAD plan did not collapse');
-  await standalone.locator('#reportCadToggle').click();
-  if(!(await standalone.locator('#reportCadBody').isVisible()))
-    throw Error('CAD plan did not reopen');
-  const [drawingDownload]=await Promise.all([
-    standalone.waitForEvent('download'),standalone.locator('#reportCadSave').click()
-  ]);
-  if(!drawingDownload.suggestedFilename().endsWith('cad.svg'))
-    throw Error('Standalone CAD SVG download not offered');
+    throw Error('Inline CAD drawing does not include the current mechanical limits');
+  const docsCad=await standalone.evaluate(async()=>{
+    const response=await fetch('../screenshots/default-cad.svg');
+    return response.ok?await response.text():null;
+  });
+  if(!docsCad||!docsCad.includes('MIN 247.8°'))
+    throw Error('README drawing does not use the default joint-limited preset');
+  // Switch to source first: Print must restore the formatted report and open
+  // EVERY nested disclosure, including raw intermediate calculations.
+  await standalone.locator('#reportMode').click();
+  await standalone.evaluate(()=>{window.__printInvocations=0;
+    window.print=()=>{window.__printInvocations++;};
+  });
+  await standalone.locator('#reportPrint').click();
+  const expanded=await standalone.locator('#fileHubMarkdownPreview details[open]').count();
+  if(expanded!==22 ||
+     !(await standalone.locator('#fileHubMarkdownPreview').isVisible()) ||
+     !(await standalone.locator('#reportMarkdownSource').isHidden()) ||
+     !(await standalone.evaluate(()=>window.__printInvocations===1)))
+    throw Error('Print must expand all 22 sections and invoke the browser print dialog');
   const [standaloneZip]=await Promise.all([
     standalone.waitForEvent('download'),standalone.locator('#reportZip').click()
   ]);
   if(!standaloneZip.suggestedFilename().endsWith('.zip'))
     throw Error('Standalone report ZIP download missing');
-  if(await standalone.locator('.reportMeta').count() ||
-     await standalone.locator('.reportCadHeader').count())
-    throw Error('Redundant report or CAD header returned');
   await standalone.close();
 
   await page.locator('[data-file-kind="json"]').click();
