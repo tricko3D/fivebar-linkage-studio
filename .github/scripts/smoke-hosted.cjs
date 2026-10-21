@@ -93,8 +93,10 @@ const fs = require('node:fs');
   await page.locator('#fileMenuButton').click();
   if(!(await page.locator('#fileHubOverlay').isVisible()))
     throw Error('File workspace did not open');
-  if(await page.locator('[data-file-kind]').count()!==4)
-    throw Error('Expected JSON, SolidWorks, Markdown and SVG views');
+  if(await page.locator('[data-file-kind]').count()!==5)
+    throw Error('Expected JSON, SolidWorks, Markdown, CAD SVG and Share views');
+  if(await page.locator('.fileHubRepositoryLinks a').count()!==2)
+    throw Error('GitHub source and MIT license footer links missing');
   const hub=page.locator('#fileHubOverlay');
   if(!(await page.locator('#fileHubText').inputValue()).includes('"boardW": 255'))
     throw Error('JSON preview lacks current board settings');
@@ -207,10 +209,53 @@ const fs = require('node:fs');
   if(!(await page.locator('#fileHubSvgPreview').isVisible()) ||
      !(await page.locator('#fileHubSvgImage').getAttribute('src')).startsWith('blob:'))
     throw Error('SVG image preview is missing');
+  const cadSvg=await page.evaluate(()=>buildCadDrawingSvg());
+  if(!cadSvg.includes('EDGE MID')||!cadSvg.includes('LINK CROSS SECTIONS')||
+     !cadSvg.includes('L1  200 mm')||!cadSvg.includes('R2  220 mm'))
+    throw Error('CAD drawing dimensions missing');
+  const datum=await page.evaluate(()=>cadEdgeReference());
+  if(datum.side!=='BOTTOM'||Math.abs(datum.distance-102.5)>0.001)
+    throw Error('Motor mounting distance must reference outer board edge midpoint');
   const [svg]=await Promise.all([page.waitForEvent('download'),page.locator('#fileHubSave').click()]);
-  if(!svg.suggestedFilename().endsWith('.svg'))throw Error('Canvas SVG missing');
+  if(!svg.suggestedFilename().includes('cad.svg'))throw Error('CAD SVG filename incorrect');
+
+  // Share view, link stability, independent studio/report loading.
+  await page.locator('[data-file-kind="share"]').click();
+  const studioLink=await page.locator('#shareStudioUrl').inputValue();
+  const reportLink=await page.locator('#shareReportUrl').inputValue();
+  if(!studioLink.includes('/#c=')||!reportLink.includes('/r/#c='))
+    throw Error('Deterministic share routes missing');
+  const stable=await page.evaluate(()=>shareLink('studio')===shareLink('studio'));
+  if(!stable)throw Error('Share link generation is nondeterministic');
+  const child=await browser.newPage({viewport:{width,height:900}});
+  await child.goto(studioLink,{waitUntil:'load',timeout:30000});
+  if(await child.locator('#boardW').inputValue()!=='255')
+    throw Error('Shared URL did not restore board dimensions');
+  await child.close();
+  const standalone=await browser.newPage({viewport:{width,height:900}});
+  await standalone.goto(reportLink,{waitUntil:'load',timeout:30000});
+  if(!(await standalone.locator('#reportStatus').innerText()).includes('Configuration loaded') ||
+     await standalone.locator('#fileHubMarkdownPreview h2').count()<5)
+    throw Error('Standalone /r/ report link failed to render');
+  if(!(await standalone.locator('#reportBack').getAttribute('href')).includes('#c='))
+    throw Error('Standalone report cannot return to the exact studio snapshot');
+  await standalone.close();
+
+  await page.locator('[data-file-kind="json"]').click();
+  await page.locator('[data-json-mode="import"]').click();
+  await page.locator('#fileHubText').fill(reportLink);
+  await page.locator('#fileHubApply').click();
+  if(!(await page.locator('#fileHubStatus').innerText()).includes('Imported'))
+    throw Error('Pasting a report URL did not import the configuration');
   await page.locator('#fileHubClose').click();
   if(await hub.isVisible())throw Error('File workspace failed to close');
+  if(await page.locator('link[rel="icon"][href="favicon.svg"]').count()!==1)
+    throw Error('Custom SVG favicon not linked');
+  await page.locator('.topSettingsTabs [data-setting="display"]').click();
+  await page.locator('#showDimensions').check();
+  if(await page.locator('#cadDimensions .cadDimension').count()<6)
+    throw Error('Live SVG does not show CAD dimension arrows');
+  await page.locator('#showDimensions').uncheck();
   if(await page.locator('#printButton').count())throw Error('PDF export should be gone');
   if(await page.locator('.appHeader svg.lucide').count()<5)
     throw Error('Header icons did not load');
