@@ -91,8 +91,10 @@ svg.addEventListener('pointermove', (e) => {
     const P = add(dragging.initialJoint, sub(q, dragging.start));
     if (resizeToJoint(P, dragging)) change(true);
   } else {
-    state.targetX = q.x;
-    state.targetY = q.y;
+    // Never push the gripper past an enabled output-joint hard stop.
+    const bounded = constrainedTarget(vec(state.targetX, state.targetY), q);
+    state.targetX = bounded.x;
+    state.targetY = bounded.y;
     change(false);
   }
   e.preventDefault();
@@ -107,8 +109,9 @@ for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture'])
     if (boardClick && !resizeMode) {
       const q = localPoint(e);
       if (q.x >= 0 && q.x <= state.boardW && q.y >= 0 && q.y <= state.boardH) {
-        state.targetX = q.x;
-        state.targetY = q.y;
+        const bounded = constrainedTarget(vec(state.targetX, state.targetY), q);
+        state.targetX = bounded.x;
+        state.targetY = bounded.y;
         change(false);
         return;
       }
