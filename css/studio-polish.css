@@ -828,3 +828,9 @@
   grid-column: 1 / -1;
   min-width: 0;
 }
+
+/* Do not leave a lone input stranded in half of a two-column grid. */
+.config .fieldrow > .field:only-child {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
