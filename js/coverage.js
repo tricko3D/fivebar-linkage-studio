@@ -86,8 +86,16 @@ function servoPass(sol, data) {
     windowContains(sol.angleR, data.rightWindow.start, data.usable)
   );
 }
+// The preset's travel describes motor-shaft travel, not the driven joint.
+// For continuous-rotation motors/steppers, 360° is the library's "unbounded
+// rotation" sentinel; positional servos have travel below 360°.
+function usableJointTravel(s = state) {
+  if (s.servoTravel >= 359.999) return 360;
+  return Math.max(0, Math.min(360,
+    (s.servoTravel - 2 * s.servoMargin) / Math.max(1, s.ratio)));
+}
 function servoAnalysis(cov, s = state) {
-  const usable = Math.max(0, Math.min(360, s.servoTravel - 2 * s.servoMargin));
+  const usable = usableJointTravel(s);
   const leftArc = minimumArc(cov.angles.map((p) => p.L)),
     rightArc = minimumArc(cov.angles.map((p) => p.R));
   const leftWindow = bestServoWindow(
@@ -138,14 +146,18 @@ function angleFormat(n) {
 function servoReadout(sol) {
   const a = lastServoMap;
   if (!a) return;
-  $('servoUsable').textContent = `${f(a.usable)}° of ${f(state.servoTravel)}° rated`;
+  $('servoUsable').textContent = state.servoTravel >= 359.999
+    ? 'Continuous-angle model (verify physical limits)'
+    : `${f(a.usable)}° at output from ${f(state.servoTravel)}° motor, ${f(state.ratio)}:1 drive`;
   $('servoLeftSweep').textContent = a.leftArc
     ? `${a.leftArc.span.toFixed(1)}°`
     : 'no reachable points';
   $('servoRightSweep').textContent = a.rightArc
     ? `${a.rightArc.span.toFixed(1)}°`
     : 'no reachable points';
-  $('servoMaxDisp').textContent = `${f(a.usable)}° (${f(state.servoMargin)}° reserve each end)`;
+  $('servoMaxDisp').textContent = state.servoTravel >= 359.999
+    ? 'Unrestricted model · check motor hardware'
+    : `${f(a.usable)}° output (${f(state.servoMargin)}° motor margin/side, ${f(state.ratio)}:1)`;
   $('servoLArc').textContent = a.leftArc
     ? `${angleFormat(a.leftArc.start)} → ${angleFormat(a.leftArc.start + a.leftArc.span)} (${a.leftArc.span.toFixed(1)}°)`
     : '—';

@@ -573,7 +573,7 @@
               ><input id="accel" data-key="accel" type="number" min="0" max="10000" step="50" />
             </div>
             <div class="field">
-              <label for="dragN">XY resistance · N</label
+              <label for="dragN">Assumed XY drag · N</label
               ><input id="dragN" data-key="dragN" type="number" min="0" max="50" step="0.1" />
             </div>
           </div>
@@ -639,13 +639,13 @@
             speed to motor RPM</label
           >
           <p class="hint">
-            Gear ratio is motor revolutions per one output revolution (1:1 = direct, 3:1 = three
-            motor turns per output turn). RPM is an assumed usable motor speed, not a torque-speed
-            curve. The path animation checks both motor RPM and output torque under the simplified
-            dynamics assumptions.
+            Gear ratio is motor revolutions per output revolution (3:1 = three motor turns per
+            output turn). Finite-travel servos also lose output angle: (motor travel − 2 × motor
+            end margin) / gear ratio. RPM is an assumed speed, not a torque-speed curve.
+            The path animation checks estimated motor RPM and torque, but not physical collisions.
           </p>
           <div class="field">
-            <label for="bearingFrictionNm">Joint friction allowance · N·m per motor</label
+            <label for="bearingFrictionNm">Assumed joint friction · N·m / motor</label
             ><input
               id="bearingFrictionNm"
               data-key="bearingFrictionNm"
@@ -656,11 +656,11 @@
             />
           </div>
           <p class="hint">
-            Motor torque must be the
-            <strong>available running torque at your intended speed</strong>, not the motor's
-            holding torque. A 1:1 ratio means direct drive. XY torque uses a conservative
-            acceleration-direction estimate, an approximate fraction of link inertia and an assumed
-            drag force, not a full dynamics model.
+            <strong>Calibration needed:</strong> The 0.3 N drag and 0.015 N·m joint friction
+            are unmeasured defaults, not calculated from bearings. The motor presets use illustrative
+            running torque. Do not lower these inputs merely to make the map green.
+            XY load uses worst-case planar force direction and an approximate link-mass allowance;
+            it does not model rotor inertia, motor speed–torque curves or all link dynamics.
           </p>
           <p class="hint">
             Structural model approximates the four links as two parallel idealized cantilever
@@ -699,13 +699,13 @@
             <i data-lucide="layers" aria-hidden="true"></i>
             <select id="heatMode" data-key="heatMode" aria-label="Heatmap display">
               <option value="coverage">Geometric reach</option>
-              <option value="motor">Motor torque reserve</option>
+              <option value="motor">Motor torque (assumed)</option>
               <option value="payload">Vertical load capacity</option>
-              <option value="combined">Combined screening</option>
+              <option value="combined">Combined (assumed)</option>
               <option value="singularity">Singularity proximity</option>
               <option value="servo">Servo travel</option>
             </select>
-            <button type="button" class="infoTrigger" aria-label="Heatmap model explanation" data-tip="Mechanical colours are evaluated at square centres. Vertical load estimates check sag and stress, not holding torque. The motor overlay estimates XY motion demand. These are comparative estimates, not safe lifting ratings."><i data-lucide="info"></i></button>
+            <button type="button" class="infoTrigger" aria-label="Heatmap model explanation" data-tip="Green means the selected calculation passes with the entered, unverified assumptions. Motor and combined maps include finite servo travel after gearbox reduction and check square centres only. Red means either travel, singularity or torque fails. A full green board is NOT physical verification."><i data-lucide="info"></i></button>
           </div>
           <svg
             id="scene"
@@ -835,7 +835,7 @@
         </div>
 <nav class="navtabs resultTabs" aria-label="Analysis categories"><button type="button" class="navtab is-active" data-insight="help" aria-selected="true"><i data-lucide="book-open"></i>Guide</button><button type="button" class="navtab " data-insight="position" aria-selected="false"><i data-lucide="crosshair"></i>Position</button><button type="button" class="navtab " data-insight="forces" aria-selected="false"><i data-lucide="weight"></i>Loads</button><button type="button" class="navtab " data-insight="servo" aria-selected="false"><i data-lucide="gauge"></i>Motors</button><button type="button" class="navtab " data-insight="corners" aria-selected="false"><i data-lucide="square-dashed"></i>Corners</button></nav>
         <div class="panel" id="servoInspector">
-          <div class="sectheader">MG90S / motor travel</div>
+          <div class="sectheader">Motor travel · output joints</div>
           <div class="mechbadge" id="servoStatus">Calculating</div>
           <div class="datarow sm"><span>Usable rotation</span><b id="servoMaxDisp">--</b></div>
           <div class="datarow sm"><span>Left motor required arc</span><b id="servoLArc">--</b></div>
@@ -858,9 +858,11 @@
             <span>At current gripper position</span><b id="servoTarget">--</b>
           </div>
           <p class="hint">
-            Angles measured counterclockwise from world +X, not PWM pulses or manufacturer-specific
-            horn zero. Windows auto-position for each motor; motors are assumed independently
-            orientable on assembly. Coverage is sampled, not continuous-path certification.
+            Angles use the drawing's Y-down convention (+ rotation looks clockwise).
+            For positional servos, the gear ratio reduces available joint travel.
+            Windows assume independently adjustable mounting zero. 360° motor configurations
+            represent continuous-angle motors, not a one-turn physical hard stop.
+            This is sampled coverage, not collision or path certification.
           </p>
         </div>
         <div class="panel" id="mechInspector">
@@ -874,6 +876,10 @@
           <div class="datarow sm">
             <span>Torque allowance / motor</span><b id="mechTorqueAllow">--</b>
           </div>
+          <div class="datarow sm"><span>Demand breakdown · limiting side</span><b id="mechTorqueBudget">--</b></div>
+          <div class="datarow sm"><span>Motor torque centres passing</span><b id="mechBoardMotorPass">--</b></div>
+          <div class="datarow sm"><span>Worst centre motor demand</span><b id="mechWorstMotor">--</b></div>
+          <div class="datarow sm"><span>Motor required for 64 centres</span><b id="mechRequiredMotor">--</b></div>
           <div class="datarow sm">
             <span>Vertical-only payload estimate</span><b id="mechMaxPayload">--</b>
           </div>
@@ -894,10 +900,11 @@
           </div>
           <p class="hint">
             Vertical-only payload assumes hanging weight, and uses a simplified beam proxy that is
-            currently the same at all XY positions. The XY motor proxy is about
-            acceleration/resistance and assumes a worst-case force direction, so exceeding it does
-            not mean the tool cannot lift. These are NOT validated working loads. * “≥2,000 g” means
-            the model reached its search cap.
+            currently the same at all XY positions. The XY motor estimate is a worst-direction
+            bound using assumed drag/friction and illustrative motor torque. The required motor
+            value is a screening target, not a certified motor specification. Torque counts do not
+            include servo travel; motor heatmap colours do. The Z lift is NOT modeled.
+            * “≥2,000 g” means the model reached its search cap.
           </p>
         </div>
         <div class="panel">

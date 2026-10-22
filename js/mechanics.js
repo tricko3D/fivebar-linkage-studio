@@ -91,11 +91,26 @@ function getGradient(sol, s = state) {
   if (!Number.isFinite(JL) || !Number.isFinite(JR) || JL > 100 || JR > 100) return null;
   return [JL, JR];
 }
+// Break the screening load into its *assumed* contributions so an over-limit
+// condition never masquerades as a measured servo failure.
+function torqueBreakdown(payloadG, base, gradient, s = state) {
+  if (!gradient) return null;
+  const movingMass = (s.headG + payloadG) / 1000 + base.linkMass * 0.5;
+  const accelerationForce = movingMass * s.accel / 1000;
+  const dragForce = s.dragN;
+  const side = arm => ({
+    acceleration: accelerationForce * arm,
+    drag: dragForce * arm,
+    friction: s.bearingFrictionNm,
+    total: (accelerationForce + dragForce) * arm + s.bearingFrictionNm
+  });
+  return { movingMass, accelerationForce, dragForce,
+    L: side(gradient[0]), R: side(gradient[1]) };
+}
 function torqueAt(payloadG, base, gradient, s = state) {
-  if (!gradient) return { L: NaN, R: NaN };
-  const effectiveMoving = (s.headG + payloadG) / 1000 + base.linkMass * 0.5;
-  const F = s.dragN + (effectiveMoving * s.accel) / 1000;
-  return { L: F * gradient[0] + s.bearingFrictionNm, R: F * gradient[1] + s.bearingFrictionNm };
+  const components = torqueBreakdown(payloadG, base, gradient, s);
+  return components ? { L: components.L.total, R: components.R.total } :
+    { L: NaN, R: NaN };
 }
 function numericLimit(predicate) {
   if (!predicate(0)) return 0;
@@ -177,6 +192,10 @@ function mechColor(info, s = state) {
     return ratio < 1 ? '#e16e7a' : ratio < 1.5 ? '#f0b660' : '#48d3a5';
   }
   if (!info.mech || !info.mech.gradient || info.sol.margin < 0.14) return '#e16e7a';
+  // A green motor or combined cell must also be physically reachable within
+  // positional-servo travel after gearbox reduction.
+  if (['motor', 'combined'].includes(s.heatMode) &&
+      (!lastServoMap || !servoPass(info.sol, lastServoMap))) return '#e16e7a';
   if (s.heatMode === 'motor') {
     const use = Math.max(info.mech.torque.L, info.mech.torque.R) / info.base.allowTorque;
     return use > 1 ? '#e16e7a' : use > 0.7 ? '#f0b660' : '#48d3a5';
@@ -193,14 +212,22 @@ function mechanicalCoverage() {
   let worst = capPayloadG,
     critical = '',
     singularCount = 0,
-    motorOver = 0;
+    motorOver = 0,
+    maxTorque = 0,
+    maxTorqueSquare = '';
   for (let row = 0; row < 8; row++)
     for (let col = 0; col < 8; col++) {
       const sol = calc(squarePos(col, row));
       const mech = sol.valid ? mechanicalAt(sol, base) : null;
       if (sol.valid && sol.margin < 0.14) singularCount++;
-      if (mech && mech.gradient && Math.max(mech.torque.L, mech.torque.R) > base.allowTorque)
-        motorOver++;
+      if (mech && mech.gradient) {
+        const demand = Math.max(mech.torque.L, mech.torque.R);
+        if (demand > base.allowTorque) motorOver++;
+        if (demand > maxTorque) {
+          maxTorque = demand;
+          maxTorqueSquare = squareName(col, row);
+        }
+      }
       if (sol.valid) {
         let score = mech ? mech.finalLimit : 0;
         if (score <= worst) {
@@ -210,7 +237,11 @@ function mechanicalCoverage() {
       }
       cells.push({ sol, mech, base });
     }
-  return { base, cells, worst, critical, singularCount, motorOver };
+  const requiredMotorNm = base.allowTorque > 0
+    ? maxTorque * state.motorSF / (state.ratio * state.efficiency / 100)
+    : NaN;
+  return { base, cells, worst, critical, singularCount, motorOver,
+    maxTorque, maxTorqueSquare, requiredMotorNm };
 }
 function updateMechanicalInspector(sol) {
   if (!state.showMechanics) {
@@ -231,6 +262,19 @@ function updateMechanicalInspector(sol) {
     ? `${result.torque.R.toFixed(3)} N·m`
     : 'not reliably estimated';
   $('mechTorqueAllow').textContent = `${b.allowTorque.toFixed(3)} N·m (derated)`;
+  const demand = torqueBreakdown(state.payloadG, b, result.gradient);
+  const limitingArm = demand && demand.L.total >= demand.R.total ? demand?.L : demand?.R;
+  $('mechTorqueBudget').textContent = limitingArm
+    ? `drag ${limitingArm.drag.toFixed(3)} + accel ${limitingArm.acceleration.toFixed(3)} + friction ${limitingArm.friction.toFixed(3)} N·m`
+    : 'Not reliably estimated';
+  $('mechBoardMotorPass').textContent =
+    `${64 - lastMechMap.motorOver}/64 under derated torque`;
+  $('mechWorstMotor').textContent =
+    `${lastMechMap.maxTorque.toFixed(3)} N·m @ ${lastMechMap.maxTorqueSquare || 'N/A'}`;
+  $('mechRequiredMotor').textContent =
+    Number.isFinite(lastMechMap.requiredMotorNm)
+      ? `${lastMechMap.requiredMotorNm.toFixed(3)} N·m at motor shaft`
+      : 'Not available';
   $('mechMaxPayload').textContent = sol.valid
     ? formatPayload(result.structuralLimit)
     : 'unreachable';
@@ -254,7 +298,10 @@ function updateMechanicalInspector(sol) {
     status.textContent = 'Vertical bending estimate exceeds configured threshold.';
   } else if (result.torque.L > b.allowTorque || result.torque.R > b.allowTorque) {
     status.className = 'mechbadge warn';
-    status.textContent = 'Vertical load passes the estimate; XY motion torque margin is low.';
+    status.textContent = 'XY motor torque exceeds the assumption-based allowance.';
+  } else if (!lastServoMap || !servoPass(sol, lastServoMap)) {
+    status.className = 'mechbadge warn';
+    status.textContent = 'Motor torque estimate passes here, but servo travel does not.';
   } else {
     status.className = 'mechbadge';
     status.textContent = 'Within simplified screening thresholds, not a safety rating.';

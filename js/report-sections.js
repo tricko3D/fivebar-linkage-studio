@@ -165,7 +165,15 @@ J_R=\frac{\sqrt{b^2+a^2}}{|ad-bc|\,1000}\\
             ['Left M₁',val(grad.JL,'m/rad',4),val(m.torque.L,'N·m',4),val(base.allowTorque,'N·m',4)],
             ['Right M₂',val(grad.JR,'m/rad',4),val(m.torque.R,'N·m',4),val(base.allowTorque,'N·m',4)]
           ]),
-          ...explain(`For each motor the estimate adds the configured ${val(s.bearingFrictionNm,'N·m',4)} bearing friction. It **does not** solve the exact direction of XY force, dynamics, or actual stepper torque-speed behavior.`)
+          ...table(['Contribution (at selected pose)','Left M₁','Right M₂'],(() => {
+            const parts = torqueBreakdown(s.payloadG,base,m.gradient,s);
+            return [
+              ['Assumed XY drag',val(parts.L.drag,'N·m',5),val(parts.R.drag,'N·m',5)],
+              ['Acceleration proxy',val(parts.L.acceleration,'N·m',5),val(parts.R.acceleration,'N·m',5)],
+              ['Assumed bearing friction',val(parts.L.friction,'N·m',5),val(parts.R.friction,'N·m',5)]
+            ];
+          })()),
+          ...explain(`Each motor's estimate adds ${val(s.bearingFrictionNm,'N·m',4)} **assumed** joint friction. Actual force direction, motor speed–torque curves, full link dynamics and physical resistance are not measured by this model.`)
         ] : unavailable(grad?.reason||'Numerical Jacobian unavailable'))
       ];
     },
