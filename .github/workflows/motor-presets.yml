@@ -8,6 +8,7 @@ on:
       - 'js/**'
       - 'css/motor-picker.css'
       - 'index.html'
+      - 'r/**'
       - 'configs/default.json'
 jobs:
   motor-presets:

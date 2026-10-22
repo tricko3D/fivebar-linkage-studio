@@ -105,6 +105,51 @@ const fs = require('node:fs');
   if ((await page.locator('#motorChoiceLabel').innerText()) !== 'Custom values')
     throw Error('Manual edit did not mark preset as custom');
   if (errors.length) throw Error('Page errors: ' + errors.join('; '));
-  console.log('PASS motor presets, default and legacy config, import/export, permalink, local persistence and compact note styling');
+
+  // Regression: stand-alone /r/ report previously crashed with
+  // "motorPresets is not defined" for a shared MG90S configuration.
+  const mg90sReportConfig = {
+    ...initial.defaults,
+    boardW: 182, boardH: 182, outerW: 210, outerH: 210,
+    heatMode: 'motor',
+    l1: 156.6040116480914, r1: 156.6040116480914,
+    l2: 172.26441281290053, r2: 172.26441281290053,
+    l1W: 10, l1H: 10, l2W: 10, l2H: 10,
+    r1W: 10, r1H: 10, r2W: 10, r2H: 10,
+    mountX: 92.90394592285156, mountY: 282.3293151855469,
+    targetX: 79.625, targetY: 11.375,
+    motorPreset: 'mg90s', motorNm: 0.08, motorRPM: 65,
+    servoTravel: 180, ratio: 6, useJointLimits: false,
+    leftMinAngle: 0, leftMaxAngle: 360,
+    rightMinAngle: 0, rightMaxAngle: 360
+  };
+  const sharedMg90sReport = await page.evaluate(
+    input => shareLink('report',input), mg90sReportConfig
+  );
+  const standalone = await browser.newPage({viewport: {width: 1200, height: 900}});
+  const reportErrors = [];
+  standalone.on('pageerror', error => reportErrors.push(error.message));
+  await standalone.goto(sharedMg90sReport, {waitUntil: 'load', timeout: 30000});
+  const reportError = await standalone.locator('#reportError').innerText();
+  const reportStatus = await standalone.locator('#reportStatus').innerText();
+  if (reportErrors.length || reportError ||
+      !reportStatus.includes('Report ready') ||
+      await standalone.locator('#fileHubMarkdownPreview h2').count() < 5)
+    throw Error('Shared MG90S report failed: ' +
+      JSON.stringify({reportStatus,reportError,reportErrors}));
+  const reportState = await standalone.evaluate(() => ({
+    motorPreset:state.motorPreset,motorNm:state.motorNm,motorRPM:state.motorRPM,
+    servoTravel:state.servoTravel,ratio:state.ratio,boardW:state.boardW,boardH:state.boardH
+  }));
+  if (reportState.motorPreset !== 'mg90s' || reportState.motorNm !== 0.08 ||
+      reportState.motorRPM !== 65 || reportState.servoTravel !== 180 ||
+      reportState.ratio !== 6 || reportState.boardW !== 182 || reportState.boardH !== 182)
+    throw Error('Report did not preserve MG90S shared settings: ' + JSON.stringify(reportState));
+  const reportMarkdown = await standalone.locator('#reportMarkdownSource').inputValue();
+  if (!reportMarkdown.includes('TowerPro MG90S') ||
+      !reportMarkdown.includes('0.08') || !reportMarkdown.includes('6:1'))
+    throw Error('Standalone report omitted motor choice or transmission values');
+  await standalone.close();
+  console.log('PASS motor presets, config, persistence, styling and standalone shared MG90S report');
   await browser.close();
 })().catch(error => { console.error(error); process.exit(1); });

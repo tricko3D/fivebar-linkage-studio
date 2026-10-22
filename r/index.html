@@ -37,6 +37,9 @@
   </footer>
   <svg id="scene" hidden aria-hidden="true"></svg>
   <script defer src="../js/state.js"></script>
+  <!-- Reports use the same motor model library as the Studio. It must be loaded
+       before report-sections.js / reports.js reference motorPresets. -->
+  <script defer src="../js/motor-picker.js"></script>
   <script defer src="../js/kinematics.js"></script>
   <script defer src="../js/mechanics.js"></script>
   <script defer src="../js/coverage.js"></script>
