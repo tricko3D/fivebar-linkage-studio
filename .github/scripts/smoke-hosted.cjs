@@ -72,6 +72,12 @@ const fs = require('node:fs');
   await page.locator('#routeReset').click();
   if(await page.locator('#routeScrub').inputValue()!=='0')throw Error('Reset did not rewind timeline');
 
+  // Motion Study deliberately starts collapsed; the transport remains visible.
+  // Expand before testing its optional chart controls.
+  if(await page.locator('#motionStudyContent').isHidden())
+    await page.locator('#motionStudyToggle').click();
+  if(!(await page.locator('#motionStudyContent').isVisible()))
+    throw Error('Motion Study charts failed to expand');
   // Switch to the full overlaid graph, filter specific left/right curves,
   // switch the scale, and scrub the shared playback directly from the plot.
   await page.locator('[data-motion-view="graph"]').click();
