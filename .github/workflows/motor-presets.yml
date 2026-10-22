@@ -1,0 +1,27 @@
+name: Verify motor presets and configuration
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/scripts/motor-preset-smoke.cjs'
+      - '.github/workflows/motor-presets.yml'
+      - 'js/**'
+      - 'css/motor-picker.css'
+      - 'index.html'
+      - 'configs/default.json'
+jobs:
+  motor-presets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Start simulator
+        run: |
+          python3 -m http.server 8765 >/tmp/motor-smoke-server.log 2>&1 &
+          sleep 2
+      - name: Verify motor profiles and config persistence
+        run: node .github/scripts/motor-preset-smoke.cjs
