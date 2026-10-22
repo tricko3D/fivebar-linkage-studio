@@ -150,6 +150,69 @@ const fs = require('node:fs');
       !reportMarkdown.includes('0.08') || !reportMarkdown.includes('6:1'))
     throw Error('Standalone report omitted motor choice or transmission values');
   await standalone.close();
-  console.log('PASS motor presets, config, persistence, styling and standalone shared MG90S report');
+
+  // The 2 g chess-piece / 50 g gripper project configuration must preserve the
+  // failure: do NOT paint a red MG90S motor map green by dropping drag/friction.
+  const lightweight = {...mg90sReportConfig,headG:50,payloadG:2,ratio:1,servoMargin:5};
+  const measured = await page.evaluate(cfg => {
+    state={...cfg};
+    render(true);
+    const cov=sampleCoverage(),servo=servoAnalysis(cov),map=mechanicalCoverage();
+    const target=mechanicalAt(calc(vec(cfg.targetX,cfg.targetY)),map.base);
+    return {geo:cov.okCenters,servo:servo.centers,over:map.motorOver,
+      demand:map.maxTorque,required:map.requiredMotorNm,
+      allowance:map.base.allowTorque,drag:cfg.dragN,friction:cfg.bearingFrictionNm,
+      expectedBudget:torqueBreakdown(cfg.payloadG,map.base,target.gradient)};
+  },lightweight);
+  if (measured.geo!==64 || measured.servo!==64 || measured.over!==64 ||
+      Math.abs(measured.demand-0.15191449)>0.00001 ||
+      Math.abs(measured.required-0.271847)>0.001 ||
+      measured.drag!==0.3 || measured.friction!==0.015 ||
+      Math.abs(measured.expectedBudget.L.drag+measured.expectedBudget.L.acceleration+
+        measured.expectedBudget.L.friction-measured.expectedBudget.L.total)>1e-10)
+    throw Error('MG90S baseline model invalid or misleading: '+JSON.stringify(measured));
+  if (!(await page.locator('#mechWorstMotor').innerText()).includes('0.152') ||
+      !(await page.locator('#mechBoardMotorPass').innerText()).includes('0/64'))
+    throw Error('The board-wide torque diagnostics are missing or stale');
+
+  // A 2:1 reduction INCREASES torque, but halves the positional servo's
+  // available output sweep. It must not falsely mark the whole board reachable.
+  const reduced=await page.evaluate(cfg=>{
+    state={...cfg,ratio:2};
+    return servoAnalysis(sampleCoverage());
+  },lightweight);
+  if (Math.abs(reduced.usable-85)>1e-9 || reduced.full || reduced.centers===64)
+    throw Error('Servo travel not reduced at gearbox output: '+JSON.stringify(reduced));
+
+  // Demonstrate a design that *does* pass the SAME drag, friction and safety
+  // assumptions, by changing the physical actuator and section dimensions.
+  const screenedGreen={...lightweight,motorPreset:'mg996r',motorNm:0.4,motorRPM:38,
+    l1H:16,l2H:16,r1H:16,r2H:16,heatMode:'combined'};
+  const green=await page.evaluate(cfg=>{
+    state={...cfg};
+    render(true);
+    const cov=sampleCoverage(),servo=servoAnalysis(cov),m=mechanicalCoverage();
+    const shades=m.cells.map(cell=>mechColor(cell));
+    const sample=mechanicalAt(calc(squarePos(7,7)),m.base);
+    return {geo:cov.okCenters,servo:servo.centers,over:m.motorOver,
+      max:m.maxTorque,allow:m.base.allowTorque,sag:sample.struct.sag,
+      bad:shades.filter(color=>color!=='#48d3a5').length};
+  },screenedGreen);
+  if (green.geo!==64 || green.servo!==64 || green.over!==0 ||
+      green.max>=green.allow || green.sag>=1 || green.bad!==0)
+    throw Error('Credible screening-pass alternative did not turn fully green: '+JSON.stringify(green));
+
+  // If 180-degree MG90S gets reduction without enough angle, a motor torque
+  // map must still paint a centre red despite otherwise sufficient torque.
+  const ratioLimited=await page.evaluate(cfg=>{
+    state={...cfg,motorPreset:'mg996r',motorNm:0.4,motorRPM:38,ratio:2,heatMode:'motor'};
+    render(true);
+    return {travel:lastServoMap.usable,
+      bad:lastMechMap.cells.filter(cell=>mechColor(cell)!=='#48d3a5').length};
+  },screenedGreen);
+  if (ratioLimited.travel!==85 || ratioLimited.bad===0)
+    throw Error('Motor map falsely green despite blocked joint travel: '+JSON.stringify(ratioLimited));
+
+  console.log('PASS motor presets, configuration, conservative MG90S torque, gearbox servo travel, and realistic passing design');
   await browser.close();
 })().catch(error => { console.error(error); process.exit(1); });
