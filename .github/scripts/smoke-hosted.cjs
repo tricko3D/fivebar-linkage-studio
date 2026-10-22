@@ -51,7 +51,15 @@ const fs = require('node:fs');
   const initialHeight=await route.evaluate(el=>el.getBoundingClientRect().height);
   console.log('Motion monitor '+width+'px height '+Math.round(initialHeight)+'px');
   if(width>=1500&&initialHeight>220)throw Error('Motion monitor still occupies too much vertical space');
-  if(!(await page.locator('#motionTorqueThreshold').isVisible()))throw Error('Torque safety limit missing');
+  // Zero-width threshold markers are visible dashed borders: Playwright's
+  // isVisible() incorrectly treats a width:0 border-only marker as invisible.
+  const torqueMarker=await page.locator('#motionTorqueThreshold').evaluate(el=>({
+    hidden:el.hidden,left:el.style.left,border:getComputedStyle(el).borderLeftWidth,
+    routeReady:typeof routeData!=='undefined'&&!!routeData?.valid
+  }));
+  if(!torqueMarker.routeReady||torqueMarker.hidden||!torqueMarker.left||
+      parseFloat(torqueMarker.border)<1)
+    throw Error('Torque safety limit missing: '+JSON.stringify(torqueMarker));
   await page.locator('#routeScrub').fill('500');
   await page.locator('#routeScrub').dispatchEvent('input');
   if(!(await page.locator('#routeTime').innerText()).includes('s'))throw Error('Playback time readout broken');
