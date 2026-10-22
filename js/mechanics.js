@@ -213,6 +213,7 @@ function mechanicalCoverage() {
     critical = '',
     singularCount = 0,
     motorOver = 0,
+    motorChecked = 0,
     maxTorque = 0,
     maxTorqueSquare = '';
   for (let row = 0; row < 8; row++)
@@ -220,7 +221,8 @@ function mechanicalCoverage() {
       const sol = calc(squarePos(col, row));
       const mech = sol.valid ? mechanicalAt(sol, base) : null;
       if (sol.valid && sol.margin < 0.14) singularCount++;
-      if (mech && mech.gradient) {
+      if (mech && mech.gradient && sol.margin >= 0.14) {
+        motorChecked++;
         const demand = Math.max(mech.torque.L, mech.torque.R);
         if (demand > base.allowTorque) motorOver++;
         if (demand > maxTorque) {
@@ -240,7 +242,7 @@ function mechanicalCoverage() {
   const requiredMotorNm = base.allowTorque > 0
     ? maxTorque * state.motorSF / (state.ratio * state.efficiency / 100)
     : NaN;
-  return { base, cells, worst, critical, singularCount, motorOver,
+  return { base, cells, worst, critical, singularCount, motorChecked, motorOver,
     maxTorque, maxTorqueSquare, requiredMotorNm };
 }
 function updateMechanicalInspector(sol) {
@@ -268,13 +270,14 @@ function updateMechanicalInspector(sol) {
     ? `drag ${limitingArm.drag.toFixed(3)} + accel ${limitingArm.acceleration.toFixed(3)} + friction ${limitingArm.friction.toFixed(3)} N·m`
     : 'Not reliably estimated';
   $('mechBoardMotorPass').textContent =
-    `${64 - lastMechMap.motorOver}/64 under derated torque`;
+    `${lastMechMap.motorChecked - lastMechMap.motorOver}/${lastMechMap.motorChecked} evaluated` +
+    (lastMechMap.motorChecked < 64 ? ` · ${64 - lastMechMap.motorChecked} unassessed` : '');
   $('mechWorstMotor').textContent =
     `${lastMechMap.maxTorque.toFixed(3)} N·m @ ${lastMechMap.maxTorqueSquare || 'N/A'}`;
   $('mechRequiredMotor').textContent =
-    Number.isFinite(lastMechMap.requiredMotorNm)
+    lastMechMap.motorChecked === 64 && Number.isFinite(lastMechMap.requiredMotorNm)
       ? `${lastMechMap.requiredMotorNm.toFixed(3)} N·m at motor shaft`
-      : 'Not available';
+      : 'Unavailable · not all 64 centres evaluated';
   $('mechMaxPayload').textContent = sol.valid
     ? formatPayload(result.structuralLimit)
     : 'unreachable';
