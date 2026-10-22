@@ -180,8 +180,13 @@ const fs = require('node:fs');
     name:'restored-config.json',mimeType:'application/json',
     buffer:Buffer.from(sourceJSON,'utf8')
   });
-  if(await page.locator('#boardW').inputValue()!=='255')
-    throw Error('Loading JSON file did not restore the configuration');
+  // File input handlers await file.text(), so wait for async import completion
+  // instead of reading the field immediately after setInputFiles().
+  await page.waitForFunction(() => document.getElementById('boardW').value === '255',
+    null,{timeout:10000}).catch(async()=>{
+      throw Error('Loading JSON file did not restore the configuration: ' +
+        await page.locator('#fileHubStatus').innerText());
+    });
 
   // SolidWorks source preview and download.
   await page.locator('[data-file-kind="sw"]').click();
