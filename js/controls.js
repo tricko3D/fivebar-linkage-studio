@@ -98,6 +98,7 @@ function importConfigurationJson(source) {
     if (typeof parsed[key] === 'number' && !Number.isFinite(parsed[key])) continue;
     updated[key] = parsed[key];
   }
+  migrateLegacyMotorConfiguration(parsed, updated);
   state = updated;
   normalizeMaterialSelection();
   normalizeMotorPresetSelection();

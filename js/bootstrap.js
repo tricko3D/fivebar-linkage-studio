@@ -125,6 +125,7 @@ try {
   if (prior && typeof prior === 'object') {
     for (const key of Object.keys(defaults))
       if (typeof prior[key] === typeof defaults[key]) state[key] = prior[key];
+    migrateLegacyMotorConfiguration(prior, state);
   }
 } catch (e) {}
 // A shared URL overrides local settings: it is an immutable snapshot.

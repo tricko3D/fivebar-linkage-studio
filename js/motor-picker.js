@@ -5,7 +5,10 @@
 const motorFamilies = [
   { key: 'micro', label: 'Micro servos', description: 'Compact positional RC servos for small linkages', symbol: '◉' },
   { key: 'standard', label: 'Standard servos', description: 'Larger positional RC servos for heavier linkages', symbol: '◈' },
-  { key: 'stepper', label: 'Steppers', description: 'Continuous-angle steppers, driver-dependent torque', symbol: '⚙' }
+  { key: 'stepper', label: 'Steppers', description: 'Continuous-angle steppers, driver-dependent torque', symbol: '⚙' },
+  { key: 'gimbal', label: 'Gimbal & frameless', description: 'Compact direct-drive BLDC motors for robotic joints', symbol: '◎' },
+  { key: 'outrunner', label: 'BLDC outrunners', description: 'Bare high-torque-density motors, external FOC needed', symbol: '◌' },
+  { key: 'actuator', label: 'Integrated actuators', description: 'Robotic BLDC units with driver or gearing built in', symbol: '◈' }
 ];
 // All motorNm / motorRPM entries are editable FIRST-PASS RUNNING estimates.
 // Published stall/holding torque and no-load speed are NOT interchangeable with
@@ -28,12 +31,32 @@ const motorPresets = {
   'nema14-34': { family: 'stepper', label: 'NEMA 14 · 34 mm', rating: '0.14 N·m holding (14HS13 example)', motorNm: 0.065, motorRPM: 200, servoTravel: 360, note: 'Representative NEMA 14 at moderate speed. Usable torque is highly dependent on driver, voltage and current.' },
   'nema17-34': { family: 'stepper', label: 'NEMA 17 · 34 mm', rating: '0.26 N·m holding (17HS13-0404S1)', motorNm: 0.10, motorRPM: 180, servoTravel: 360, note: 'Short NEMA 17 example. This high-inductance 0.4 A motor needs its own measured torque-speed curve.' },
   'nema17-40': { family: 'stepper', label: 'NEMA 17 · 40 mm', rating: '0.40 N·m holding (17HS4401)', motorNm: 0.18, motorRPM: 250, servoTravel: 360, note: 'Common 1.7 A NEMA 17. Holding torque is not usable running torque; tune to your driver and supply.' },
-  'nema17-48': { family: 'stepper', label: 'NEMA 17 · 48 mm', rating: '0.59 N·m holding (17HS19-2004S1)', motorNm: 0.25, motorRPM: 250, servoTravel: 360, note: 'Longer 2 A NEMA 17 example, not a guaranteed torque at 250 RPM.' }
+  'nema17-48': { family: 'stepper', label: 'NEMA 17 · 48 mm', rating: '0.59 N·m holding (17HS19-2004S1)', motorNm: 0.25, motorRPM: 250, servoTravel: 360, note: 'Longer 2 A NEMA 17 example, not a guaranteed torque at 250 RPM.' },
+  'nema17-baseline': {family:'stepper',label:'NEMA 17 · project baseline',rating:'Project setup, not a manufacturer torque-speed curve',motorNm:0.25,motorRPM:180,servoTravel:360,ratio:2,note:'Retains saved 0.25 N·m, 180 RPM, 2:1 external drive; travel corrected from 180° to 360°.'},
+  'ipower-gm4108h': {family:'gimbal',label:'iPower GM4108H-120T',rating:'0.12–0.18 N·m load torque @20 V',motorNm:0.12,motorRPM:250,servoTravel:360,note:'Listed loaded torque, but 250 RPM is an illustrative estimate, not measured at that torque.',source:'https://iflight-rc.eu/en-pt/products/ipower-gm4108h-120t-gimbal-motor'},
+  'cubemars-ri30': {family:'gimbal',label:'CubeMars RI30 KV260',rating:'0.076 N·m rated @4110 RPM, 24 V',motorNm:0.076,motorRPM:4110,servoTravel:360,note:'Published rated torque-speed point, frameless FOC motor.',source:'https://www.cubemars.com/product/ri30-kv260-frameless-torque-motor.html'},
+  'cubemars-ri50': {family:'gimbal',label:'CubeMars RI50 KV100',rating:'0.58 N·m rated @1090 RPM, 24 V',motorNm:0.58,motorRPM:1090,servoTravel:360,note:'Published rated torque-speed point, frameless 54 mm motor.',source:'https://www.cubemars.com/product/ri50-kv100-frameless-inrunner-torque-motor.html'},
+  'odrive-d5065': {family:'outrunner',label:'ODrive D5065 · 270 KV',rating:'270 KV; approximately 0.031 N·m/A',motorNm:0.22,motorRPM:900,servoTravel:360,note:'Illustrative running point, not a published rated torque-speed pair. Encoder and FOC controller needed.',source:'https://eu.odriverobotics.com/shop/odrive-custom-motor-d5065'},
+  'flipsky-6374': {family:'outrunner',label:'Flipsky 6374 · 190 KV',rating:'8 N·m MAX torque, not continuous',motorNm:1.5,motorRPM:1000,servoTravel:360,note:'Illustrative working point. Maximum torque must not be used for continuous sizing.',source:'https://flipsky.net/products/bldc-belt-motor-6374-190kv-3250w-for-electric-skateboard'},
+  'eagle-la8308-90kv': {family:'outrunner',label:'Eagle Power LA8308 · 90 KV',rating:'90 KV; 22 A max continuous current; Ø92 × 28.5 mm',motorNm:0.45,motorRPM:500,servoTravel:360,note:'Compact axially, but 92 mm diameter. Running torque and speed are illustrative, not a tested matched pair.',source:'https://www.technobotix.in/products/eagle-powor-la-8308-kv90-motor/1781252000000073016'},
+  'dji-gm6020': {family:'actuator',label:'DJI RoboMaster GM6020',rating:'1.2 N·m continuous @132 RPM, 24 V',motorNm:1.2,motorRPM:132,servoTravel:360,note:'Published output specification. Integrated driver and positional feedback; direct drive.',source:'https://www.robomaster.com/en-US/products/components/general/gm6020'},
+  'dji-m3508-p19': {family:'actuator',label:'DJI M3508 P19',rating:'3 N·m continuous @469 RPM, C620 @24 V',motorNm:3,motorRPM:469,servoTravel:360,note:'Published output point with internal P19 gearbox; do not count its internal ratio twice.',source:'https://rm-static.djicdn.com/robomasters/public/document/RoboMaster%20M3508%20P19%20Brushless%20DC%20Gear%20Motor%20V1.0.pdf'},
+  'cubemars-ak40-10': {family:'actuator',label:'CubeMars AK40-10',rating:'1.3 N·m rated @370 RPM, 24 V',motorNm:1.3,motorRPM:370,servoTravel:360,note:'Integrated FOC, encoder and 10:1 gearbox. Torque and speed already at the output.',source:'https://www.cubemars.com/product/ak40-10-robotic-actuator.html'},
+  'cubemars-ak60-6': {family:'actuator',label:'CubeMars AK60-6 V3',rating:'3 N·m rated @490 RPM, 48 V',motorNm:3,motorRPM:490,servoTravel:360,note:'Integrated BLDC + driver with 6:1 internal gearbox. Output rating already reduced.',source:'https://www.cubemars.com/product/ak60-6-v3-0-kv80-robotic-actuator.html'}
 };
 let selectedMotorFamily = 'micro';
 let motorPickerReturnFocus = null;
 let motorPickerInitialized = false;
 const motorKeys = ['motorNm', 'motorRPM', 'servoTravel'];
+// Only the exact historical NEMA 17 snapshot gets the user-confirmed 360° correction.
+function migrateLegacyMotorConfiguration(source, destination) {
+  if (!source || Object.prototype.hasOwnProperty.call(source, 'motorPreset')) return;
+  if (source.motorNm === 0.25 && source.motorRPM === 180 &&
+      source.ratio === 2 && source.efficiency === 95 && source.servoTravel === 180) {
+    destination.motorPreset = 'nema17-baseline';
+    destination.servoTravel = 360;
+  }
+}
 function normalizeMotorPresetSelection() {
   const preset = motorPresets[state.motorPreset];
   if (!preset || motorKeys.some(key => Math.abs(state[key] - preset[key]) > 1e-6))
@@ -56,11 +79,11 @@ function updateMotorPresetNote() {
   if (!note) return;
   const preset = motorPresets[state.motorPreset];
   note.textContent = preset
-    ? preset.label + ': ' + preset.note +
-      ' Preset RPM and motor torque are illustrative RUNNING estimates, not published load ratings. ' +
-      'External reduction is reset to 1:1; existing joint hard stops are cleared for recalibration.'
-    : 'Custom motor: running torque, usable RPM and angular travel remain fully editable. ' +
-      'Use motor torque at speed, not a servo stall or stepper holding rating.';
+    ? state.motorPreset === 'nema17-baseline'
+      ? 'Saved NEMA 17 setup · 0.25 N·m, 180 RPM, 2:1 drive (assumed).'
+      : preset.label + ' · ' + preset.motorNm + ' N·m, ' + preset.motorRPM +
+        ' RPM (see model details).'
+    : 'Custom values. Enter running torque at speed, not stall or holding torque.';
 }
 function renderMotorChoices() {
   const family = motorFamilies.find(entry => entry.key === selectedMotorFamily);
@@ -122,6 +145,7 @@ function renderMotorChoices() {
     description.className = 'materialPickerChoiceNote';
     description.textContent = model.note;
     button.append(head, metrics, rating, description);
+    if (model.source) button.title = 'Specification source: ' + model.source;
     choices.append(button);
   }
   const custom = document.createElement('button');
@@ -145,10 +169,11 @@ function applyMotorPreset(key) {
     if (!preset) return false;
     state.motorPreset = key;
     for (const field of motorKeys) state[field] = preset[field];
-    state.servoMargin = preset.family === 'stepper' ? 0 : 10;
+    state.servoMargin = key === 'nema17-baseline' ? 10 :
+      ['micro', 'standard'].includes(preset.family) ? 10 : 0;
     // The rated servo torque is measured at the horn, AFTER its internal gearbox.
     // 1:1 here means no ADDITIONAL external transmission.
-    state.ratio = 1;
+    state.ratio = preset.ratio ?? 1;
     state.efficiency = 95;
     // Existing joint stops belong to the previous motor installation.
     state.useJointLimits = false;
