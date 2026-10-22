@@ -196,7 +196,7 @@ const fs = require('node:fs');
     throw Error('SolidWorks variables missing from preview');
   for(const key of ['LeftJointMinAngle','LeftJointMaxAngle','RightJointMinAngle','RightJointMaxAngle','HardStopsEnabled','ServoUsableTravel'])
     if(!equations.includes('"'+key+'" ='))throw Error('SolidWorks export omits '+key);
-  const vars=[...equations.matchAll(/^"([^"]+)" = ([-\\d.]+)(mm|deg)?$/gm)];
+  const vars=[...equations.matchAll(/^"([^"]+)" = ([-\d.]+)(mm|deg)?$/gm)];
   if(vars.length<70)throw Error('Insufficient CAD variable coverage: '+vars.length);
   const [sw]=await Promise.all([page.waitForEvent('download'),page.locator('#fileHubSave').click()]);
   if(!sw.suggestedFilename().endsWith('.txt'))throw Error('SW export not TXT');
