@@ -33,6 +33,7 @@ function buildEngineeringAuditAppendices(ctx) {
         item('Board',`${fmt(s.boardW,1)} × ${fmt(s.boardH,1)} mm`),
         item('Mounting / motor separation',val(s.sep,'mm')),
         item('Link material',material),
+        item('Motor profile',motorPresets[s.motorPreset]?.label || 'Custom values'),
         item('Motor running torque',val(s.motorNm,'N·m')),
         item('Gear ratio',`${fmt(s.ratio,2)}:1`),
         item('Tool + payload',`${fmt(s.headG,1)} + ${fmt(s.payloadG,1)} g`),

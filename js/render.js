@@ -447,6 +447,8 @@ function writeControls() {
   });
   updateToolSettings();
   updateBoardReadout();
+  if (typeof refreshMotorPickerTrigger === 'function') refreshMotorPickerTrigger();
+  if (typeof updateMotorPresetNote === 'function') updateMotorPresetNote();
 }
 function updateBoardReadout() {
   for (const k of ['l1', 'l2', 'r1', 'r2']) {

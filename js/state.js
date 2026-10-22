@@ -136,6 +136,7 @@ const defaults = {
   routeTo: 'D8',
   xySpeed: 90,
   motorRPM: 180,
+  motorPreset: 'custom',
   speedCap: true,
   boardW: 255,
   boardH: 255,

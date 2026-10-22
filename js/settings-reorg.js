@@ -66,17 +66,21 @@
 
   // Motor angle overlays are a display control; servo angle limits are hardware.
   display.append(setting('showServoArcs'), setting('showMechanics'));
+  const motorPresetEntry = document.getElementById('motorPresetEntry');
+  const motorPresetNote = document.getElementById('motorPresetNote');
+  motorPresetEntry.remove();
+  motorPresetNote.remove();
   const travelCard = document.createElement('details');
   travelCard.className = 'mechanicsGroup';
   travelCard.open = true;
   const summary = document.createElement('summary');
-  summary.innerHTML = '<span>Servo travel</span><i data-lucide="chevron-down" aria-hidden="true"></i>';
+  summary.innerHTML = '<span>Angular travel</span><i data-lucide="chevron-down" aria-hidden="true"></i>';
   const travelBody = document.createElement('div');
   travelBody.className = 'mechanicsGroupBody';
   for (const child of Array.from(motors.children))
     if (!child.classList.contains('sectheader')) travelBody.append(child);
   travelCard.append(summary, travelBody);
-  motors.append(travelCard);
+  motors.append(makeGroup('Motor selection', [], [motorPresetEntry, motorPresetNote]), travelCard);
   // Hard stops must be a separate collapsible card, not nested in servo travel.
   const jointStopsCard = document.getElementById('jointLimitsGroup');
   if (jointStopsCard) motors.append(jointStopsCard);

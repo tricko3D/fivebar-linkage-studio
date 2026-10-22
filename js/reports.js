@@ -179,6 +179,8 @@ function buildAuditReport() {
       `NOTE: simplified structural sag currently does NOT vary with XY joint angle; real assembly sag WILL vary.`,
     ]),
     ...auditTag('06  XY MOTOR TORQUE / FINITE-DIFFERENCE JACOBIAN', [
+      `Motor profile=${motorPresets[s.motorPreset]?.label || 'Custom values'} (${s.motorPreset})`,
+      `Motor preset context=${motorPresets[s.motorPreset]?.rating || 'Manual inputs'}; running estimates are not datasheet stall/holding torque or a tested speed curve`,
       `Motor running torque entered=${auditNum(s.motorNm, 8)} N*m`,
       `Reduction ratio=${auditNum(s.ratio, 6)}; efficiency=${auditNum(s.efficiency, 6)}%; safety factor=${auditNum(s.motorSF, 5)}`,
       `Derated available torque=motorNm*ratio*(efficiency/100)/motorSF=${auditNum(base.allowTorque, 10)} N*m / motor`,
@@ -401,6 +403,7 @@ function buildAuditReport() {
     `| Manufacturing & material | ${process} / ${mat} |`,
     `| Board | ${fmt(s.boardW,1,'mm')} × ${fmt(s.boardH,1,'mm')} |`,
     `| Motor spacing / baseline angle | ${fmt(s.sep,1,'mm')} / ${fmt(s.angle,1,'°')} |`,
+    `| Motor model | ${motorPresets[s.motorPreset]?.label || 'Custom values'} |`,
     `| Link lengths (L1, L2, R1, R2) | ${['l1','l2','r1','r2'].map(k=>fmt(s[k],1,'mm')).join(' / ')} |`,
     `| Target (X, Y) | (${fmt(s.targetX,1)}, ${fmt(s.targetY,1)}) mm |`,
     `| Motor output angles | ${sol.valid?fmt(sol.angleL,2,'°')+' / '+fmt(sol.angleR,2,'°'):'Unavailable'} |`,

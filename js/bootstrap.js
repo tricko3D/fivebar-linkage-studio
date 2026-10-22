@@ -139,6 +139,7 @@ try {
   warning.textContent='Could not open shared configuration: '+error.message;
   document.body.prepend(warning);
 }
+normalizeMotorPresetSelection();
 state.outerW = Math.max(state.boardW, state.outerW);
 state.outerH = Math.max(state.boardH, state.outerH);
 // Infer a manufacturing method for legacy settings saved before the picker existed.
@@ -146,6 +147,7 @@ setupMaterialOptions();
 writeControls();
 initControls();
 initMaterialPicker();
+initMotorPicker();
 initFileHub();
 updateTransmissionReadout();
 rebuildRoute();

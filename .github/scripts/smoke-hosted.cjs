@@ -669,6 +669,38 @@ const fs = require('node:fs');
   await auditActiveFieldRows();
 
   // Explicit min/max, per-value reset, and reset-all must all work in the rail.
+  // Motor library must use the same modal component as material, then update
+  // running inputs without treating stall/holding torque as available torque.
+  await page.locator('.topSettingsTabs [data-setting="motors"]').click();
+  await page.locator('#motorPickerTrigger').click();
+  if(!(await page.locator('#motorPickerOverlay').isVisible()))throw Error('Motor chooser did not open');
+  if(!(await page.locator('#motorPickerOverlay').evaluate(el=>el.classList.contains('materialPickerOverlay'))))
+    throw Error('Motor picker does not reuse the existing material overlay component');
+  if(await page.locator('[data-motor-family]').count()!==3)throw Error('Missing motor families');
+  await page.locator('[data-motor-family="stepper"]').click();
+  if(await page.locator('[data-motor-choice]').count()<4)throw Error('Missing stepper choices');
+  await page.locator('[data-motor-choice="nema17-40"]').click();
+  let motorAudit=await page.evaluate(()=>({preset:state.motorPreset,nm:state.motorNm,rpm:state.motorRPM,
+    travel:state.servoTravel,ratio:state.ratio,hard:state.useJointLimits}));
+  if(motorAudit.preset!=='nema17-40'||motorAudit.nm!==0.18||
+     motorAudit.rpm!==250||motorAudit.travel!==360||motorAudit.ratio!==1||motorAudit.hard)
+    throw Error('Stepper profile did not update the model: '+JSON.stringify(motorAudit));
+  if(!(await page.evaluate(()=>location.hash)).startsWith('#c='))
+    throw Error('Selecting motor did not sync the share permalink');
+  await page.locator('#motorRPM').fill('175');
+  if((await page.locator('#motorChoiceLabel').innerText())!=='Custom values')
+    throw Error('Manually changing motor RPM should select custom values');
+  await page.locator('#motorPickerTrigger').click();
+  await page.locator('[data-motor-family="micro"]').click();
+  await page.locator('[data-motor-choice="mg90s"]').click();
+  motorAudit=await page.evaluate(()=>({preset:state.motorPreset,nm:state.motorNm,
+    travel:state.servoTravel,ratio:state.ratio}));
+  if(motorAudit.preset!=='mg90s'||motorAudit.nm!==0.08||
+     motorAudit.travel!==180||motorAudit.ratio!==1)
+    throw Error('MG90S profile did not update model: '+JSON.stringify(motorAudit));
+  await page.locator('#resetButton').click();
+  await page.locator('.topSettingsTabs [data-setting="motors"]').click();
+
   const stops=page.locator('#jointLimitsGroup');
   if(!(await stops.isVisible()))throw Error('Joint hard stops are hidden');
   if(await stops.locator('[data-joint-stop]').count()!==4 ||

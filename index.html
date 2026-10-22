@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="css/cad-theme.css" />
     <link rel="stylesheet" href="css/toolbar.css" />
     <link rel="stylesheet" href="css/studio-polish.css" />
+    <link rel="stylesheet" href="css/motor-picker.css" />
     <link rel="stylesheet" href="css/motion-compact.css" />
     <link rel="stylesheet" href="css/motion-overlay.css" />
   </head>
@@ -240,12 +241,24 @@
           </p>
         </section>
         <section class="section" id="servoSection">
+          <div id="motorPresetEntry" class="field">
+            <label for="motorPickerTrigger">Motor model</label>
+            <button type="button" id="motorPickerTrigger" class="materialPickerTrigger"
+              aria-haspopup="dialog" aria-controls="motorPickerOverlay" aria-expanded="false">
+              <span class="materialPickerTriggerText">
+                <span id="motorPickerFamilyLabel" class="materialProcessLabel">Manual setup</span>
+                <strong id="motorChoiceLabel">Custom values</strong>
+              </span>
+              <i data-lucide="chevrons-up-down" aria-hidden="true"></i>
+            </button>
+          </div>
+          <p id="motorPresetNote" class="materialPresetNote" role="status" aria-live="polite"></p>
           <div class="sectheader">
             06 / Servo angle travel <span class="mini">MG90S check</span>
           </div>
           <div class="fieldrow">
             <div class="field">
-              <label for="servoTravel">Rated rotation · degrees</label
+              <label for="servoTravel">Available angular travel · °</label
               ><input
                 id="servoTravel"
                 data-key="servoTravel"
@@ -1054,6 +1067,36 @@
         </div>
       </section>
     </div>
+    <!-- Motor library reuses the manufacturing/material picker component. -->
+    <div id="motorPickerOverlay" class="materialPickerOverlay motorPickerOverlay" hidden>
+      <div class="materialPickerBackdrop" data-motor-close="true"></div>
+      <section class="materialPickerDialog" role="dialog" aria-modal="true"
+        aria-labelledby="motorPickerTitle" aria-describedby="motorPickerDescription" tabindex="-1">
+        <header class="materialPickerHeader">
+          <div>
+            <div class="materialPickerEyebrow">MOTOR LIBRARY</div>
+            <h2 id="motorPickerTitle">Choose motor model</h2>
+            <p id="motorPickerDescription">Select an actuator family, then a starting profile for both driven joints.</p>
+          </div>
+          <button type="button" id="motorPickerClose" class="materialPickerClose"
+            aria-label="Close motor picker"><i data-lucide="x" aria-hidden="true"></i></button>
+        </header>
+        <div class="materialPickerLayout">
+          <nav id="motorFamilyOptions" class="materialProcessOptions" aria-label="Motor families"></nav>
+          <div class="materialPickerResults">
+            <div class="materialPickerResultTop">
+              <div><div id="motorPickerFamilyName" class="materialPickerProcessName">Micro servos</div>
+                <p id="motorPickerFamilyHelp" class="materialPickerProcessHelp"></p></div>
+              <span id="motorPickerCount" class="materialPickerCount"></span>
+            </div>
+            <div id="motorPickerChoices" class="materialPickerChoices" role="group" aria-label="Motor models"></div>
+            <p class="materialPickerDisclaimer">Published stall/holding ratings are shown for reference only.
+              Applied torque and RPM are illustrative operating estimates, not measured torque-speed curves.
+              Presets apply to both motors and clear any previously configured joint hard stops.</p>
+          </div>
+        </div>
+      </section>
+    </div>
     <footer class="foot">
       Built using ChatGPT (GPT-6, OpenAI). Inspired by
       <a href="https://github.com/unswei/fivebar" target="_blank" rel="noopener noreferrer"
@@ -1077,6 +1120,7 @@
     <script defer src="js/report-sections.js"></script>
     <script defer src="js/reports.js"></script>
     <script defer src="js/material-picker.js"></script>
+    <script defer src="js/motor-picker.js"></script>
     <script defer src="js/file-hub.js"></script>
     <script defer src="js/export-bundle.js"></script>
     <script defer src="js/bootstrap.js"></script>

@@ -100,6 +100,7 @@ function importConfigurationJson(source) {
   }
   state = updated;
   normalizeMaterialSelection();
+  normalizeMotorPresetSelection();
   state.outerW = Math.max(state.boardW, state.outerW);
   state.outerH = Math.max(state.boardH, state.outerH);
   writeControls();
@@ -114,6 +115,7 @@ function persist() {
 }
 function change(recalc = true) {
   if (typeof refreshMaterialPickerTrigger === 'function') refreshMaterialPickerTrigger();
+  if (typeof refreshMotorPickerTrigger === 'function') refreshMotorPickerTrigger();
   stopRoute();
   if (typeof shareSyncUrl === 'function') shareSyncUrl();
   updateBoardReadout();
@@ -233,6 +235,10 @@ function initControls() {
       if (key === 'material') {
         state.manufacturing = manufacturingForMaterial(state.material, state.manufacturing);
         applyMaterialPreset(state.material);
+      }
+      if (['motorNm', 'motorRPM', 'servoTravel'].includes(key) && state.motorPreset !== 'custom') {
+        state.motorPreset = 'custom';
+        updateMotorPresetNote();
       }
       if (['youngMPa', 'density', 'stressLimit', 'stiffFactor'].includes(key) &&
           state.material !== 'custom') {

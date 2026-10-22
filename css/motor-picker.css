@@ -1,0 +1,12 @@
+/* Motor selection uses the same portal picker and choice-card components as materials. */
+.config #motorPickerTrigger{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;min-width:0;min-height:48px;padding:7px 10px;
+  background:linear-gradient(180deg,#fff,#edf4f9);
+  border:1px solid #aebfd0;border-radius:6px;
+  color:#294d6a;text-align:left;cursor:pointer;
+}
+#motorPickerTrigger:hover{border-color:#5497c8;background:#edf7ff;}
+#motorPickerTrigger:focus-visible{outline:2px solid #388bc3;outline-offset:2px;}
+#motorPickerTrigger > svg{flex:0 0 17px;width:17px;height:17px;color:#62849c;}
+#motorPickerEntry{margin-top:4px;}
